@@ -22,6 +22,8 @@ import { logger } from "./utils/logger";
 import { SocketDataContext } from "./contexts/SocketContext";
 import { useEffect, useContext } from "react";
 import { ChevronLeft, Trash2 } from "lucide-react";
+import ToastProvider from "./components/notifications/ToastProvider";
+import { AnimatePresence, motion } from "framer-motion";
 
 function App() {
   return (
@@ -44,69 +46,9 @@ function App() {
         </div>
 
         <BrowserRouter>
+          <ToastProvider />
           <LoggingWrapper />
-          <Routes>
-            <Route path="/" element={<GetStarted />} />
-            <Route
-              path="/home"
-              element={
-                <UserProtectedWrapper>
-                  <UserHomeScreen />
-                </UserProtectedWrapper>
-              }
-            />
-            <Route path="/login" element={<UserLogin />} />
-            <Route path="/signup" element={<UserSignup />} />
-            <Route
-              path="/user/edit-profile"
-              element={
-                <UserProtectedWrapper>
-                  <UserEditProfile />
-                </UserProtectedWrapper>
-              }
-            />
-            <Route
-              path="/user/rides"
-              element={
-                <UserProtectedWrapper>
-                  <RideHistory />
-                </UserProtectedWrapper>
-              }
-            />
-
-            <Route
-              path="/captain/home"
-              element={
-                <CaptainProtectedWrapper>
-                  <CaptainHomeScreen />
-                </CaptainProtectedWrapper>
-              }
-            />
-            <Route path="/captain/login" element={<CaptainLogin />} />
-            <Route path="/captain/signup" element={<CaptainSignup />} />
-            <Route
-              path="/captain/edit-profile"
-              element={
-                <CaptainProtectedWrapper>
-                  <CaptainEditProfile />
-                </CaptainProtectedWrapper>
-              }
-            />
-            <Route
-              path="/captain/rides"
-              element={
-                <CaptainProtectedWrapper>
-                  <RideHistory />
-                </CaptainProtectedWrapper>
-              }
-            />
-            <Route path="/:userType/chat/:rideId" element={<ChatScreen />} />
-            <Route path="/:userType/verify-email/" element={<VerifyEmail />} />
-            <Route path="/:userType/forgot-password/" element={<ForgotPassword />} />
-            <Route path="/:userType/reset-password/" element={<ResetPassword />} />
-
-            <Route path="*" element={<Error />} />
-          </Routes>
+          <AnimatedRoutes />
         </BrowserRouter>
       </div>
       {/* Imagen lateral para pantallas grandes */}
@@ -130,6 +72,85 @@ function App() {
 }
 
 export default App;
+
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.2 }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<GetStarted />} />
+          <Route
+            path="/home"
+            element={
+              <UserProtectedWrapper>
+                <UserHomeScreen />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route path="/login" element={<UserLogin />} />
+          <Route path="/signup" element={<UserSignup />} />
+          <Route
+            path="/user/edit-profile"
+            element={
+              <UserProtectedWrapper>
+                <UserEditProfile />
+              </UserProtectedWrapper>
+            }
+          />
+          <Route
+            path="/user/rides"
+            element={
+              <UserProtectedWrapper>
+                <RideHistory />
+              </UserProtectedWrapper>
+            }
+          />
+
+          <Route
+            path="/captain/home"
+            element={
+              <CaptainProtectedWrapper>
+                <CaptainHomeScreen />
+              </CaptainProtectedWrapper>
+            }
+          />
+          <Route path="/captain/login" element={<CaptainLogin />} />
+          <Route path="/captain/signup" element={<CaptainSignup />} />
+          <Route
+            path="/captain/edit-profile"
+            element={
+              <CaptainProtectedWrapper>
+                <CaptainEditProfile />
+              </CaptainProtectedWrapper>
+            }
+          />
+          <Route
+            path="/captain/rides"
+            element={
+              <CaptainProtectedWrapper>
+                <RideHistory />
+              </CaptainProtectedWrapper>
+            }
+          />
+          <Route path="/:userType/chat/:rideId" element={<ChatScreen />} />
+          <Route path="/:userType/verify-email/" element={<VerifyEmail />} />
+          <Route path="/:userType/forgot-password/" element={<ForgotPassword />} />
+          <Route path="/:userType/reset-password/" element={<ResetPassword />} />
+
+          <Route path="*" element={<Error />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 function LoggingWrapper() {
   const location = useLocation();
