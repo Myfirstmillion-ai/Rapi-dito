@@ -12,32 +12,24 @@ const getFare = async (pickup, destination) => {
 
   // Tarifas base en COP (Pesos Colombianos)
   const baseFare = {
-    car: 5000,
-    bike: 3000,
+    car: 2000,
+    bike: 2000,
   };
 
   // Tarifa por Km en COP
   const perKmRate = {
-    car: 1500,
+    car: 2000,
     bike: 1000,
-  };
-
-  // Tarifa por minuto en COP
-  const perMinuteRate = {
-    car: 200,
-    bike: 150,
   };
 
   const fare = {
     car: Math.round(
       baseFare.car +
-        (distanceTime.distance.value / 1000) * perKmRate.car +
-        (distanceTime.duration.value / 60) * perMinuteRate.car
+        (distanceTime.distance.value / 1000) * perKmRate.car
     ),
     bike: Math.round(
       baseFare.bike +
-        (distanceTime.distance.value / 1000) * perKmRate.bike +
-        (distanceTime.duration.value / 60) * perMinuteRate.bike
+        (distanceTime.distance.value / 1000) * perKmRate.bike
     ),
   };
 

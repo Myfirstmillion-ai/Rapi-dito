@@ -123,7 +123,7 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
   
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
     input
-  )}&key=${apiKey}&location=${centerLat},${centerLng}&radius=${radius}&strictbounds=true&components=country:co|country:ve&language=es`;
+  )}&key=${apiKey}&location=${centerLat},${centerLng}&radius=${radius}&strictbounds=false&components=country:co|country:ve&language=es`;
 
   try {
     const response = await axios.get(url);
@@ -155,13 +155,22 @@ module.exports.getCaptainsInTheRadius = async (ltd, lng, radius, vehicleType) =>
   // radius en km
   
   try {
+    // Normalizar el tipo de vehículo antes de buscar
+    const vehicleTypeMap = {
+      'moto': 'bike',
+      'carro': 'car',
+      'bike': 'bike',
+      'car': 'car'
+    };
+    const normalizedVehicleType = vehicleTypeMap[vehicleType.toLowerCase()] || vehicleType;
+    
     const captains = await captainModel.find({
       location: {
         $geoWithin: {
           $centerSphere: [[lng, ltd], radius / 6371],
         },
       },
-      "vehicle.type": vehicleType,
+      "vehicle.type": normalizedVehicleType,
     });
     return captains;
   } catch (error) {
