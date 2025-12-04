@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema(
         ref: "Ride",
       },
     ],
+    rating: {
+      average: { type: Number, default: 5 },
+      count: { type: Number, default: 0 }
+    },
   },
   { timestamps: true }
 );

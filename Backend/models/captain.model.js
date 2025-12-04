@@ -83,6 +83,10 @@ const captainSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    rating: {
+      average: { type: Number, default: 5 },
+      count: { type: Number, default: 0 }
+    },
   },
   { timestamps: true }
 );

@@ -269,3 +269,98 @@ module.exports.cancelRide = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
+
+module.exports.rateRide = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { rideId, rating, comment, ratingFor } = req.body;
+
+  try {
+    const ride = await rideModel.findById(rideId).populate("user").populate("captain");
+
+    if (!ride) {
+      return res.status(404).json({ message: "Viaje no encontrado" });
+    }
+
+    if (ride.status !== "completed") {
+      return res.status(400).json({ message: "Solo se pueden calificar viajes completados" });
+    }
+
+    // Determinar quién está calificando y a quién
+    const isUser = req.user && req.user._id.toString() === ride.user._id.toString();
+    const isCaptain = req.captain && req.captain._id.toString() === ride.captain._id.toString();
+
+    if (!isUser && !isCaptain) {
+      return res.status(403).json({ message: "No autorizado para calificar este viaje" });
+    }
+
+    // Si es usuario calificando al capitán
+    if (isUser && ratingFor === "captain") {
+      if (ride.captainRating && ride.captainRating.rating) {
+        return res.status(400).json({ message: "Ya has calificado este viaje" });
+      }
+
+      ride.captainRating = {
+        rating,
+        comment: comment || "",
+        createdAt: new Date()
+      };
+
+      // Actualizar promedio del capitán
+      const captain = await require("../models/captain.model").findById(ride.captain._id);
+      const newCount = captain.rating.count + 1;
+      const newAverage = ((captain.rating.average * captain.rating.count) + rating) / newCount;
+      captain.rating.average = Math.round(newAverage * 10) / 10;
+      captain.rating.count = newCount;
+      await captain.save();
+    }
+    // Si es capitán calificando al usuario
+    else if (isCaptain && ratingFor === "user") {
+      if (ride.userRating && ride.userRating.rating) {
+        return res.status(400).json({ message: "Ya has calificado este viaje" });
+      }
+
+      ride.userRating = {
+        rating,
+        comment: comment || "",
+        createdAt: new Date()
+      };
+
+      // Actualizar promedio del usuario
+      const user = await userModel.findById(ride.user._id);
+      const newCount = user.rating.count + 1;
+      const newAverage = ((user.rating.average * user.rating.count) + rating) / newCount;
+      user.rating.average = Math.round(newAverage * 10) / 10;
+      user.rating.count = newCount;
+      await user.save();
+    } else {
+      return res.status(400).json({ message: "Parámetro ratingFor inválido" });
+    }
+
+    await ride.save();
+
+    // Notificar a la otra parte
+    if (isUser && ride.captain.socketId) {
+      sendMessageToSocketId(ride.captain.socketId, {
+        event: "rated-by-user",
+        data: { rideId: ride._id, rating }
+      });
+    } else if (isCaptain && ride.user.socketId) {
+      sendMessageToSocketId(ride.user.socketId, {
+        event: "rated-by-captain",
+        data: { rideId: ride._id, rating }
+      });
+    }
+
+    return res.status(200).json({ 
+      message: "Calificación guardada exitosamente",
+      ride 
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+};

@@ -54,6 +54,16 @@ const rideSchema = new mongoose.Schema(
       select: false,
       required: true,
     },
+    userRating: {
+      rating: { type: Number, min: 1, max: 5 },
+      comment: { type: String },
+      createdAt: { type: Date }
+    },
+    captainRating: {
+      rating: { type: Number, min: 1, max: 5 },
+      comment: { type: String },
+      createdAt: { type: Date }
+    },
     messages: [
       {
         msg: String,
