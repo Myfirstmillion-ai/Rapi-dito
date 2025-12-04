@@ -4,6 +4,7 @@ import map from "/map.png";
 import {
   Button,
   LocationSuggestions,
+  RatingModal,
   SelectVehicle,
   RideDetails,
   Sidebar,
@@ -72,6 +73,10 @@ function UserHomeScreen() {
   });
   const [confirmedRideData, setConfirmedRideData] = useState(null);
   const rideTimeout = useRef(null);
+
+  // Rating modal
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rideToRate, setRideToRate] = useState(null);
 
   // Paneles
   const [showFindTripPanel, setShowFindTripPanel] = useState(true);
@@ -274,6 +279,28 @@ function UserHomeScreen() {
     setRideCreated(false);
   };
 
+  // Handle rating submission
+  const handleRatingSubmit = async ({ rating, comment, ratingFor }) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/ride/rate`,
+        {
+          rideId: rideToRate._id,
+          rating,
+          comment,
+          ratingFor
+        },
+        {
+          headers: { token: token }
+        }
+      );
+      Console.log("Calificación enviada exitosamente");
+    } catch (error) {
+      Console.log("Error al enviar calificación:", error);
+      throw error;
+    }
+  };
+
   // Actualizar ubicación
   const updateLocation = () => {
     if (navigator.geolocation) {
@@ -343,6 +370,11 @@ function UserHomeScreen() {
       Console.log("Viaje Finalizado");
       playSound(NOTIFICATION_SOUNDS.rideEnded);
       vibrate([500]);
+      
+      // Show rating modal
+      setRideToRate(data);
+      setShowRatingModal(true);
+      
       setShowRideDetailsPanel(false);
       setShowSelectVehiclePanel(false);
       setShowFindTripPanel(true);
@@ -546,6 +578,17 @@ function UserHomeScreen() {
         loading={loading}
         rideCreated={rideCreated}
         confirmedRideData={confirmedRideData}
+      />
+
+      {/* Rating Modal */}
+      <RatingModal
+        show={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        onSubmit={handleRatingSubmit}
+        ratingFor="captain"
+        targetName={rideToRate?.captain?.fullname ? 
+          `${rideToRate.captain.fullname.firstname} ${rideToRate.captain.fullname.lastname || ''}`.trim() 
+          : ""}
       />
     </div>
   );

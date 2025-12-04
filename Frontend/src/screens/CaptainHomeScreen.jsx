@@ -4,7 +4,7 @@ import axios from "axios";
 import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
-import { NewRide, Sidebar } from "../components";
+import { NewRide, RatingModal, Sidebar } from "../components";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
@@ -97,6 +97,10 @@ function CaptainHomeScreen() {
   const [error, setError] = useState("");
   const [showRideCompleted, setShowRideCompleted] = useState(false);
   const [completedRideData, setCompletedRideData] = useState(null);
+
+  // Rating modal
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rideToRate, setRideToRate] = useState(null);
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
@@ -217,6 +221,10 @@ function CaptainHomeScreen() {
         vibrate([300, 150, 300, 150, 300]);
         playSound(NOTIFICATION_SOUNDS.rideEnded);
         
+        // Show rating modal
+        setRideToRate(newRide);
+        setShowRatingModal(true);
+        
         // Mostrar pantalla de viaje completado
         setShowRideCompleted(true);
         
@@ -245,6 +253,28 @@ function CaptainHomeScreen() {
     setShowRideCompleted(false);
     setCompletedRideData(null);
     setShowCaptainDetailsPanel(true);
+  };
+
+  // Handle rating submission
+  const handleRatingSubmit = async ({ rating, comment, ratingFor }) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/ride/rate`,
+        {
+          rideId: rideToRate._id,
+          rating,
+          comment,
+          ratingFor
+        },
+        {
+          headers: { token: token }
+        }
+      );
+      Console.log("Calificación enviada exitosamente");
+    } catch (error) {
+      Console.log("Error al enviar calificación:", error);
+      throw error;
+    }
   };
 
   const updateLocation = () => {
@@ -563,6 +593,17 @@ function CaptainHomeScreen() {
         verifyOTP={verifyOTP}
         endRide={endRide}
         error={error}
+      />
+
+      {/* Rating Modal */}
+      <RatingModal
+        show={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        onSubmit={handleRatingSubmit}
+        ratingFor="user"
+        targetName={rideToRate?.user?.fullname ? 
+          `${rideToRate.user.fullname.firstname} ${rideToRate.user.fullname.lastname || ''}`.trim() 
+          : ""}
       />
     </div>
   );

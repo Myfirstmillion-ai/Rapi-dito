@@ -4,6 +4,7 @@ import Heading from "./Heading";
 import Input from "./Input";
 import LocationSuggestions from "./LocationSuggestions";
 import NewRide from "./NewRide";
+import RatingModal from "./RatingModal";
 import RideDetails from "./RideDetails";
 import SelectVehicle from "./SelectVehicle";
 import Spinner from "./Spinner";
@@ -17,6 +18,7 @@ export {
   Input,
   LocationSuggestions,
   NewRide,
+  RatingModal,
   RideDetails,
   SelectVehicle,
   Sidebar,
