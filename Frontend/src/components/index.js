@@ -2,6 +2,7 @@ import { Alert } from "./Alert";
 import Button from "./Button";
 import Heading from "./Heading";
 import Input from "./Input";
+import LiveMapTracker from "./LiveMapTracker";
 import LocationSuggestions from "./LocationSuggestions";
 import NewRide from "./NewRide";
 import RatingModal from "./RatingModal";
@@ -16,6 +17,7 @@ export {
   Button,
   Heading,
   Input,
+  LiveMapTracker,
   LocationSuggestions,
   NewRide,
   RatingModal,
