@@ -1,0 +1,160 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: "Poppins", serif;
+  font-weight: 500;
+  font-style: normal;
+  scrollbar-width: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background-color: #bbf7d0;
+  color: black;
+}
+
+/* Ocultar scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Transiciones suaves para paneles */
+.transition-panel {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejoras para el mapa */
+.map {
+  transition: opacity 0.3s ease;
+}
+
+/* Estilos para inputs */
+input:focus {
+  outline: 2px solid #22c55e;
+  outline-offset: -2px;
+}
+
+/* Botones con efecto ripple */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+button:active::after {
+  width: 200%;
+  height: 200%;
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) {
+  button:hover {
+    transform: none;
+  }
+}
+
+/* Responsive para diferentes tamaños de pantalla */
+@media (max-width: 640px) {
+  .map {
+    height: 100vh !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .map {
+    height: 85vh !important;
+  }
+}
+
+/* Estilos para modo oscuro (preparado para futuro) */
+@media (prefers-color-scheme: dark) {
+  /* Aquí se pueden agregar estilos para modo oscuro */
+}
+
+/* Animación de typing dots */
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Safe area para dispositivos con notch */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
