@@ -215,9 +215,39 @@ module.exports.endRide = async (req, res) => {
   try {
     const ride = await rideService.endRide({ rideId, captain: req.captain });
 
+    // Notify user that ride ended
     sendMessageToSocketId(ride.user.socketId, {
       event: "ride-ended",
       data: ride,
+    });
+
+    // Request ratings from both user and captain
+    sendMessageToSocketId(ride.user.socketId, {
+      event: "rating:request",
+      data: {
+        rideId: ride._id,
+        raterType: "user",
+        rateeType: "captain",
+        ratee: {
+          _id: ride.captain._id,
+          name: `${ride.captain.fullname.firstname} ${ride.captain.fullname.lastname || ""}`.trim(),
+          rating: ride.captain.rating,
+        },
+      },
+    });
+
+    sendMessageToSocketId(ride.captain.socketId, {
+      event: "rating:request",
+      data: {
+        rideId: ride._id,
+        raterType: "captain",
+        rateeType: "user",
+        ratee: {
+          _id: ride.user._id,
+          name: `${ride.user.fullname.firstname} ${ride.user.fullname.lastname || ""}`.trim(),
+          rating: ride.user.rating,
+        },
+      },
     });
 
     return res.status(200).json(ride);

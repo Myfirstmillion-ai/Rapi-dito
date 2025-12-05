@@ -23,6 +23,7 @@ import { SocketDataContext } from "./contexts/SocketContext";
 import { useEffect, useContext } from "react";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import ToastProvider from "./components/notifications/ToastProvider";
+import RatingModalWrapper from "./components/RatingModalWrapper";
 import { AnimatePresence, motion } from "framer-motion";
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
 
         <BrowserRouter>
           <ToastProvider />
+          <RatingModalWrapper />
           <LoggingWrapper />
           <AnimatedRoutes />
         </BrowserRouter>
