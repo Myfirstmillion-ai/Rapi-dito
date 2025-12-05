@@ -6,6 +6,177 @@ This document provides technical details about the UBER-level premium features a
 
 ---
 
+## ⭐ Rating System
+
+### Overview
+
+Complete 5-star rating system that allows both passengers and drivers to rate each other after ride completion. Ratings are automatically requested via socket events when a ride ends.
+
+### Database Schema
+
+**Ride Model** (`Backend/models/ride.model.js`)
+```javascript
+rating: {
+  userToCaptain: {
+    stars: Number,      // 1-5
+    comment: String,    // Max 250 chars
+    createdAt: Date,
+  },
+  captainToUser: {
+    stars: Number,      // 1-5
+    comment: String,    // Max 250 chars
+    createdAt: Date,
+  },
+}
+```
+
+**User/Captain Models** - Rating statistics:
+```javascript
+rating: {
+  average: Number,  // 0-5, rounded to 1 decimal
+  count: Number,    // Total ratings received
+}
+```
+
+### API Endpoints
+
+**POST /ratings/submit**
+- Submit a rating for a completed ride
+- Authentication: Required (user or captain token)
+- Body:
+  ```json
+  {
+    "rideId": "mongoId",
+    "stars": 5,
+    "comment": "Great ride!",
+    "raterType": "user" // or "captain"
+  }
+  ```
+- Returns: 200 with updated ride rating
+- Errors:
+  - 404: Ride not found
+  - 400: Ride not completed or already rated
+  - 403: Not authorized to rate this ride
+
+**GET /ratings/:rideId/status**
+- Check if ride has been rated by user/captain
+- Authentication: Required
+- Returns:
+  ```json
+  {
+    "rideId": "mongoId",
+    "status": "completed",
+    "userRated": true,
+    "captainRated": false
+  }
+  ```
+
+### Socket Events
+
+**Server → Client: `rating:request`**
+Emitted when ride ends to both user and captain.
+```javascript
+{
+  rideId: "mongoId",
+  raterType: "user", // or "captain"
+  rateeType: "captain", // or "user"
+  ratee: {
+    _id: "mongoId",
+    name: "John Doe",
+    rating: {
+      average: 4.8,
+      count: 150
+    }
+  }
+}
+```
+
+**Server → Client: `rating:received`**
+Notified when someone rates you.
+```javascript
+{
+  rideId: "mongoId",
+  stars: 5,
+  newAverage: 4.9
+}
+```
+
+### Frontend Component
+
+**File:** `Frontend/src/components/ui/RatingModal.jsx`
+
+**Features:**
+- UBER-style design with yellow star header
+- Cannot close until rating submitted
+- 5 interactive stars with hover effects (scale 1.1)
+- Optional comment field (max 250 chars)
+- Real-time character counter
+- Avatar and rating display
+- Smooth animations (fade + scale)
+
+**Integration:**
+```jsx
+import RatingModalWrapper from "./components/RatingModalWrapper";
+
+function App() {
+  return (
+    <SocketContext>
+      <RatingModalWrapper />
+      {/* Other components */}
+    </SocketContext>
+  );
+}
+```
+
+**Hook:** `useRatingModal()`
+```javascript
+const { isRatingModalOpen, ratingData, closeRatingModal } = useRatingModal();
+```
+
+### Rating Flow
+
+1. **Ride Completion**
+   - Captain calls `POST /ride/end`
+   - Backend updates ride status to "completed"
+
+2. **Rating Request**
+   - Backend emits `rating:request` to both user and captain
+   - Each receives modal with other person's info
+
+3. **User Submission**
+   - User fills out rating (stars required, comment optional)
+   - Calls `POST /ratings/submit`
+   - Backend:
+     - Saves rating to ride document
+     - Calculates new average for ratee
+     - Updates ratee's profile
+     - Emits `rating:received` to ratee
+
+4. **Average Calculation**
+   ```javascript
+   newCount = count + 1;
+   newAverage = (average * count + stars) / newCount;
+   // Rounded to 1 decimal place
+   ```
+
+### Security
+
+- Authentication required for all endpoints
+- Users can only rate rides they participated in
+- Cannot rate same ride twice
+- Cannot rate incomplete rides
+- Comment length limited to 250 characters
+- Star rating validated (1-5 range)
+
+### Performance
+
+- Ratings indexed for fast retrieval
+- Average calculated on submission (no aggregation queries)
+- Modal preloaded, shown/hidden via state
+- Socket events ensure instant delivery
+
+---
+
 ## 🐛 Critical Bug Fixes
 
 ### 1. Race Condition in Ride Acceptance

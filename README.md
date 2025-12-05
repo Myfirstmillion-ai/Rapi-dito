@@ -98,6 +98,18 @@ QuickRide is a feature-rich project built using modern web technologies. It repl
 - **Ride unavailability broadcast**: Other drivers notified when ride is accepted
 - Automatic ride cancellation after timeout
 - Accurate fare estimation based on distance and time
+- **NEW**: ⭐ 5-Star Rating System - Rate drivers and passengers after each ride
+
+### ⭐ Rating & Feedback System
+
+- **NEW**: UBER-style rating modal with animated stars
+- **NEW**: Automatic rating request when ride completes
+- **NEW**: Both passenger and driver receive rating prompts
+- **NEW**: Cannot close modal until rating is submitted
+- **NEW**: Optional comment field (max 250 characters)
+- **NEW**: Real-time rating average calculation
+- **NEW**: Rating history stored per ride
+- Display of driver/passenger ratings before accepting rides
 
 ### 🔄 Real-Time Updates
 
