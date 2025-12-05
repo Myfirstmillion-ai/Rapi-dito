@@ -336,7 +336,7 @@ function CaptainHomeScreen() {
       // Real-time location tracking for active rides
       let activeRideLocationInterval = null;
       
-      if (showBtn === "start" || showBtn === "end") {
+      if (showBtn === "start" || showBtn === "end-ride") {
         // During active ride, send location every 5 seconds
         activeRideLocationInterval = setInterval(() => {
           if (navigator.geolocation && newRide._id) {
@@ -391,7 +391,8 @@ function CaptainHomeScreen() {
         socket.off("ride-cancelled");
       };
     }
-  }, [captain, showBtn, newRide?._id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captain._id, showBtn, newRide._id]);
 
   useEffect(() => {
     localStorage.setItem("messages", JSON.stringify(messages));
