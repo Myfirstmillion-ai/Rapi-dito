@@ -86,6 +86,19 @@ export default {
         'touch': '44px', // Minimum touch target
         'button': '48px', // UBER minimum button height
       },
+      zIndex: {
+        '0': '0',
+        '10': '10',
+        '20': '20',
+        '30': '30',
+        '40': '40',
+        '50': '50',
+        '100': '100',
+        '200': '200',
+        '300': '300',
+        '400': '400',
+        '500': '500',
+      },
     },
   },
   plugins: [],

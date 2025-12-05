@@ -81,6 +81,12 @@ function UserHomeScreen() {
   const [showFindTripPanel, setShowFindTripPanel] = useState(true);
   const [showSelectVehiclePanel, setShowSelectVehiclePanel] = useState(false);
   const [showRideDetailsPanel, setShowRideDetailsPanel] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Handle sidebar toggle - hide all panels when sidebar opens
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
 
   // Obtener ubicación actual y convertirla a dirección
   const getCurrentLocation = async () => {
@@ -467,7 +473,7 @@ function UserHomeScreen() {
 
   return (
     <div className="relative w-full h-dvh overflow-hidden">
-      <Sidebar />
+      <Sidebar onToggle={handleSidebarToggle} />
       
       {/* Map Container - Full Height */}
       <div className="absolute inset-0 z-0">
@@ -482,8 +488,8 @@ function UserHomeScreen() {
       </div>
       
       {/* Componente Buscar viaje - Bottom Sheet Style */}
-      {showFindTripPanel && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh]">
+      {showFindTripPanel && !isSidebarOpen && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
           <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           <h1 className="text-2xl font-semibold">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">
@@ -547,31 +553,35 @@ function UserHomeScreen() {
         </div>
       )}
 
-      {/* Panel de selección de vehículo */}
-      <SelectVehicle
-        selectedVehicle={setSelectedVehicle}
-        showPanel={showSelectVehiclePanel}
-        setShowPanel={setShowSelectVehiclePanel}
-        showPreviousPanel={setShowFindTripPanel}
-        showNextPanel={setShowRideDetailsPanel}
-        fare={fare}
-      />
+      {/* Panel de selección de vehículo - Hidden when sidebar is open */}
+      {!isSidebarOpen && (
+        <SelectVehicle
+          selectedVehicle={setSelectedVehicle}
+          showPanel={showSelectVehiclePanel}
+          setShowPanel={setShowSelectVehiclePanel}
+          showPreviousPanel={setShowFindTripPanel}
+          showNextPanel={setShowRideDetailsPanel}
+          fare={fare}
+        />
+      )}
 
-      {/* Panel de detalles del viaje */}
-      <RideDetails
-        pickupLocation={pickupLocation}
-        destinationLocation={destinationLocation}
-        selectedVehicle={selectedVehicle}
-        fare={fare}
-        showPanel={showRideDetailsPanel}
-        setShowPanel={setShowRideDetailsPanel}
-        showPreviousPanel={setShowSelectVehiclePanel}
-        createRide={createRide}
-        cancelRide={cancelRide}
-        loading={loading}
-        rideCreated={rideCreated}
-        confirmedRideData={confirmedRideData}
-      />
+      {/* Panel de detalles del viaje - Hidden when sidebar is open */}
+      {!isSidebarOpen && (
+        <RideDetails
+          pickupLocation={pickupLocation}
+          destinationLocation={destinationLocation}
+          selectedVehicle={selectedVehicle}
+          fare={fare}
+          showPanel={showRideDetailsPanel}
+          setShowPanel={setShowRideDetailsPanel}
+          showPreviousPanel={setShowSelectVehiclePanel}
+          createRide={createRide}
+          cancelRide={cancelRide}
+          loading={loading}
+          rideCreated={rideCreated}
+          confirmedRideData={confirmedRideData}
+        />
+      )}
     </div>
   );
 }

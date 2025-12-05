@@ -6,7 +6,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 
-function Sidebar() {
+function Sidebar({ onToggle }) {
   const token = localStorage.getItem("token");
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -18,6 +18,15 @@ function Sidebar() {
   }, []);
 
   const navigate = useNavigate();
+
+  const toggleSidebar = () => {
+    const newState = !showSidebar;
+    setShowSidebar(newState);
+    // Notify parent component about sidebar state change
+    if (onToggle) {
+      onToggle(newState);
+    }
+  };
 
   const logout = async () => {
     try {
@@ -42,21 +51,30 @@ function Sidebar() {
       Console.log("Error al cerrar sesión", error);
     }
   };
+  
   return (
     <>
+      {/* Hamburger Menu Button */}
       <div
-        className="m-3 mt-4 absolute right-0 top-0 z-20 cursor-pointer bg-white p-1 rounded shadow-md"
-        onClick={() => {
-          setShowSidebar(!showSidebar);
-        }}
+        className="m-3 mt-4 absolute right-0 top-0 z-30 cursor-pointer bg-white p-2 rounded-lg shadow-uber-md hover:shadow-uber-lg transition-all duration-200 active:scale-95"
+        onClick={toggleSidebar}
       >
-        {showSidebar ? <X /> : <Menu />}
+        {showSidebar ? <X size={24} /> : <Menu size={24} />}
       </div>
 
-      {/* Componente Sidebar */}
+      {/* Backdrop Overlay - Only when sidebar is open */}
+      {showSidebar && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-100 animate-fade-in"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Sidebar Panel */}
       <div
-        className={`${showSidebar ? " left-0 " : " -left-[100%] "
-          } z-10 duration-300 absolute w-full h-dvh bottom-0 bg-white p-4 pt-5 flex flex-col justify-between`}
+        className={`${
+          showSidebar ? "left-0" : "-left-full"
+        } fixed w-full max-w-sm h-dvh top-0 bg-white z-200 p-4 pt-5 flex flex-col justify-between shadow-uber-xl transition-all duration-300 ease-out`}
       >
         <div className="select-none">
           <h1 className="relative text-2xl font-semibold">Perfil</h1>
@@ -79,7 +97,8 @@ function Sidebar() {
 
           <Link
             to={`/${newUser?.type}/edit-profile`}
-            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3"
+            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3 transition-colors duration-200"
+            onClick={toggleSidebar}
           >
             <div className="flex gap-3">
               <CircleUserRound /> <h1>Editar Perfil</h1>
@@ -91,7 +110,8 @@ function Sidebar() {
 
           <Link
             to={`/${newUser?.type}/rides`}
-            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3"
+            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3 transition-colors duration-200"
+            onClick={toggleSidebar}
           >
             <div className="flex gap-3">
               <History /> <h1>Historial de Viajes</h1>
@@ -103,7 +123,8 @@ function Sidebar() {
 
           <Link
             to={`/${newUser?.type}/reset-password?token=${token}`}
-            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3"
+            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3 transition-colors duration-200"
+            onClick={toggleSidebar}
           >
             <div className="flex gap-3">
               <KeyRound /> <h1>Cambiar Contraseña</h1>

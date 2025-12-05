@@ -106,6 +106,12 @@ function CaptainHomeScreen() {
   const [showBtn, setShowBtn] = useState(
     JSON.parse(localStorage.getItem("showBtn")) || "accept"
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Handle sidebar toggle - hide all panels when sidebar opens
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
 
   // Función para refrescar datos del conductor
   const refreshCaptainData = async () => {
@@ -456,7 +462,7 @@ function CaptainHomeScreen() {
         onClose={hideAlert}
         type={alert.type}
       />
-      <Sidebar />
+      <Sidebar onToggle={handleSidebarToggle} />
       
       {/* Map Container - Full Height */}
       <div className="absolute inset-0 z-0">
@@ -503,8 +509,9 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      {showCaptainDetailsPanel && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto">
+      {/* Captain details panel - Hidden when sidebar is open */}
+      {showCaptainDetailsPanel && !isSidebarOpen && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto transition-all duration-300 ease-out">
           <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           {/* Detalles del conductor */}
           <div className="flex justify-between items-center">
@@ -586,20 +593,23 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      <NewRide
-        rideData={newRide}
-        otp={otp}
-        setOtp={setOtp}
-        showBtn={showBtn}
-        showPanel={showNewRidePanel}
-        setShowPanel={setShowNewRidePanel}
-        showPreviousPanel={setShowCaptainDetailsPanel}
-        loading={loading}
-        acceptRide={acceptRide}
-        verifyOTP={verifyOTP}
-        endRide={endRide}
-        error={error}
-      />
+      {/* New ride panel - Hidden when sidebar is open */}
+      {!isSidebarOpen && (
+        <NewRide
+          rideData={newRide}
+          otp={otp}
+          setOtp={setOtp}
+          showBtn={showBtn}
+          showPanel={showNewRidePanel}
+          setShowPanel={setShowNewRidePanel}
+          showPreviousPanel={setShowCaptainDetailsPanel}
+          loading={loading}
+          acceptRide={acceptRide}
+          verifyOTP={verifyOTP}
+          endRide={endRide}
+          error={error}
+        />
+      )}
     </div>
   );
 }
