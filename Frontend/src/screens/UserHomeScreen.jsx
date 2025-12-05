@@ -10,6 +10,7 @@ import {
 } from "../components";
 import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
+import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -65,9 +66,10 @@ function UserHomeScreen() {
   const [loading, setLoading] = useState(false);
   const [selectedInput, setSelectedInput] = useState("pickup");
   const [locationSuggestion, setLocationSuggestion] = useState([]);
-  const [mapLocation, setMapLocation] = useState(
-    `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-  );
+  const [mapCenter, setMapCenter] = useState({
+    lat: DEFAULT_LOCATION.lat,
+    lng: DEFAULT_LOCATION.lng
+  });
   const [rideCreated, setRideCreated] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [driverLocation, setDriverLocation] = useState(null);
@@ -181,9 +183,8 @@ function UserHomeScreen() {
     Console.log(pickupLocation, destinationLocation);
     try {
       setLoading(true);
-      setMapLocation(
-        `https://www.google.com/maps?q=${encodeURIComponent(pickupLocation)} to ${encodeURIComponent(destinationLocation)}&output=embed`
-      );
+      // Note: Map will stay centered on current location
+      // Route will be shown when ride is created
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/ride/get-fare?pickup=${encodeURIComponent(pickupLocation)}&destination=${encodeURIComponent(destinationLocation)}`,
         {
@@ -297,23 +298,26 @@ function UserHomeScreen() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setMapLocation(
-            `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}&output=embed`
-          );
+          setMapCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
         },
         (error) => {
           console.error("Error obteniendo posición:", error);
           // Usar ubicación por defecto si hay error
-          setMapLocation(
-            `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-          );
+          setMapCenter({
+            lat: DEFAULT_LOCATION.lat,
+            lng: DEFAULT_LOCATION.lng
+          });
         }
       );
     } else {
       // Usar ubicación por defecto
-      setMapLocation(
-        `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-      );
+      setMapCenter({
+        lat: DEFAULT_LOCATION.lat,
+        lng: DEFAULT_LOCATION.lng
+      });
     }
   };
 
@@ -351,9 +355,13 @@ function UserHomeScreen() {
       }
       
       setCurrentRideStatus("accepted"); // Driver on the way to pickup
-      setMapLocation(
-        `https://www.google.com/maps?q=${data.captain.location.coordinates[1]},${data.captain.location.coordinates[0]} to ${encodeURIComponent(pickupLocation)}&output=embed`
-      );
+      // Update map center to driver's location
+      if (data.captain?.location?.coordinates) {
+        setMapCenter({
+          lat: data.captain.location.coordinates[1],
+          lng: data.captain.location.coordinates[0]
+        });
+      }
       setConfirmedRideData(data);
     });
 
@@ -362,9 +370,7 @@ function UserHomeScreen() {
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
       setCurrentRideStatus("ongoing"); // Ride in progress
-      setMapLocation(
-        `https://www.google.com/maps?q=${encodeURIComponent(data.pickup)} to ${encodeURIComponent(data.destination)}&output=embed`
-      );
+      // Map will show route from pickup to destination via EliteTrackingMap
     });
 
     // Listen for driver location updates
@@ -394,15 +400,17 @@ function UserHomeScreen() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            setMapLocation(
-              `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}&output=embed`
-            );
+            setMapCenter({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            });
           },
           (error) => {
             console.error("Error obteniendo posición:", error);
-            setMapLocation(
-              `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-            );
+            setMapCenter({
+              lat: DEFAULT_LOCATION.lat,
+              lng: DEFAULT_LOCATION.lng
+            });
           }
         );
       }
@@ -552,14 +560,15 @@ function UserHomeScreen() {
             className="w-full h-full"
           />
         ) : (
-          <iframe
-            src={mapLocation}
+          <MapboxStaticMap
+            latitude={mapCenter.lat}
+            longitude={mapCenter.lng}
+            zoom={13}
+            interactive={true}
+            showMarker={true}
+            markerColor="#276EF1"
             className="w-full h-full"
-            allowFullScreen={true}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            style={{ border: 0 }}
-          ></iframe>
+          />
         )}
       </div>
       

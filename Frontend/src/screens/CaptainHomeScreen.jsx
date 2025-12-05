@@ -6,6 +6,7 @@ import { Phone, User } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
+import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
@@ -81,9 +82,10 @@ function CaptainHomeScreen() {
     ltd: DEFAULT_LOCATION.lat,
     lng: DEFAULT_LOCATION.lng,
   });
-  const [mapLocation, setMapLocation] = useState(
-    `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-  );
+  const [mapCenter, setMapCenter] = useState({
+    lat: DEFAULT_LOCATION.lat,
+    lng: DEFAULT_LOCATION.lng
+  });
   const [earnings, setEarnings] = useState({
     total: 0,
     today: 0,
@@ -166,9 +168,11 @@ function CaptainHomeScreen() {
         vibrate([200, 100, 200]);
         playSound(NOTIFICATION_SOUNDS.rideAccepted);
         
-        setMapLocation(
-          `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng} to ${encodeURIComponent(newRide.pickup)}&output=embed`
-        );
+        // Update map center to driver's location
+        setMapCenter({
+          lat: riderLocation.ltd,
+          lng: riderLocation.lng
+        });
         Console.log(response);
       }
     } catch (error) {
@@ -193,9 +197,11 @@ function CaptainHomeScreen() {
             },
           }
         );
-        setMapLocation(
-          `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng} to ${encodeURIComponent(newRide.destination)}&output=embed`
-        );
+        // Update map center to current location
+        setMapCenter({
+          lat: riderLocation.ltd,
+          lng: riderLocation.lng
+        });
         setShowBtn("end-ride");
         setCurrentRideStatus("ongoing"); // Ride in progress
         setLoading(false);
@@ -239,9 +245,11 @@ function CaptainHomeScreen() {
         // Mostrar pantalla de viaje completado
         setShowRideCompleted(true);
         
-        setMapLocation(
-          `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng}&output=embed`
-        );
+        // Reset map to current location
+        setMapCenter({
+          lat: riderLocation.ltd,
+          lng: riderLocation.lng
+        });
         setShowBtn("accept");
         setCurrentRideStatus("pending");
         setLoading(false);
@@ -282,9 +290,10 @@ function CaptainHomeScreen() {
             lng: position.coords.longitude,
           });
 
-          setMapLocation(
-            `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}&output=embed`
-          );
+          setMapCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
           socket.emit("update-location-captain", {
             userId: captain._id,
             location: location,
@@ -293,9 +302,10 @@ function CaptainHomeScreen() {
         (error) => {
           console.error("Error obteniendo posición:", error);
           // Usar ubicación por defecto
-          setMapLocation(
-            `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-          );
+          setMapCenter({
+            lat: DEFAULT_LOCATION.lat,
+            lng: DEFAULT_LOCATION.lng
+          });
         }
       );
     }
@@ -495,14 +505,15 @@ function CaptainHomeScreen() {
       
       {/* Map Container - Full Height */}
       <div className="absolute inset-0 z-0">
-        <iframe
-          src={mapLocation}
+        <MapboxStaticMap
+          latitude={mapCenter.lat}
+          longitude={mapCenter.lng}
+          zoom={13}
+          interactive={true}
+          showMarker={true}
+          markerColor="#05A357"
           className="w-full h-full"
-          allowFullScreen={true}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          style={{ border: 0 }}
-        ></iframe>
+        />
       </div>
 
       {/* Modal de viaje completado */}
