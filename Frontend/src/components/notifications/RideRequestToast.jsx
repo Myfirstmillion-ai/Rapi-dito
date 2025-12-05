@@ -111,15 +111,22 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
   );
 }
 
+// Preload notification audio for better performance
+let notificationAudio = null;
+try {
+  notificationAudio = new Audio('/notification.mp3');
+  notificationAudio.preload = 'auto';
+} catch (e) {
+  // Silently fail if audio can't be loaded
+}
+
 export function showRideRequestToast(ride, onAccept, onReject) {
   // Play notification sound if available
-  try {
-    const audio = new Audio('/notification.mp3');
-    audio.play().catch(() => {
+  if (notificationAudio) {
+    notificationAudio.currentTime = 0; // Reset to start
+    notificationAudio.play().catch(() => {
       // Silently fail if audio doesn't play
     });
-  } catch (e) {
-    // Ignore audio errors
   }
 
   // Vibrate if available

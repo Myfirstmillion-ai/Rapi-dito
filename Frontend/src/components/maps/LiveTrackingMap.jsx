@@ -82,21 +82,36 @@ function LiveTrackingMap({
       driverMarker.current.remove();
     }
 
-    // Create custom marker element
+    // Create custom marker element using DOM methods for security
     const el = document.createElement('div');
     el.className = 'driver-marker';
-    el.innerHTML = `
-      <div class="relative">
-        <!-- Pulse animation -->
-        <div class="absolute inset-0 bg-uber-blue rounded-full animate-ping opacity-75"></div>
-        <!-- Driver marker -->
-        <div class="relative w-12 h-12 bg-uber-black rounded-full border-4 border-white shadow-uber-lg flex items-center justify-center">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-      </div>
-    `;
+    
+    const container = document.createElement('div');
+    container.className = 'relative';
+    
+    const pulse = document.createElement('div');
+    pulse.className = 'absolute inset-0 bg-uber-blue rounded-full animate-ping opacity-75';
+    
+    const markerDiv = document.createElement('div');
+    markerDiv.className = 'relative w-12 h-12 bg-uber-black rounded-full border-4 border-white shadow-uber-lg flex items-center justify-center';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'w-6 h-6 text-white');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('d', 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z');
+    
+    svg.appendChild(path);
+    markerDiv.appendChild(svg);
+    container.appendChild(pulse);
+    container.appendChild(markerDiv);
+    el.appendChild(container);
 
     driverMarker.current = new mapboxgl.Marker(el)
       .setLngLat(driverLocation)
@@ -138,16 +153,28 @@ function LiveTrackingMap({
       pickupMarker.current.remove();
     }
 
+    // Create pickup marker using DOM methods
     const el = document.createElement('div');
-    el.innerHTML = `
-      <div class="relative">
-        <div class="w-10 h-10 bg-uber-blue rounded-full border-4 border-white shadow-uber-md flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </div>
-      </div>
-    `;
+    const container = document.createElement('div');
+    container.className = 'relative';
+    
+    const markerDiv = document.createElement('div');
+    markerDiv.className = 'w-10 h-10 bg-uber-blue rounded-full border-4 border-white shadow-uber-md flex items-center justify-center';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'w-5 h-5 text-white');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', '12');
+    circle.setAttribute('cy', '12');
+    circle.setAttribute('r', '3');
+    
+    svg.appendChild(circle);
+    markerDiv.appendChild(svg);
+    container.appendChild(markerDiv);
+    el.appendChild(container);
 
     pickupMarker.current = new mapboxgl.Marker(el)
       .setLngLat(pickupLocation)
@@ -172,16 +199,30 @@ function LiveTrackingMap({
       dropoffMarker.current.remove();
     }
 
+    // Create dropoff marker using DOM methods
     const el = document.createElement('div');
-    el.innerHTML = `
-      <div class="relative">
-        <div class="w-10 h-10 bg-uber-green rounded-full border-4 border-white shadow-uber-md flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-          </svg>
-        </div>
-      </div>
-    `;
+    const container = document.createElement('div');
+    container.className = 'relative';
+    
+    const markerDiv = document.createElement('div');
+    markerDiv.className = 'w-10 h-10 bg-uber-green rounded-full border-4 border-white shadow-uber-md flex items-center justify-center';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'w-5 h-5 text-white');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('stroke-width', '3');
+    path.setAttribute('d', 'M5 13l4 4L19 7');
+    
+    svg.appendChild(path);
+    markerDiv.appendChild(svg);
+    container.appendChild(markerDiv);
+    el.appendChild(container);
 
     dropoffMarker.current = new mapboxgl.Marker(el)
       .setLngLat(dropoffLocation)
