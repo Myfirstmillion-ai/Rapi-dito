@@ -492,6 +492,20 @@ function CaptainHomeScreen() {
     if (socket.id) Console.log("socket id:", socket.id);
   }, [socket.id]);
 
+  // Show loading state if captain data is not yet loaded
+  if (!captain || !captain._id) {
+    return (
+      <div className="relative w-full h-dvh overflow-hidden bg-zinc-50">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-uber-green mx-auto mb-4"></div>
+            <p className="text-uber-gray-600 font-medium">Cargando datos del conductor...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-dvh overflow-hidden">
       <Alert
