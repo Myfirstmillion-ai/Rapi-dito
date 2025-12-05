@@ -1,4 +1,5 @@
-import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const vehicles = [
   {
@@ -27,11 +28,44 @@ function SelectVehicle({
   showNextPanel,
   fare,
 }) {
+  const [isMinimized, setIsMinimized] = useState(false);
+
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
+  };
+
   return (
     <>
       <div
-        className={`${showPanel ? "bottom-0" : "-bottom-[60%]"} transition-all duration-500 absolute bg-white w-full rounded-t-xl p-4 pt-0 shadow-lg`}
+        className={`${showPanel ? "bottom-0" : "-bottom-full"} ${
+          isMinimized ? "max-h-[25%]" : "max-h-[60%]"
+        } transition-all duration-500 ease-out absolute bg-white w-full rounded-t-2xl p-4 pt-0 shadow-2xl z-10 overflow-y-auto`}
       >
+        {/* Drag Handle with Minimize/Maximize Button */}
+        <div 
+          onClick={toggleMinimize}
+          className="flex justify-center py-3 cursor-pointer hover:bg-gray-50 rounded-t-2xl transition-colors"
+        >
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full"></div>
+            {isMinimized ? (
+              <ChevronUp size={20} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={20} className="text-gray-400" />
+            )}
+          </div>
+        </div>
+
+        {isMinimized ? (
+          /* Minimized View */
+          <div className="pb-4">
+            <h2 className="text-base font-semibold text-center text-gray-700">
+              Selecciona tu vehículo - Toca para ver opciones
+            </h2>
+          </div>
+        ) : (
+          /* Maximized View */
+          <>
         <div
           onClick={() => {
             setShowPanel(false);
@@ -52,6 +86,8 @@ function SelectVehicle({
             showNextPanel={showNextPanel}
           />
         ))}
+          </>
+        )}
       </div>
     </>
   );

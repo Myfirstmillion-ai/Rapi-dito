@@ -54,12 +54,16 @@ function Sidebar({ onToggle }) {
   
   return (
     <>
-      {/* Hamburger Menu Button */}
+      {/* Hamburger Menu Button - Always visible */}
       <div
-        className="m-3 mt-4 absolute right-0 top-0 z-30 cursor-pointer bg-white p-2 rounded-lg shadow-uber-md hover:shadow-uber-lg transition-all duration-200 active:scale-95"
+        className="m-3 mt-4 absolute right-0 top-0 z-30 cursor-pointer bg-white p-3 rounded-lg shadow-uber-md hover:shadow-uber-lg transition-all duration-200 active:scale-95"
         onClick={toggleSidebar}
       >
-        {showSidebar ? <X size={24} /> : <Menu size={24} />}
+        {showSidebar ? (
+          <X size={24} className="text-gray-900" />
+        ) : (
+          <Menu size={24} className="text-gray-900" />
+        )}
       </div>
 
       {/* Backdrop Overlay - Only when sidebar is open */}

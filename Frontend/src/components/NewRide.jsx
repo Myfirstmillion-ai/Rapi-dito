@@ -1,9 +1,12 @@
+import { useState } from "react";
 import {
   CreditCard,
   MapPinMinus,
   MapPinPlus,
   PhoneCall,
   SendHorizontal,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Button from "./Button";
 import MessageBadge from "./ui/MessageBadge";
@@ -23,20 +26,67 @@ function NewRide({
   error,
   unreadMessages = 0,
 }) {
+  const [isMinimized, setIsMinimized] = useState(false);
+  
   const ignoreRide = () => {
     setShowPanel(false);
     showPreviousPanel(true);
+  };
+
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
   };
 
   return (
     <>
       <div
         className={`${
-          showPanel ? "bottom-0" : "-bottom-[60%]"
-        } transition-all duration-500 absolute bg-white w-full rounded-t-xl p-4 pt-0 shadow-lg`}
+          showPanel ? "bottom-0" : "-bottom-full"
+        } ${
+          isMinimized ? "max-h-[25%]" : "max-h-[60%]"
+        } transition-all duration-500 ease-out absolute bg-white w-full rounded-t-2xl p-4 pt-0 shadow-2xl z-10 overflow-y-auto`}
       >
+        {/* Drag Handle with Minimize/Maximize Button */}
+        <div 
+          onClick={toggleMinimize}
+          className="flex justify-center py-3 cursor-pointer hover:bg-gray-50 rounded-t-2xl transition-colors"
+        >
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full"></div>
+            {isMinimized ? (
+              <ChevronUp size={20} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={20} className="text-gray-400" />
+            )}
+          </div>
+        </div>
+
         <div>
-          <div className="flex justify-between items-center pb-4 pt-2">
+          {isMinimized ? (
+            /* Minimized View - Summary Only */
+            <div className="flex justify-between items-center pb-4">
+              <div className="flex items-center gap-3">
+                <div className="select-none rounded-full w-10 h-10 bg-green-500 flex items-center justify-center">
+                  <h1 className="text-lg text-white">
+                    {rideData?.user?.fullname?.firstname[0]}
+                    {rideData?.user?.fullname?.lastname[0]}
+                  </h1>
+                </div>
+                <div>
+                  <h1 className="text-base font-semibold">
+                    {rideData?.user?.fullname?.firstname} {rideData?.user?.fullname?.lastname}
+                  </h1>
+                  <p className="text-xs text-gray-500">Toca para ver detalles</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <h1 className="font-bold text-lg text-uber-green">COP$ {rideData?.fare?.toLocaleString('es-CO') || 0}</h1>
+              </div>
+            </div>
+          ) : (
+            /* Maximized View - Full Details */
+            <>
+          <div className="flex justify-between items-center pb-4">
             <div className="flex items-center gap-3">
               <div className="my-2 select-none rounded-full w-10 h-10 bg-green-500 mx-auto flex items-center justify-center">
                 <h1 className="text-lg text-white">
@@ -186,6 +236,8 @@ function NewRide({
               loading={loading}
               classes={"bg-green-600"}
             />
+          )}
+            </>
           )}
         </div>
       </div>

@@ -1,9 +1,12 @@
+import { useState } from "react";
 import {
   CreditCard,
   MapPinMinus,
   MapPinPlus,
   PhoneCall,
   SendHorizontal,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Button from "./Button";
 import MessageBadge from "./ui/MessageBadge";
@@ -23,15 +26,38 @@ function RideDetails({
   confirmedRideData,
   unreadMessages = 0,
 }) {
+  const [isMinimized, setIsMinimized] = useState(false);
+
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
+  };
+  
   return (
     <>
       <div
         className={`${
-          showPanel ? "bottom-0" : "-bottom-[60%]"
-        } transition-all duration-500 absolute bg-white w-full rounded-t-xl p-4 pt-2 shadow-lg`}
+          showPanel ? "bottom-0" : "-bottom-full"
+        } ${
+          isMinimized ? "max-h-[25%]" : "max-h-[60%]"
+        } transition-all duration-500 ease-out absolute bg-white w-full rounded-t-2xl p-4 pt-0 shadow-2xl z-10 overflow-y-auto`}
       >
+        {/* Drag Handle with Minimize/Maximize Button */}
+        <div 
+          onClick={toggleMinimize}
+          className="flex justify-center py-3 cursor-pointer hover:bg-gray-50 rounded-t-2xl transition-colors"
+        >
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full"></div>
+            {isMinimized ? (
+              <ChevronUp size={20} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={20} className="text-gray-400" />
+            )}
+          </div>
+        </div>
+
         <div>
-          {rideCreated && !confirmedRideData && (
+          {rideCreated && !confirmedRideData && !isMinimized && (
             <>
               <h1 className="text-center">Buscando conductores cercanos</h1>
               <div className="overflow-y-hidden py-2 pb-2">
@@ -39,6 +65,31 @@ function RideDetails({
               </div>
             </>
           )}
+          
+          {isMinimized ? (
+            /* Minimized View - Summary Only */
+            <div className="flex justify-between items-center pb-4">
+              <div className="flex items-center gap-2">
+                <img
+                  src={
+                    selectedVehicle === "car"
+                      ? "/car.png"
+                      : `/${selectedVehicle}.webp`
+                  }
+                  className="h-12"
+                  alt="Vehículo"
+                />
+                <p className="text-sm text-gray-600">Toca para ver detalles</p>
+              </div>
+              <div className="text-right">
+                <h1 className="font-bold text-lg text-uber-blue">
+                  COP$ {fare[selectedVehicle]?.toLocaleString('es-CO') || 0}
+                </h1>
+              </div>
+            </div>
+          ) : (
+            /* Maximized View - Full Details */
+            <>
           <div
             className={`flex ${
               confirmedRideData ? " justify-between " : " justify-center "
@@ -171,6 +222,8 @@ function RideDetails({
             />
           ) : (
             <Button title={"Confirmar Viaje"} fun={createRide} loading={loading} />
+          )}
+            </>
           )}
         </div>
       </div>

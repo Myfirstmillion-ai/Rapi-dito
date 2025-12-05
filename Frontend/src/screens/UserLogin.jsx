@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Heading, Input } from "../components";
 import axios from "axios";
 import Console from "../utils/console";
+import logo from '/logo-quickride.png';
 
 function UserLogin() {
   const [responseError, setResponseError] = useState("");
@@ -48,54 +49,76 @@ function UserLogin() {
   }, [responseError]);
 
   return (
-    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6">
-      <div>
-        <Heading title={"Iniciar Sesión 🧑🏻"} />
-        <form onSubmit={handleSubmit(loginUser)}>
-          <Input
-            label={"Correo electrónico"}
-            type={"email"}
-            name={"email"}
-            register={register}
-            error={errors.email}
+    <div className="relative w-full h-dvh overflow-hidden bg-gray-50">
+      {/* Hero Image Section - Top Third */}
+      <div 
+        className="h-1/3 w-full bg-cover bg-center relative"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(39,110,241,0.7), rgba(39,110,241,0.9)), url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&q=80')`
+        }}
+      >
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-white px-6">
+          <img
+            className="h-10 mb-4 object-contain brightness-0 invert"
+            src={logo}
+            alt="Rapidito Logo"
           />
-          <Input
-            label={"Contraseña"}
-            type={"password"}
-            name={"password"}
-            register={register}
-            error={errors.password}
-          />
-          {responseError && (
-            <p className="text-sm text-center mb-4 text-red-500">
-              {responseError}
-            </p>
-          )}
-          <Link to="/user/forgot-password" className="text-sm mb-2 inline-block">
-            ¿Olvidaste tu contraseña?
-          </Link>
-          <Button title={"Iniciar Sesión"} loading={loading} type="submit" />
-        </form>
-        <p className="text-sm font-normal text-center mt-4">
-          ¿No tienes una cuenta?{" "}
-          <Link to={"/signup"} className="font-semibold">
-            Regístrate
-          </Link>
-        </p>
-
+          <h1 className="text-3xl font-bold mb-2">¡Bienvenido de nuevo!</h1>
+          <p className="text-base opacity-90">Inicia sesión para solicitar tu viaje</p>
+        </div>
       </div>
-      <div>
-        <Button
-          type={"link"}
-          path={"/captain/login"}
-          title={"Iniciar como Conductor"}
-          classes={"bg-orange-500"}
-        />
-        <p className="text-xs font-normal text-center self-end mt-6">
-          Este sitio está protegido por reCAPTCHA y aplican la{" "}
-          <span className="font-semibold underline">Política de Privacidad</span> y{" "}
-          <span className="font-semibold underline">Términos de Servicio</span> de Google.
-        </p>
+
+      {/* Form Section - Bottom Two Thirds */}
+      <div className="h-2/3 w-full bg-white rounded-t-3xl -mt-8 shadow-2xl p-6 pt-8 overflow-y-auto">
+        <div className="max-w-md mx-auto">
+          <form onSubmit={handleSubmit(loginUser)} className="space-y-4">
+            <Input
+              label={"Correo electrónico"}
+              type={"email"}
+              name={"email"}
+              register={register}
+              error={errors.email}
+            />
+            <Input
+              label={"Contraseña"}
+              type={"password"}
+              name={"password"}
+              register={register}
+              error={errors.password}
+            />
+            {responseError && (
+              <p className="text-sm text-center text-red-500">
+                {responseError}
+              </p>
+            )}
+            <Link to="/user/forgot-password" className="text-sm text-uber-blue hover:underline inline-block">
+              ¿Olvidaste tu contraseña?
+            </Link>
+            <Button title={"Iniciar Sesión"} loading={loading} type="submit" />
+          </form>
+          
+          <p className="text-sm font-normal text-center mt-6">
+            ¿No tienes una cuenta?{" "}
+            <Link to={"/signup"} className="font-semibold text-uber-blue hover:underline">
+              Regístrate aquí
+            </Link>
+          </p>
+
+          <div className="mt-8 border-t pt-6">
+            <Button
+              type={"link"}
+              path={"/captain/login"}
+              title={"Iniciar como Conductor"}
+              classes={"bg-uber-green hover:bg-green-600"}
+            />
+          </div>
+          
+          <p className="text-xs font-normal text-center text-gray-500 mt-6">
+            Este sitio está protegido por reCAPTCHA y aplican la{" "}
+            <span className="font-semibold underline">Política de Privacidad</span> y{" "}
+            <span className="font-semibold underline">Términos de Servicio</span> de Google.
+          </p>
+        </div>
       </div>
     </div>
   );

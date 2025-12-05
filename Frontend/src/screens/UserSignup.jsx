@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Heading, Input } from "../components";
 import axios from "axios";
 import Console from "../utils/console";
+import logo from '/logo-quickride.png';
 
 function UserSignup() {
   const [responseError, setResponseError] = useState("");
@@ -51,71 +52,87 @@ function UserSignup() {
   }, [responseError]);
 
   return (
-    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6">
-      <div>
-        <Heading title={"Registro de Usuario 🧑🏻"} />
-        <form onSubmit={handleSubmit(signupUser)}>
-          <div className="flex gap-4 -mb-2">
+    <div className="relative w-full h-dvh overflow-hidden bg-gray-50">
+      {/* Header Section */}
+      <div className="h-auto w-full bg-uber-blue p-6 pb-8 relative">
+        <img
+          className="h-8 mb-4 object-contain brightness-0 invert"
+          src={logo}
+          alt="Rapidito Logo"
+        />
+        <h1 className="text-2xl font-bold text-white mb-1">Crea tu cuenta</h1>
+        <p className="text-sm text-white opacity-90">Comienza a viajar con Rapidito</p>
+      </div>
+
+      {/* Form Section */}
+      <div className="h-full w-full bg-white rounded-t-3xl -mt-6 shadow-2xl p-6 overflow-y-auto pb-24">
+        <div className="max-w-md mx-auto">
+          <form onSubmit={handleSubmit(signupUser)} className="space-y-3">
+            <div className="flex gap-4 -mb-2">
+              <Input
+                label={"Nombre"}
+                name={"firstname"}
+                register={register}
+                error={errors.firstname}
+              />
+              <Input
+                label={"Apellido"}
+                name={"lastname"}
+                register={register}
+                error={errors.lastname}
+              />
+            </div>
             <Input
-              label={"Nombre"}
-              name={"firstname"}
+              label={"Número de teléfono"}
+              type={"number"}
+              name={"phone"}
               register={register}
-              error={errors.firstname}
+              error={errors.phone}
             />
             <Input
-              label={"Apellido"}
-              name={"lastname"}
+              label={"Correo electrónico"}
+              type={"email"}
+              name={"email"}
               register={register}
-              error={errors.lastname}
+              error={errors.email}
+            />
+            <Input
+              label={"Contraseña"}
+              type={"password"}
+              name={"password"}
+              register={register}
+              error={errors.password}
+            />
+            {responseError && (
+              <p className="text-sm text-center text-red-500">
+                {responseError}
+              </p>
+            )}
+            <Button title={"Registrarse"} loading={loading} type="submit" />
+          </form>
+          
+          <p className="text-sm font-normal text-center mt-6">
+            ¿Ya tienes una cuenta?{" "}
+            <Link to={"/login"} className="font-semibold text-uber-blue hover:underline">
+              Iniciar sesión
+            </Link>
+          </p>
+
+          <div className="mt-8 border-t pt-6">
+            <Button
+              type={"link"}
+              path={"/captain/signup"}
+              title={"Registrarse como Conductor"}
+              classes={"bg-uber-green hover:bg-green-600"}
             />
           </div>
-          <Input
-            label={"Número de teléfono"}
-            type={"number"}
-            name={"phone"}
-            register={register}
-            error={errors.phone}
-          />
-          <Input
-            label={"Correo electrónico"}
-            type={"email"}
-            name={"email"}
-            register={register}
-            error={errors.email}
-          />
-          <Input
-            label={"Contraseña"}
-            type={"password"}
-            name={"password"}
-            register={register}
-            error={errors.password}
-          />
-          {responseError && (
-            <p className="text-sm text-center mb-4 text-red-500">
-              {responseError}
-            </p>
-          )}
-          <Button title={"Registrarse"} loading={loading} type="submit" />
-        </form>
-        <p className="text-sm font-normal text-center mt-4">
-          ¿Ya tienes una cuenta?{" "}
-          <Link to={"/login"} className="font-semibold">
-            Iniciar sesión
-          </Link>
-        </p>
-      </div>
-      <div>
-        <Button
-          type={"link"}
-          path={"/captain/signup"}
-          title={"Registrarse como Conductor"}
-          classes={"bg-orange-500"}
-        />
-        <p className="text-xs font-normal text-center self-end mt-6">
-          Este sitio está protegido por reCAPTCHA y aplican la{" "}
-          <span className="font-semibold underline">Política de Privacidad</span> y{" "}
-          <span className="font-semibold underline">Términos de Servicio</span> de Google.
-        </p>
+          
+          <p className="text-xs font-normal text-center text-gray-500 mt-6">
+            Este sitio está protegido por reCAPTCHA y aplican la{" "}
+            <span className="font-semibold underline">Política de Privacidad</span> y{" "}
+            <span className="font-semibold underline">Términos de Servicio</span> de Google.
+          </p>
+        </div>
       </div>
     </div>
   );
