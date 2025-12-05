@@ -4,7 +4,7 @@ const userModel = require("../models/user.model");
 const captainModel = require("../models/captain.model");
 
 module.exports.authUser = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.token;
+  const token = req.cookies.token || req.headers.token || req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
     return res.status(401).json({ message: "Unauthorized User" });
@@ -49,7 +49,7 @@ module.exports.authUser = async (req, res, next) => {
 };
 
 module.exports.authCaptain = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.token;
+  const token = req.cookies.token || req.headers.token || req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
     return res.status(401).json({ message: "Unauthorized User" });
