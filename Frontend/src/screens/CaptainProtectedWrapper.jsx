@@ -31,11 +31,13 @@ function CaptainProtectedWrapper({ children }) {
           setCaptain(captainData);
           localStorage.setItem(
             "userData",
-            JSON.stringify({ type: "captain", data: captainData }));
+            JSON.stringify({ type: "captain", data: captainData })
+          );
           setIsVerified(captainData.emailVerified);
         }
       })
       .catch((err) => {
+        console.error("Error fetching captain profile:", err);
         localStorage.removeItem("token");
         localStorage.removeItem("userData");
         navigate("/captain/login");
@@ -43,7 +45,7 @@ function CaptainProtectedWrapper({ children }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [token]);
+  }, [token, navigate, setCaptain]);
 
   if (loading) return <Loading />;
 
