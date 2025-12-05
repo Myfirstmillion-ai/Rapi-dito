@@ -84,11 +84,21 @@ function Sidebar({ onToggle }) {
           <h1 className="relative text-2xl font-semibold">Perfil</h1>
 
           <div className="leading-3 mt-8 mb-4">
-            <div className="my-2 rounded-full w-24 h-24 bg-blue-400 mx-auto flex items-center justify-center">
-              <h1 className="text-5xl text-white">
-                {newUser?.data?.fullname?.firstname[0]}
-                {newUser?.data?.fullname?.lastname[0]}
-              </h1>
+            <div className="my-2 rounded-full w-24 h-24 mx-auto relative">
+              {newUser?.data?.profileImage ? (
+                <img 
+                  src={newUser.data.profileImage} 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              ) : (
+                <div className={`w-full h-full rounded-full ${newUser?.type === 'captain' ? 'bg-gradient-to-br from-green-400 to-green-500' : 'bg-gradient-to-br from-blue-400 to-blue-500'} flex items-center justify-center shadow-lg`}>
+                  <h1 className="text-5xl text-white font-black">
+                    {newUser?.data?.fullname?.firstname?.[0] || 'U'}
+                    {newUser?.data?.fullname?.lastname?.[0] || ''}
+                  </h1>
+                </div>
+              )}
             </div>
             <h1 className=" text-center font-semibold text-2xl">
               {newUser?.data?.fullname?.firstname}{" "}
