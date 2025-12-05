@@ -5,7 +5,11 @@ import { SocketDataContext } from "../../contexts/SocketContext";
 import { cn } from "../../utils/cn";
 
 // Set Mapbox access token
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+if (!mapboxToken) {
+  console.warn("VITE_MAPBOX_TOKEN not found in environment variables");
+}
+mapboxgl.accessToken = mapboxToken || "";
 
 /**
  * Real-Time Ride Tracking Component

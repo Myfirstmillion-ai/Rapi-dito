@@ -12,19 +12,42 @@ const authUserOrCaptain = async (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized User" });
   }
 
-  // Try authenticating as user first, then as captain
-  try {
-    await authMiddleware.authUser(req, res, () => {});
-    return next();
-  } catch (error) {
-    // If user auth fails, try captain auth
-    try {
-      await authMiddleware.authCaptain(req, res, () => {});
+  // Create fake response handlers to capture auth middleware behavior
+  let userAuthPassed = false;
+  let captainAuthPassed = false;
+
+  const fakeNext = () => {
+    if (!userAuthPassed) {
+      userAuthPassed = true;
       return next();
-    } catch (error) {
-      return res.status(401).json({ message: "Unauthorized User" });
+    } else if (!captainAuthPassed) {
+      captainAuthPassed = true;
+      return next();
     }
+  };
+
+  const fakeRes = {
+    status: () => ({ json: () => {} })
+  };
+
+  // Try user auth first
+  try {
+    await authMiddleware.authUser(req, fakeRes, fakeNext);
+    if (userAuthPassed) return;
+  } catch (error) {
+    // Continue to captain auth
   }
+
+  // Try captain auth if user auth failed
+  try {
+    await authMiddleware.authCaptain(req, fakeRes, fakeNext);
+    if (captainAuthPassed) return;
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized User" });
+  }
+
+  // If neither worked
+  return res.status(401).json({ message: "Unauthorized User" });
 };
 
 // Submit rating (user or captain)

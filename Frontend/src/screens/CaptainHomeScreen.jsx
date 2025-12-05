@@ -358,7 +358,7 @@ function CaptainHomeScreen() {
         socket.off("ride-cancelled");
       };
     }
-  }, [captain, showBtn, newRide._id]);
+  }, [captain, showBtn, newRide?._id]);
 
   useEffect(() => {
     localStorage.setItem("messages", JSON.stringify(messages));
