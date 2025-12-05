@@ -83,6 +83,10 @@ const captainSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
     // Rating statistics
     rating: {
       average: {
