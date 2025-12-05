@@ -300,6 +300,37 @@ function CaptainHomeScreen() {
       // Actualizar ubicación cada 30 segundos
       const locationInterval = setInterval(updateLocation, 30000);
       
+      // Real-time location tracking for active rides
+      let activeRideLocationInterval = null;
+      
+      if (showBtn === "start" || showBtn === "end") {
+        // During active ride, send location every 5 seconds
+        activeRideLocationInterval = setInterval(() => {
+          if (navigator.geolocation && newRide._id) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const location = {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                };
+                
+                // Send location update via socket
+                socket.emit("driver:locationUpdate", {
+                  driverId: captain._id,
+                  location,
+                  rideId: newRide._id,
+                });
+                
+                Console.log("Ubicación enviada:", location);
+              },
+              (error) => {
+                Console.log("Error obteniendo ubicación:", error);
+              }
+            );
+          }
+        }, 5000); // Update every 5 seconds
+      }
+      
       // Configurar listeners de socket DENTRO del bloque captain._id
       socket.on("new-ride", (data) => {
         Console.log("Nuevo viaje disponible:", data);
@@ -320,11 +351,14 @@ function CaptainHomeScreen() {
       
       return () => {
         clearInterval(locationInterval);
+        if (activeRideLocationInterval) {
+          clearInterval(activeRideLocationInterval);
+        }
         socket.off("new-ride");
         socket.off("ride-cancelled");
       };
     }
-  }, [captain]);
+  }, [captain, showBtn, newRide._id]);
 
   useEffect(() => {
     localStorage.setItem("messages", JSON.stringify(messages));

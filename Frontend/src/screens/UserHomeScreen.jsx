@@ -8,11 +8,13 @@ import {
   RideDetails,
   Sidebar,
 } from "../components";
+import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
-import { Navigation } from "lucide-react";
+import { Navigation, MessageCircle } from "lucide-react";
+import MessageBadge from "../components/ui/MessageBadge";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -53,6 +55,7 @@ function UserHomeScreen() {
   const [messages, setMessages] = useState(
     JSON.parse(localStorage.getItem("messages")) || []
   );
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedInput, setSelectedInput] = useState("pickup");
   const [locationSuggestion, setLocationSuggestion] = useState([]);
@@ -61,6 +64,7 @@ function UserHomeScreen() {
   );
   const [rideCreated, setRideCreated] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [driverLocation, setDriverLocation] = useState(null);
 
   // Detalles del viaje
   const [pickupLocation, setPickupLocation] = useState("");
@@ -324,6 +328,14 @@ function UserHomeScreen() {
       vibrate([200, 100, 200, 100, 200]);
       playSound(NOTIFICATION_SOUNDS.rideConfirmed);
       
+      // Set initial driver location
+      if (data.captain.location && data.captain.location.coordinates) {
+        setDriverLocation([
+          data.captain.location.coordinates[0],
+          data.captain.location.coordinates[1]
+        ]);
+      }
+      
       setMapLocation(
         `https://www.google.com/maps?q=${data.captain.location.coordinates[1]},${data.captain.location.coordinates[0]} to ${encodeURIComponent(pickupLocation)}&output=embed`
       );
@@ -339,6 +351,14 @@ function UserHomeScreen() {
       );
     });
 
+    // Listen for driver location updates
+    socket.on("driver:locationUpdated", (data) => {
+      Console.log("Ubicación del conductor actualizada:", data);
+      if (data.location) {
+        setDriverLocation([data.location.lng, data.location.lat]);
+      }
+    });
+
     socket.on("ride-ended", (data) => {
       Console.log("Viaje Finalizado");
       playSound(NOTIFICATION_SOUNDS.rideEnded);
@@ -347,6 +367,7 @@ function UserHomeScreen() {
       setShowSelectVehiclePanel(false);
       setShowFindTripPanel(true);
       setDefaults();
+      setDriverLocation(null);
       localStorage.removeItem("rideDetails");
       localStorage.removeItem("panelDetails");
 
@@ -371,6 +392,7 @@ function UserHomeScreen() {
       socket.off("ride-confirmed");
       socket.off("ride-started");
       socket.off("ride-ended");
+      socket.off("driver:locationUpdated");
     };
   }, [user, pickupLocation]);
 
@@ -433,6 +455,7 @@ function UserHomeScreen() {
 
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, { msg, by: "other" }]);
+      setUnreadMessages((prev) => prev + 1);
       playSound(NOTIFICATION_SOUNDS.newMessage);
       vibrate([100]);
     });
