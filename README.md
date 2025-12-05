@@ -33,7 +33,7 @@ QuickRide is a feature-rich project built using modern web technologies. It repl
 
 | **Category**       | **Technologies / Tools**                                              |
 | ------------------ | --------------------------------------------------------------------- |
-| **Frontend**       | HTML, CSS, React.js, Tailwind CSS, Google Maps                        |
+| **Frontend**       | HTML, CSS, React.js, Tailwind CSS, Mapbox GL JS, Framer Motion, React Hot Toast |
 | **Backend**        | Node.js, Express.js, MongoDB, Socket IO, NodeMailer, Google Maps APIs |
 | **Authentication** | JWT (JSON Web Token), bcrypt                                          |
 | **Deployment**     | Vercel, Render                                                        |
@@ -60,6 +60,9 @@ QuickRide is a feature-rich project built using modern web technologies. It repl
 
 ### 📍 Location & Mapping
 
+- **NEW**: Mapbox GL JS integration for modern, interactive maps
+- **NEW**: Location autocomplete with Mapbox Geocoding API
+- **NEW**: Real-time driver location tracking with animated markers
 - Pickup and destination selection with address auto-complete
 - Real-time location tracking on interactive maps
 - Route visualization with distance and estimated time calculation
@@ -74,6 +77,8 @@ QuickRide is a feature-rich project built using modern web technologies. It repl
 
 ### 🔄 Real-Time Updates
 
+- **NEW**: Enhanced toast notifications with react-hot-toast
+- **NEW**: Rich ride request notifications with accept/reject actions
 - Socket-based updates for ride status and live locations
 - Real-time in-app chat between rider and captain
 - Chat messages are stored in the database with timestamps
@@ -81,9 +86,20 @@ QuickRide is a feature-rich project built using modern web technologies. It repl
 
 ### 👨‍✈️ Captain (Driver) Interface
 
+- **FIXED**: Critical bug - drivers now properly receive ride notifications
 - Accept or reject incoming ride requests
 - Real-time updates for trip progress
 - Role-specific access to ride-related actions
+
+### 🎨 UI/UX Enhancements
+
+- **NEW**: Modern component library with redesigned buttons, inputs, cards
+- **NEW**: Smooth page transitions with Framer Motion
+- **NEW**: Bottom sheet component for mobile-friendly interactions
+- **NEW**: Skeleton loaders for better perceived performance
+- **NEW**: Professional color scheme with green primary and Inter font
+- **NEW**: Ripple effects and micro-interactions
+- **NEW**: Responsive design optimized for mobile (320px - 1280px)
 
 ### 🧰 System Utilities
 
@@ -188,9 +204,10 @@ Create `.env` files in both `Frontend/` and `Backend/` directories.
 ### Frontend `.env`
 
 ```env
-VITE_SERVER_URL=http://localhost:3000
+VITE_SERVER_URL=http://localhost:4000
 VITE_ENVIRONMENT=development
 VITE_RIDE_TIMEOUT=90000
+VITE_MAPBOX_TOKEN=pk.xxx  # Get from https://account.mapbox.com/
 ```
 
 ### Backend `.env`

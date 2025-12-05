@@ -300,30 +300,30 @@ function CaptainHomeScreen() {
       // Actualizar ubicación cada 30 segundos
       const locationInterval = setInterval(updateLocation, 30000);
       
-      return () => clearInterval(locationInterval);
-    }
+      // Configurar listeners de socket DENTRO del bloque captain._id
+      socket.on("new-ride", (data) => {
+        Console.log("Nuevo viaje disponible:", data);
+        // Vibrar y reproducir sonido
+        vibrate([500, 200, 500, 200, 500]);
+        playSound(NOTIFICATION_SOUNDS.newRide);
+        
+        setShowBtn("accept");
+        setNewRide(data);
+        setShowNewRidePanel(true);
+      });
 
-    socket.on("new-ride", (data) => {
-      Console.log("Nuevo viaje disponible:", data);
-      // Vibrar y reproducir sonido
-      vibrate([500, 200, 500, 200, 500]);
-      playSound(NOTIFICATION_SOUNDS.newRide);
+      socket.on("ride-cancelled", (data) => {
+        Console.log("Viaje cancelado", data);
+        updateLocation();
+        clearRideData();
+      });
       
-      setShowBtn("accept");
-      setNewRide(data);
-      setShowNewRidePanel(true);
-    });
-
-    socket.on("ride-cancelled", (data) => {
-      Console.log("Viaje cancelado", data);
-      updateLocation();
-      clearRideData();
-    });
-
-    return () => {
-      socket.off("new-ride");
-      socket.off("ride-cancelled");
-    };
+      return () => {
+        clearInterval(locationInterval);
+        socket.off("new-ride");
+        socket.off("ride-cancelled");
+      };
+    }
   }, [captain]);
 
   useEffect(() => {
