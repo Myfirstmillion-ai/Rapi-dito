@@ -443,23 +443,25 @@ function UserHomeScreen() {
   }, [confirmedRideData]);
 
   return (
-    <div
-      className="relative w-full h-dvh bg-contain bg-center"
-      style={{ backgroundImage: `url(${map})` }}
-    >
+    <div className="relative w-full h-dvh overflow-hidden">
       <Sidebar />
-      <iframe
-        src={mapLocation}
-        className="absolute map w-full h-[120vh] touch-none"
-        allowFullScreen={true}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        style={{ touchAction: "pan-x pan-y" }}
-      ></iframe>
       
-      {/* Componente Buscar viaje */}
+      {/* Map Container - Full Height */}
+      <div className="absolute inset-0 z-0">
+        <iframe
+          src={mapLocation}
+          className="w-full h-full"
+          allowFullScreen={true}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          style={{ border: 0 }}
+        ></iframe>
+      </div>
+      
+      {/* Componente Buscar viaje - Bottom Sheet Style */}
       {showFindTripPanel && (
-        <div className="absolute b-0 flex flex-col justify-start p-4 pb-2 gap-4 rounded-b-lg bg-white h-fit w-full shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh]">
+          <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           <h1 className="text-2xl font-semibold">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">
             <div className="h-3/5 w-[3px] flex flex-col items-center justify-between bg-black rounded-full absolute mx-5">

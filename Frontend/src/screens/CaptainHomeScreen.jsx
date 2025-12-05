@@ -414,10 +414,7 @@ function CaptainHomeScreen() {
   }, [socket.id]);
 
   return (
-    <div
-      className="relative w-full h-dvh bg-contain bg-center"
-      style={{ backgroundImage: `url(${map})` }}
-    >
+    <div className="relative w-full h-dvh overflow-hidden">
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -426,14 +423,18 @@ function CaptainHomeScreen() {
         type={alert.type}
       />
       <Sidebar />
-      <iframe
-        src={mapLocation}
-        className="map w-full h-[80vh] touch-none"
-        allowFullScreen={true}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        style={{ touchAction: "pan-x pan-y" }}
-      ></iframe>
+      
+      {/* Map Container - Full Height */}
+      <div className="absolute inset-0 z-0">
+        <iframe
+          src={mapLocation}
+          className="w-full h-full"
+          allowFullScreen={true}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          style={{ border: 0 }}
+        ></iframe>
+      </div>
 
       {/* Modal de viaje completado */}
       {showRideCompleted && completedRideData && (
@@ -469,7 +470,8 @@ function CaptainHomeScreen() {
       )}
 
       {showCaptainDetailsPanel && (
-        <div className="absolute bottom-0 flex flex-col justify-start p-4 gap-2 rounded-t-lg bg-white h-fit w-full shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto">
+          <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           {/* Detalles del conductor */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">

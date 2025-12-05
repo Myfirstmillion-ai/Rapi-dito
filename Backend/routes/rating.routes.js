@@ -4,10 +4,33 @@ const { body } = require("express-validator");
 const ratingController = require("../controllers/rating.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
+// Middleware to accept both user and captain authentication
+const authUserOrCaptain = async (req, res, next) => {
+  const token = req.cookies.token || req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized User" });
+  }
+
+  // Try authenticating as user first, then as captain
+  try {
+    await authMiddleware.authUser(req, res, () => {});
+    return next();
+  } catch (error) {
+    // If user auth fails, try captain auth
+    try {
+      await authMiddleware.authCaptain(req, res, () => {});
+      return next();
+    } catch (error) {
+      return res.status(401).json({ message: "Unauthorized User" });
+    }
+  }
+};
+
 // Submit rating (user or captain)
 router.post(
   "/submit",
-  authMiddleware.authUser || authMiddleware.authCaptain,
+  authUserOrCaptain,
   [
     body("rideId").isMongoId().withMessage("ID de viaje inválido"),
     body("stars")
@@ -28,7 +51,7 @@ router.post(
 // Get rating status for a ride
 router.get(
   "/:rideId/status",
-  authMiddleware.authUser || authMiddleware.authCaptain,
+  authUserOrCaptain,
   ratingController.getRatingStatus
 );
 
