@@ -6,6 +6,8 @@ import { Phone, User } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
+import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
+import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
@@ -67,8 +69,13 @@ function CaptainHomeScreen() {
 
   const { captain, setCaptain } = useCaptain();
   const { socket } = useContext(SocketDataContext);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { alert, showAlert, hideAlert } = useAlert();
+  
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showMessageBanner, setShowMessageBanner] = useState(false);
+  const [lastMessage, setLastMessage] = useState({ sender: "", text: "" });
 
   const [riderLocation, setRiderLocation] = useState({
     ltd: DEFAULT_LOCATION.lat,
@@ -385,8 +392,20 @@ function CaptainHomeScreen() {
 
     socket.on("receiveMessage", async (msg) => {
       setMessages((prev) => [...prev, { msg, by: "other" }]);
+      setUnreadMessages((prev) => prev + 1);
+      
+      // Set message info for banner
+      setLastMessage({
+        sender: newRide?.user?.fullname?.firstname || "Pasajero",
+        text: msg
+      });
+      
+      // Show notification banner
+      setShowMessageBanner(true);
+      
+      // Play sound and vibrate
       playSound(NOTIFICATION_SOUNDS.newMessage);
-      vibrate([100]);
+      vibrate([200, 100, 200]);
     });
 
     return () => {
@@ -618,8 +637,22 @@ function CaptainHomeScreen() {
           verifyOTP={verifyOTP}
           endRide={endRide}
           error={error}
+          unreadMessages={unreadMessages}
         />
       )}
+      
+      {/* Message Notification Banner */}
+      <MessageNotificationBanner
+        senderName={lastMessage.sender}
+        message={lastMessage.text}
+        show={showMessageBanner}
+        onClose={() => setShowMessageBanner(false)}
+        onTap={() => {
+          setShowMessageBanner(false);
+          setUnreadMessages(0);
+          navigate(`/captain/chat/${newRide?._id}`);
+        }}
+      />
     </div>
   );
 }

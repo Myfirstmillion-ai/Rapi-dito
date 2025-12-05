@@ -10,6 +10,8 @@ import {
 } from "../components";
 import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
+import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
@@ -53,10 +55,13 @@ function UserHomeScreen() {
   const token = localStorage.getItem("token");
   const { socket } = useContext(SocketDataContext);
   const { user } = useUser();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState(
     JSON.parse(localStorage.getItem("messages")) || []
   );
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showMessageBanner, setShowMessageBanner] = useState(false);
+  const [lastMessage, setLastMessage] = useState({ sender: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [selectedInput, setSelectedInput] = useState("pickup");
   const [locationSuggestion, setLocationSuggestion] = useState([]);
@@ -471,8 +476,19 @@ function UserHomeScreen() {
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, { msg, by: "other" }]);
       setUnreadMessages((prev) => prev + 1);
+      
+      // Set message info for banner
+      setLastMessage({
+        sender: confirmedRideData?.captain?.fullname?.firstname || "Conductor",
+        text: msg
+      });
+      
+      // Show notification banner
+      setShowMessageBanner(true);
+      
+      // Play sound and vibrate
       playSound(NOTIFICATION_SOUNDS.newMessage);
-      vibrate([100]);
+      vibrate([200, 100, 200]);
     });
 
     return () => {
@@ -640,8 +656,22 @@ function UserHomeScreen() {
           loading={loading}
           rideCreated={rideCreated}
           confirmedRideData={confirmedRideData}
+          unreadMessages={unreadMessages}
         />
       )}
+      
+      {/* Message Notification Banner */}
+      <MessageNotificationBanner
+        senderName={lastMessage.sender}
+        message={lastMessage.text}
+        show={showMessageBanner}
+        onClose={() => setShowMessageBanner(false)}
+        onTap={() => {
+          setShowMessageBanner(false);
+          setUnreadMessages(0);
+          navigate(`/user/chat/${confirmedRideData?._id}`);
+        }}
+      />
     </div>
   );
 }

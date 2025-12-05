@@ -6,6 +6,7 @@ import {
   SendHorizontal,
 } from "lucide-react";
 import Button from "./Button";
+import MessageBadge from "./ui/MessageBadge";
 
 function NewRide({
   rideData,
@@ -20,6 +21,7 @@ function NewRide({
   endRide,
   verifyOTP,
   error,
+  unreadMessages = 0,
 }) {
   const ignoreRide = () => {
     setShowPanel(false);
@@ -65,13 +67,18 @@ function NewRide({
           {/* Mensaje y llamada */}
           {showBtn !== "accept" && (
             <div className="flex gap-2 mb-2">
-              <Button
-                type={"link"}
-                path={`/captain/chat/${rideData?._id}`}
-                title={"Enviar mensaje..."}
-                icon={<SendHorizontal strokeWidth={1.5} size={18} />}
-                classes={"bg-zinc-100 font-medium text-sm text-zinc-950"}
-              />
+              <div className="relative flex-1">
+                <Button
+                  type={"link"}
+                  path={`/captain/chat/${rideData?._id}`}
+                  title={"Enviar mensaje..."}
+                  icon={<SendHorizontal strokeWidth={1.5} size={18} />}
+                  classes={"bg-zinc-100 font-medium text-sm text-zinc-950 w-full"}
+                />
+                {unreadMessages > 0 && (
+                  <MessageBadge count={unreadMessages} className="top-0 right-0" />
+                )}
+              </div>
               <div className="flex items-center justify-center w-14 rounded-md bg-zinc-100">
                 <a href={"tel:" + rideData?.user?.phone}>
                   <PhoneCall size={18} strokeWidth={2} color="black" />
