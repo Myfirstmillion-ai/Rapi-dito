@@ -9,6 +9,7 @@ import {
   Sidebar,
 } from "../components";
 import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
+import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
@@ -65,6 +66,8 @@ function UserHomeScreen() {
   const [rideCreated, setRideCreated] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [driverLocation, setDriverLocation] = useState(null);
+  const [rideETA, setRideETA] = useState(null);
+  const [currentRideStatus, setCurrentRideStatus] = useState("pending");
 
   // Detalles del viaje
   const [pickupLocation, setPickupLocation] = useState("");
@@ -334,14 +337,15 @@ function UserHomeScreen() {
       vibrate([200, 100, 200, 100, 200]);
       playSound(NOTIFICATION_SOUNDS.rideConfirmed);
       
-      // Set initial driver location
+      // Set initial driver location and ride status
       if (data.captain.location && data.captain.location.coordinates) {
-        setDriverLocation([
-          data.captain.location.coordinates[0],
-          data.captain.location.coordinates[1]
-        ]);
+        setDriverLocation({
+          lng: data.captain.location.coordinates[0],
+          lat: data.captain.location.coordinates[1]
+        });
       }
       
+      setCurrentRideStatus("accepted"); // Driver on the way to pickup
       setMapLocation(
         `https://www.google.com/maps?q=${data.captain.location.coordinates[1]},${data.captain.location.coordinates[0]} to ${encodeURIComponent(pickupLocation)}&output=embed`
       );
@@ -352,6 +356,7 @@ function UserHomeScreen() {
       Console.log("Viaje iniciado");
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
+      setCurrentRideStatus("ongoing"); // Ride in progress
       setMapLocation(
         `https://www.google.com/maps?q=${encodeURIComponent(data.pickup)} to ${encodeURIComponent(data.destination)}&output=embed`
       );
@@ -361,7 +366,10 @@ function UserHomeScreen() {
     socket.on("driver:locationUpdated", (data) => {
       Console.log("Ubicación del conductor actualizada:", data);
       if (data.location) {
-        setDriverLocation([data.location.lng, data.location.lat]);
+        setDriverLocation({
+          lng: data.location.lng,
+          lat: data.location.lat
+        });
       }
     });
 
@@ -374,6 +382,7 @@ function UserHomeScreen() {
       setShowFindTripPanel(true);
       setDefaults();
       setDriverLocation(null);
+      setCurrentRideStatus("pending");
       localStorage.removeItem("rideDetails");
       localStorage.removeItem("panelDetails");
 
@@ -471,20 +480,71 @@ function UserHomeScreen() {
     };
   }, [confirmedRideData]);
 
+  // Helper function to convert pickup/destination strings to coordinates
+  const parseLocationString = async (locationStr) => {
+    // For now, use geocoding to get coordinates from address
+    // In production, store coordinates when user selects from suggestions
+    try {
+      const response = await axios.get(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationStr)}.json`,
+        {
+          params: {
+            access_token: import.meta.env.VITE_MAPBOX_TOKEN,
+            limit: 1,
+          },
+        }
+      );
+      
+      if (response.data.features && response.data.features.length > 0) {
+        const [lng, lat] = response.data.features[0].center;
+        return { lng, lat };
+      }
+    } catch (error) {
+      Console.log("Error geocoding location:", error);
+    }
+    return null;
+  };
+
+  // Handle ETA updates from tracking map
+  const handleETAUpdate = (data) => {
+    setRideETA(data);
+    Console.log("ETA actualizado:", data);
+  };
+
+  // Determine if we should show the elite tracking map
+  const showEliteMap = confirmedRideData && driverLocation;
+
   return (
     <div className="relative w-full h-dvh overflow-hidden">
       <Sidebar onToggle={handleSidebarToggle} />
       
       {/* Map Container - Full Height */}
       <div className="absolute inset-0 z-0">
-        <iframe
-          src={mapLocation}
-          className="w-full h-full"
-          allowFullScreen={true}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          style={{ border: 0 }}
-        ></iframe>
+        {showEliteMap ? (
+          <EliteTrackingMap
+            driverLocation={driverLocation}
+            pickupLocation={confirmedRideData?.captain?.location?.coordinates 
+              ? { lng: confirmedRideData.captain.location.coordinates[0], lat: confirmedRideData.captain.location.coordinates[1] }
+              : null
+            }
+            dropoffLocation={null} // Will be set when ride starts
+            rideId={confirmedRideData._id}
+            rideStatus={currentRideStatus}
+            userType="user"
+            vehicleType={selectedVehicle}
+            onETAUpdate={handleETAUpdate}
+            className="w-full h-full"
+          />
+        ) : (
+          <iframe
+            src={mapLocation}
+            className="w-full h-full"
+            allowFullScreen={true}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            style={{ border: 0 }}
+          ></iframe>
+        )}
       </div>
       
       {/* Componente Buscar viaje - Bottom Sheet Style */}

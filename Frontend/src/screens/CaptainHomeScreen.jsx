@@ -1,10 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import map from "/map.png";
 import axios from "axios";
 import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
+import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
@@ -97,6 +98,9 @@ function CaptainHomeScreen() {
   const [error, setError] = useState("");
   const [showRideCompleted, setShowRideCompleted] = useState(false);
   const [completedRideData, setCompletedRideData] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentRideStatus, setCurrentRideStatus] = useState("pending");
+  const locationUpdateInterval = useRef(null);
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
@@ -149,6 +153,7 @@ function CaptainHomeScreen() {
         );
         setLoading(false);
         setShowBtn("otp");
+        setCurrentRideStatus("accepted"); // Driver on the way to pickup
         
         // Vibrar y reproducir sonido al aceptar
         vibrate([200, 100, 200]);
@@ -185,6 +190,7 @@ function CaptainHomeScreen() {
           `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng} to ${encodeURIComponent(newRide.destination)}&output=embed`
         );
         setShowBtn("end-ride");
+        setCurrentRideStatus("ongoing"); // Ride in progress
         setLoading(false);
         Console.log(response);
       }
@@ -230,6 +236,7 @@ function CaptainHomeScreen() {
           `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng}&output=embed`
         );
         setShowBtn("accept");
+        setCurrentRideStatus("pending");
         setLoading(false);
         setShowCaptainDetailsPanel(false);
         setShowNewRidePanel(false);
@@ -257,8 +264,14 @@ function CaptainHomeScreen() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setRiderLocation({
+          const location = {
             ltd: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          
+          setRiderLocation(location);
+          setCurrentLocation({
+            lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
 
@@ -267,10 +280,7 @@ function CaptainHomeScreen() {
           );
           socket.emit("update-location-captain", {
             userId: captain._id,
-            location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude,
-            },
+            location: location,
           });
         },
         (error) => {
