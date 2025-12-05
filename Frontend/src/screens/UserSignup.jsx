@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Heading, Input } from "../components";
-import { User, Mail, Phone, Lock, ArrowRight, Shield, Sparkles } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import Console from "../utils/console";
-import logo from '/logo-quickride.png';
 
 function UserSignup() {
   const [responseError, setResponseError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     handleSubmit,
@@ -18,6 +17,7 @@ function UserSignup() {
   } = useForm();
 
   const navigation = useNavigate();
+  
   const signupUser = async (data) => {
     const userData = {
       fullname: {
@@ -37,6 +37,10 @@ function UserSignup() {
       );
       Console.log(response);
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userData", JSON.stringify({
+        type: "user",
+        data: response.data.user,
+      }));
       navigation("/home");
     } catch (error) {
       setResponseError(error.response?.data?.[0]?.msg || error.response?.data?.message || "Error al registrarse");
@@ -53,132 +57,144 @@ function UserSignup() {
   }, [responseError]);
 
   return (
-    <div className="relative w-full h-dvh overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Premium Header with Gradient */}
-      <div 
-        className="h-auto w-full relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #276EF1 0%, #1F58C1 100%)'
-        }}
-      >
-        {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
-        
-        <div className="relative p-8 pb-12">
-          <div className="flex items-center justify-between mb-6">
-            <img
-              className="h-10 md:h-12 object-contain brightness-0 invert drop-shadow-lg"
-              src={logo}
-              alt="Rapidito Logo"
-            />
-            <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <Sparkles className="w-4 h-4 text-white" />
-              <span className="text-sm font-bold text-white">Nuevo</span>
-            </div>
-          </div>
-          
-          <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full mb-4">
-            <span className="text-sm font-semibold text-white">Registro de Viajero</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-2 leading-tight">
-            Comienza tu<br/>experiencia
-          </h1>
-          <p className="text-base text-white/95 font-medium">
-            Crea tu cuenta en minutos
-          </p>
+    <div className="w-full min-h-screen bg-white flex flex-col">
+      {/* Logo Section */}
+      <div className="w-full pt-8 pb-16 px-6 text-center">
+        <div className="text-3xl font-black tracking-tight text-black">
+          RAPIDITO
+          <span className="inline-block w-2 h-2 bg-[#00E676] rounded-full ml-1 mb-2"></span>
         </div>
       </div>
 
-      {/* Premium Form Section */}
-      <div className="flex-1 w-full bg-white rounded-t-[2.5rem] -mt-8 shadow-2xl p-8 overflow-y-auto pb-24">
+      {/* Form Container */}
+      <div className="flex-1 px-6 pb-8">
         <div className="max-w-md mx-auto">
-          <form onSubmit={handleSubmit(signupUser)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label={"Nombre"}
-                name={"firstname"}
-                register={register}
-                error={errors.firstname}
-              />
-              <Input
-                label={"Apellido"}
-                name={"lastname"}
-                register={register}
-                error={errors.lastname}
-              />
-            </div>
-            <Input
-              label={"Número de teléfono"}
-              type={"number"}
-              name={"phone"}
-              register={register}
-              error={errors.phone}
-            />
-            <Input
-              label={"Correo electrónico"}
-              type={"email"}
-              name={"email"}
-              register={register}
-              error={errors.email}
-            />
-            <Input
-              label={"Contraseña"}
-              type={"password"}
-              name={"password"}
-              register={register}
-              error={errors.password}
-            />
-            
-            {responseError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-center text-red-600 font-medium">
-                  {responseError}
-                </p>
-              </div>
-            )}
-            
-            <Button title={"Crear Cuenta"} loading={loading} type="submit" />
-          </form>
-          
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">o</span>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <p className="text-sm text-center text-gray-600">
-              ¿Ya tienes una cuenta?{" "}
-              <Link to={"/login"} className="font-bold text-uber-blue hover:text-blue-700 transition-colors">
-                Iniciar sesión
-              </Link>
-            </p>
+          {/* Title */}
+          <h2 className="text-2xl md:text-3xl font-bold text-black mb-8">
+            Crear cuenta
+          </h2>
 
+          {/* Error Message */}
+          {responseError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+              {responseError}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(signupUser)} className="space-y-4">
+            {/* First Name */}
+            <div>
+              <input
+                type="text"
+                placeholder="Nombre"
+                {...register("firstname", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              {errors.firstname && (
+                <p className="mt-1 text-sm text-red-600">El nombre es requerido</p>
+              )}
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <input
+                type="text"
+                placeholder="Apellido"
+                {...register("lastname", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              {errors.lastname && (
+                <p className="mt-1 text-sm text-red-600">El apellido es requerido</p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <input
+                type="email"
+                placeholder="Email"
+                {...register("email", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">El email es requerido</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <input
+                type="tel"
+                placeholder="Teléfono"
+                {...register("phone", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">El teléfono es requerido</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                {...register("password", { required: true, minLength: 6 })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.type === "minLength" 
+                    ? "La contraseña debe tener al menos 6 caracteres" 
+                    : "La contraseña es requerida"}
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
             <button
-              onClick={() => navigation("/captain/signup")}
-              className="w-full bg-gradient-to-r from-uber-green to-green-600 hover:from-green-600 hover:to-uber-green text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 bg-black text-white text-base font-medium rounded hover:bg-gray-800 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
             >
-              <span>Regístrate como Conductor</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                "Crear cuenta"
+              )}
             </button>
-          </div>
-          
-          {/* Trust Badge */}
-          <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
-            <Shield className="w-4 h-4" />
-            <p className="text-xs font-medium">
-              Tus datos están protegidos
-            </p>
-          </div>
+          </form>
+
+          {/* Terms */}
+          <p className="text-xs text-gray-500 text-center mt-6 leading-relaxed">
+            Al continuar, aceptas los{" "}
+            <a href="#" className="underline hover:text-black transition-colors">
+              Términos y Condiciones
+            </a>{" "}
+            y la{" "}
+            <a href="#" className="underline hover:text-black transition-colors">
+              Política de Privacidad
+            </a>{" "}
+            de RAPIDITO
+          </p>
+
+          {/* Login Link */}
+          <p className="text-center text-sm text-gray-600 mt-6">
+            ¿Ya tienes cuenta?{" "}
+            <Link to="/login" className="font-bold text-black hover:underline">
+              Inicia sesión
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Heading, Input } from "../components";
-import { Mail, Lock, ArrowRight, Shield, TrendingUp, DollarSign } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import Console from "../utils/console";
-import logo from '/logo-quickride.png';
 
 function CaptainLogin() {
   const [responseError, setResponseError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     handleSubmit,
@@ -50,129 +49,111 @@ function CaptainLogin() {
   }, [responseError]);
 
   return (
-    <div className="relative w-full h-dvh overflow-hidden bg-gradient-to-br from-gray-50 to-green-50">
-      {/* Ultra Premium Hero Section */}
-      <div 
-        className="h-[45%] w-full bg-cover bg-center relative overflow-hidden"
-        style={{
-          backgroundImage: `
-            linear-gradient(135deg, rgba(5,163,87,0.92) 0%, rgba(4,138,74,0.95) 100%),
-            url('https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=1600&q=90')
-          `,
-          backgroundPosition: 'center center'
-        }}
-      >
-        {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
-        
-        <div className="relative h-full flex flex-col justify-between p-8">
-          {/* Logo and Earning Badge */}
-          <div className="flex items-start justify-between">
-            <img
-              className="h-12 md:h-14 object-contain brightness-0 invert drop-shadow-lg"
-              src={logo}
-              alt="Rapidito Logo"
-            />
-            <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <TrendingUp className="w-4 h-4 text-white" />
-              <span className="text-sm font-bold text-white">+35%</span>
-            </div>
-          </div>
-          
-          {/* Main Heading */}
-          <div>
-            <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full mb-4">
-              <span className="text-sm font-semibold text-white">Conductores</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white mb-3 leading-tight">
-              Gana dinero<br/>conduciendo
-            </h1>
-            <p className="text-lg text-white/95 font-medium flex items-center gap-2">
-              <DollarSign className="w-5 h-5" />
-              Ingresos flexibles en tu ciudad
-            </p>
-          </div>
+    <div className="w-full min-h-screen bg-white flex flex-col">
+      {/* Logo Section */}
+      <div className="w-full pt-8 pb-16 px-6 text-center">
+        <div className="text-3xl font-black tracking-tight text-black">
+          RAPIDITO
+          <span className="inline-block w-2 h-2 bg-[#00E676] rounded-full ml-1 mb-2"></span>
         </div>
       </div>
 
-      {/* Premium Form Section */}
-      <div className="h-[55%] w-full bg-white rounded-t-[2.5rem] -mt-8 shadow-2xl p-8 overflow-y-auto">
+      {/* Form Container */}
+      <div className="flex-1 px-6 pb-8">
         <div className="max-w-md mx-auto">
-          <form onSubmit={handleSubmit(loginCaptain)} className="space-y-5">
-            <Input
-              label={"Correo electrónico"}
-              type={"email"}
-              name={"email"}
-              register={register}
-              error={errors.email}
-            />
-            <Input
-              label={"Contraseña"}
-              type={"password"}
-              name={"password"}
-              register={register}
-              error={errors.password}
-            />
-            
-            {responseError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-center text-red-600 font-medium">
-                  {responseError}
-                </p>
-              </div>
-            )}
-            
-            <div className="flex justify-end">
-              <Link 
-                to="/captain/forgot-password" 
-                className="text-sm font-semibold text-uber-green hover:text-green-700 transition-colors"
-              >
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
-            
-            <Button title={"Iniciar Sesión"} loading={loading} type="submit" />
-          </form>
-          
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">o</span>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <p className="text-sm text-center text-gray-600">
-              ¿No tienes una cuenta?{" "}
-              <Link to={"/captain/signup"} className="font-bold text-uber-green hover:text-green-700 transition-colors">
-                Regístrate gratis
-              </Link>
-            </p>
+          {/* Subtitle Message */}
+          <p className="text-center text-base text-gray-600 mb-8">
+            Comienza a ganar con RAPIDITO
+          </p>
 
+          {/* Title */}
+          <h2 className="text-2xl md:text-3xl font-bold text-black mb-8">
+            Iniciar sesión como conductor
+          </h2>
+
+          {/* Error Message */}
+          {responseError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+              {responseError}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(loginCaptain)} className="space-y-4">
+            {/* Email Input */}
+            <div>
+              <input
+                type="email"
+                placeholder="Ingresa tu email"
+                {...register("email", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">El email es requerido</p>
+              )}
+            </div>
+
+            {/* Password Input */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                {...register("password", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">La contraseña es requerida</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
             <button
-              onClick={() => navigation("/login")}
-              className="w-full bg-gradient-to-r from-uber-blue to-blue-600 hover:from-blue-600 hover:to-uber-blue text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 bg-black text-white text-base font-medium rounded hover:bg-gray-800 hover:shadow-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              style={{
+                borderBottom: loading ? 'none' : '2px solid #00E676'
+              }}
             >
-              <span>Inicia sesión como Usuario</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                "Iniciar sesión"
+              )}
             </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-gray-300"></div>
+            <span className="px-4 text-sm text-gray-500">o</span>
+            <div className="flex-1 border-t border-gray-300"></div>
           </div>
-          
-          {/* Trust Badge */}
-          <div className="mt-8 flex items-center justify-center gap-2 text-gray-500">
-            <Shield className="w-4 h-4" />
-            <p className="text-xs font-medium">
-              Conexión segura y encriptada
-            </p>
-          </div>
+
+          {/* Sign Up Link */}
+          <p className="text-center text-sm text-gray-600">
+            ¿No tienes cuenta?{" "}
+            <Link to="/captain/signup" className="font-bold text-black hover:underline">
+              Regístrate
+            </Link>
+          </p>
+
+          {/* Link to User Login */}
+          <p className="text-center text-sm text-gray-600 mt-4">
+            ¿Quieres solicitar un viaje?{" "}
+            <Link to="/login" className="font-bold text-black hover:underline">
+              Iniciar como pasajero
+            </Link>
+          </p>
         </div>
       </div>
     </div>
