@@ -54,9 +54,9 @@ function Sidebar({ onToggle }) {
   
   return (
     <>
-      {/* Hamburger Menu Button - Always visible */}
+      {/* Hamburger Menu Button - Always visible with highest z-index */}
       <div
-        className="m-3 mt-4 absolute right-0 top-0 z-30 cursor-pointer bg-white p-3 rounded-lg shadow-uber-md hover:shadow-uber-lg transition-all duration-200 active:scale-95"
+        className="m-3 mt-4 absolute right-0 top-0 z-500 cursor-pointer bg-white p-3 rounded-lg shadow-uber-md hover:shadow-uber-lg transition-all duration-200 active:scale-95"
         onClick={toggleSidebar}
       >
         {showSidebar ? (

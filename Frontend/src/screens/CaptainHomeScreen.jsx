@@ -492,19 +492,14 @@ function CaptainHomeScreen() {
     if (socket.id) Console.log("socket id:", socket.id);
   }, [socket.id]);
 
-  // Show loading state if captain data is not yet loaded
-  if (!captain || !captain._id) {
-    return (
-      <div className="relative w-full h-dvh overflow-hidden bg-zinc-50">
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-uber-green mx-auto mb-4"></div>
-            <p className="text-uber-gray-600 font-medium">Cargando datos del conductor...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Show loading state only while data is actually loading, not if it's already loaded
+  // The captain data comes from CaptainContext which loads on mount
+  // Don't block rendering - let the component render with safe defaults
+  const captainData = captain || {
+    fullname: { firstname: "Cargando", lastname: "" },
+    _id: null,
+    vehicle: { type: "car", capacity: 4, number: "---", color: "Gris" }
+  };
 
   return (
     <div className="relative w-full h-dvh overflow-hidden">
@@ -572,18 +567,18 @@ function CaptainHomeScreen() {
             <div className="flex items-center gap-3">
               <div className="my-2 select-none rounded-full w-10 h-10 bg-blue-400 mx-auto flex items-center justify-center">
                 <h1 className="text-lg text-white">
-                  {captain?.fullname?.firstname[0]}
-                  {captain?.fullname?.lastname[0]}
+                  {captainData?.fullname?.firstname?.[0] || "C"}
+                  {captainData?.fullname?.lastname?.[0] || ""}
                 </h1>
               </div>
 
               <div>
                 <h1 className="text-lg font-semibold leading-6">
-                  {captain?.fullname?.firstname} {captain?.fullname?.lastname}
+                  {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
                 </h1>
                 <p className="text-xs flex items-center gap-1 text-gray-500 ">
                   <Phone size={12} />
-                  {captain?.phone}
+                  {captainData?.phone || "---"}
                 </p>
               </div>
             </div>
@@ -626,20 +621,20 @@ function CaptainHomeScreen() {
           <div className="flex justify-between border-2 items-center pl-3 py-2 rounded-lg">
             <div>
               <h1 className="text-lg font-semibold leading-6 tracking-tighter ">
-                {captain?.vehicle?.number}
+                {captainData?.vehicle?.number || "---"}
               </h1>
               <p className="text-xs text-gray-500 flex items-center">
-                {captain?.vehicle?.color} |
-                <User size={12} strokeWidth={2.5} /> {captain?.vehicle?.capacity}
+                {captainData?.vehicle?.color || "Gris"} |
+                <User size={12} strokeWidth={2.5} /> {captainData?.vehicle?.capacity || 4}
               </p>
             </div>
 
             <img
               className="rounded-full h-16 scale-x-[-1]"
               src={
-                captain?.vehicle?.type === "car"
+                captainData?.vehicle?.type === "car"
                   ? "/car.png"
-                  : `/${captain?.vehicle?.type}.webp`
+                  : `/${captainData?.vehicle?.type || "car"}.webp`
               }
               alt="Imagen del vehículo"
             />

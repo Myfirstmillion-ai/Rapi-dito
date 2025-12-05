@@ -5,6 +5,7 @@ import { Button, Heading, Input } from "../components";
 import axios from "axios";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Console from "../utils/console";
+import logo from '/logo-quickride.png';
 
 function CaptainSignup() {
   const [responseError, setResponseError] = useState("");
@@ -64,13 +65,29 @@ function CaptainSignup() {
   }, [responseError]);
 
   return (
-    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6">
-      <div>
-        <Heading title={"Registro de Conductor 🚗"} />
+    <div className="w-full h-dvh flex flex-col">
+      {/* Header Section - UBER Green Gradient */}
+      <div 
+        className="w-full bg-uber-green p-6 pb-8"
+        style={{
+          background: 'linear-gradient(to bottom, #05A357, #048a4a)'
+        }}
+      >
+        <img
+          src={logo}
+          alt="Rapidito Logo"
+          className="w-24 mb-4 brightness-0 invert"
+        />
+        <h1 className="text-3xl font-bold text-white">Únete como Conductor</h1>
+        <p className="text-base text-white opacity-90 mt-2">Gana dinero conduciendo en tu ciudad</p>
+      </div>
+
+      {/* Form Section - White Card */}
+      <div className="flex-1 bg-white rounded-t-3xl -mt-6 p-6 pt-8 shadow-2xl overflow-y-auto">
         <form onSubmit={handleSubmit(signupCaptain)}>
           {!showVehiclePanel && (
-            <>
-              <div className="flex gap-4 -mb-2">
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Input
                   label={"Nombre"}
                   name={"firstname"}
@@ -107,29 +124,37 @@ function CaptainSignup() {
                 error={errors.password}
               />
               {responseError && (
-                <p className="text-sm text-center mb-4 text-red-500">
+                <p className="text-sm text-center my-3 text-red-500 font-medium">
                   {responseError}
                 </p>
               )}
-              <div
-                className={`cursor-pointer flex justify-center items-center gap-2 py-3 font-semibold bg-black text-white w-full rounded-lg`}
+              <button
+                type="button"
+                className="cursor-pointer flex justify-center items-center gap-2 py-3.5 font-semibold bg-uber-green hover:bg-green-600 active:scale-98 text-white w-full rounded-xl shadow-uber-md hover:shadow-uber-lg transition-all duration-200 mt-4"
                 onClick={() => {
                   setShowVehiclePanel(true);
                 }}
               >
                 Siguiente <ChevronRight strokeWidth={2.5} />
-              </div>
-            </>
+              </button>
+            </div>
           )}
           {showVehiclePanel && (
-            <>
-              <ArrowLeft
+            <div className="space-y-3">
+              <button
+                type="button"
                 onClick={() => {
                   setShowVehiclePanel(false);
                 }}
-                className="cursor-pointer -ml-1 mb-4"
-              />
-              <div className="flex gap-4 -my-2">
+                className="flex items-center gap-2 text-uber-green hover:text-green-700 font-medium mb-4 cursor-pointer"
+              >
+                <ArrowLeft size={20} />
+                <span>Volver</span>
+              </button>
+              
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Información del Vehículo</h2>
+              
+              <div className="grid grid-cols-2 gap-3">
                 <Input
                   label={"Color del vehículo"}
                   name={"color"}
@@ -160,29 +185,37 @@ function CaptainSignup() {
               />
 
               {responseError && (
-                <p className="text-sm text-center mb-4 text-red-500">
+                <p className="text-sm text-center my-3 text-red-500 font-medium">
                   {responseError}
                 </p>
               )}
-              <Button title={"Registrarse"} loading={loading} type="submit" />
-            </>
+              <Button 
+                title={"Registrarse"} 
+                loading={loading} 
+                type="submit"
+                classes="bg-uber-green hover:bg-green-600 mt-4"
+              />
+            </div>
           )}
         </form>
-        <p className="text-sm font-normal text-center mt-4">
+        
+        <p className="text-sm font-normal text-center mt-6">
           ¿Ya tienes una cuenta?{" "}
-          <Link to={"/captain/login"} className="font-semibold">
+          <Link to={"/captain/login"} className="font-semibold text-uber-green hover:text-green-700">
             Iniciar sesión
           </Link>
         </p>
-      </div>
-      <div>
-        <Button
-          type={"link"}
-          path={"/signup"}
-          title={"Registrarse como Usuario"}
-          classes={"bg-green-500"}
-        />
-        <p className="text-xs font-normal text-center self-end mt-6">
+
+        <div className="mt-6">
+          <Button
+            type={"link"}
+            path={"/signup"}
+            title={"Registrarse como Usuario"}
+            classes={"bg-uber-blue hover:bg-blue-600"}
+          />
+        </div>
+
+        <p className="text-xs font-normal text-center text-gray-500 mt-6">
           Este sitio está protegido por reCAPTCHA y aplican la{" "}
           <span className="font-semibold underline">Política de Privacidad</span> y{" "}
           <span className="font-semibold underline">Términos de Servicio</span> de Google.
