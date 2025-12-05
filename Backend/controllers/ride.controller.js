@@ -130,57 +130,50 @@ module.exports.confirmRide = async (req, res) => {
   const { rideId } = req.body;
 
   try {
-    const rideDetails = await rideModel.findOne({ _id: rideId });
-
-    if (!rideDetails) {
-      return res.status(404).json({ message: "Ride not found." });
-    }
-
-    switch (rideDetails.status) {
-      case "accepted":
-        return res
-          .status(400)
-          .json({
-            message:
-              "The ride is accepted by another captain before you. Better luck next time.",
-          });
-
-      case "ongoing":
-        return res
-          .status(400)
-          .json({
-            message: "The ride is currently ongoing with another captain.",
-          });
-
-      case "completed":
-        return res
-          .status(400)
-          .json({ message: "The ride has already been completed." });
-
-      case "cancelled":
-        return res
-          .status(400)
-          .json({ message: "The ride has been cancelled." });
-
-      default:
-        break;
-    }
-
+    // Attempt to confirm the ride with atomic update
     const ride = await rideService.confirmRide({
       rideId,
       captain: req.captain,
     });
 
+    // Notify the user that their ride was accepted
     sendMessageToSocketId(ride.user.socketId, {
       event: "ride-confirmed",
       data: ride,
     });
 
-    // TODO: Remove ride from other captains
-    // Implement logic here, maybe emit an event or update captain listings
+    // Broadcast to all other captains that this ride is no longer available
+    // This is done asynchronously to not block the response
+    Promise.resolve().then(async () => {
+      try {
+        const pickupCoordinates = await mapService.getAddressCoordinate(ride.pickup);
+        const captainsInRadius = await mapService.getCaptainsInTheRadius(
+          pickupCoordinates.ltd,
+          pickupCoordinates.lng,
+          4,
+          ride.vehicle
+        );
+
+        // Notify all captains (except the one who accepted) that the ride is unavailable
+        captainsInRadius.forEach((captain) => {
+          if (captain._id.toString() !== req.captain._id.toString()) {
+            sendMessageToSocketId(captain.socketId, {
+              event: "ride-unavailable",
+              data: { rideId: ride._id },
+            });
+          }
+        });
+      } catch (e) {
+        console.error("Failed to notify captains about ride acceptance:", e.message);
+      }
+    });
 
     return res.status(200).json(ride);
   } catch (err) {
+    // Check if this is a race condition error (ride already accepted)
+    if (err.message === "Este viaje ya fue aceptado por otro conductor") {
+      return res.status(409).json({ message: err.message });
+    }
     return res.status(500).json({ message: err.message });
   }
 };

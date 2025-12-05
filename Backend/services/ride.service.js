@@ -92,37 +92,42 @@ module.exports.confirmRide = async ({ rideId, captain }) => {
   }
 
   try {
-    await rideModel.findOneAndUpdate(
+    // Atomic update: only accept if status is still 'pending'
+    // This prevents race conditions where multiple drivers accept the same ride
+    const ride = await rideModel.findOneAndUpdate(
       {
         _id: rideId,
+        status: "pending", // Only update if still pending
       },
       {
         status: "accepted",
         captain: captain._id,
+      },
+      { 
+        new: true // Return the updated document
       }
-    );
+    )
+    .populate("user")
+    .populate("captain")
+    .select("+otp");
 
-    const captainData = await captainModel.findOne({ _id: captain._id });
-
-    captainData.rides.push(rideId);
-
-    await captainData.save();
-
-    const ride = await rideModel
-      .findOne({
-        _id: rideId,
-      })
-      .populate("user")
-      .populate("captain")
-      .select("+otp");
-
+    // If ride is null, it means it was already accepted by another driver
     if (!ride) {
-      throw new Error("Viaje no encontrado");
+      throw new Error("Este viaje ya fue aceptado por otro conductor");
     }
+
+    // Update captain's rides list
+    const captainData = await captainModel.findOne({ _id: captain._id });
+    captainData.rides.push(rideId);
+    await captainData.save();
 
     return ride;
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    // Re-throw the error with the original message if it's our custom error
+    if (error.message === "Este viaje ya fue aceptado por otro conductor") {
+      throw error;
+    }
     throw new Error("Error al confirmar el viaje.");
   }
 };

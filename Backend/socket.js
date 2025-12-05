@@ -6,6 +6,8 @@ const captainModel = require("./models/captain.model");
 const frontendLogModel = require("./models/frontend-log.model");
 
 let io;
+// Map to track connected drivers for better management
+const connectedDrivers = new Map();
 
 function initializeSocket(server) {
   io = new Server(server, {
@@ -13,6 +15,11 @@ function initializeSocket(server) {
       origin: "*",
       methods: ["GET", "POST"],
     },
+    // Enable reconnection
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: 5,
   });
 
   io.on("connection", (socket) => {
@@ -32,10 +39,26 @@ function initializeSocket(server) {
     socket.on("join", async (data) => {
       const { userId, userType } = data;
       console.log(userType + " conectado: " + userId);
+      
       if (userType === "user") {
         await userModel.findByIdAndUpdate(userId, { socketId: socket.id });
+        socket.join(`user-${userId}`);
       } else if (userType === "captain") {
         await captainModel.findByIdAndUpdate(userId, { socketId: socket.id });
+        // Join driver-specific room for targeted messages
+        socket.join(`driver-${userId}`);
+        // Track connected driver
+        connectedDrivers.set(userId, {
+          socketId: socket.id,
+          connectedAt: new Date(),
+        });
+        // Confirm registration to the driver
+        socket.emit("driver:registered", {
+          driverId: userId,
+          socketId: socket.id,
+          timestamp: new Date(),
+        });
+        console.log(`Driver ${userId} registered and joined room driver-${userId}`);
       }
     });
 
@@ -45,12 +68,70 @@ function initializeSocket(server) {
       if (!location || !location.ltd || !location.lng) {
         return socket.emit("error", { message: "Datos de ubicación inválidos" });
       }
+      
       await captainModel.findByIdAndUpdate(userId, {
         location: {
           type: "Point",
           coordinates: [location.lng, location.ltd],
         },
       });
+
+      // Update the tracking map
+      if (connectedDrivers.has(userId)) {
+        const driverData = connectedDrivers.get(userId);
+        connectedDrivers.set(userId, {
+          ...driverData,
+          lastLocation: location,
+          lastLocationUpdate: new Date(),
+        });
+      }
+    });
+
+    // Enhanced driver location update with ride tracking
+    socket.on("driver:locationUpdate", async (data) => {
+      const { driverId, location, rideId } = data;
+      
+      if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
+        return socket.emit("error", { message: "Datos de ubicación inválidos" });
+      }
+
+      try {
+        // Update driver location in database
+        await captainModel.findByIdAndUpdate(driverId, {
+          location: {
+            type: "Point",
+            coordinates: [location.lng, location.lat],
+          },
+        });
+
+        // If driver has an active ride, notify the passenger
+        if (rideId) {
+          const ride = await rideModel.findById(rideId).populate('user');
+          if (ride && ride.user) {
+            // Send location update to the passenger
+            io.to(`user-${ride.user._id}`).emit('driver:locationUpdated', {
+              location,
+              rideId,
+              driverId,
+              timestamp: new Date(),
+            });
+          }
+        }
+
+        // Update tracking map
+        if (connectedDrivers.has(driverId)) {
+          const driverData = connectedDrivers.get(driverId);
+          connectedDrivers.set(driverId, {
+            ...driverData,
+            lastLocation: location,
+            lastLocationUpdate: new Date(),
+            activeRideId: rideId || null,
+          });
+        }
+      } catch (error) {
+        console.error("Error updating driver location:", error);
+        socket.emit("error", { message: "Error al actualizar ubicación" });
+      }
     });
 
     socket.on("join-room", (roomId) => {
@@ -89,6 +170,14 @@ function initializeSocket(server) {
 
     socket.on("disconnect", () => {
       console.log(`Cliente desconectado: ${socket.id}`);
+      // Clean up driver tracking on disconnect
+      for (const [driverId, driverData] of connectedDrivers.entries()) {
+        if (driverData.socketId === socket.id) {
+          connectedDrivers.delete(driverId);
+          console.log(`Driver ${driverId} removed from tracking`);
+          break;
+        }
+      }
     });
   });
 }
@@ -102,4 +191,24 @@ const sendMessageToSocketId = (socketId, messageObject) => {
   }
 };
 
-module.exports = { initializeSocket, sendMessageToSocketId };
+// New helper function to send to room
+const sendMessageToRoom = (room, messageObject) => {
+  if (io) {
+    console.log(`Mensaje enviado a sala: ${room}`);
+    io.to(room).emit(messageObject.event, messageObject.data);
+  } else {
+    console.log("Socket.io no inicializado.");
+  }
+};
+
+// Get connected drivers count
+const getConnectedDriversCount = () => {
+  return connectedDrivers.size;
+};
+
+module.exports = { 
+  initializeSocket, 
+  sendMessageToSocketId,
+  sendMessageToRoom,
+  getConnectedDriversCount,
+};

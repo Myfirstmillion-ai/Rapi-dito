@@ -9,6 +9,7 @@ export default {
         inter: ['Inter', 'sans-serif'],
       },
       colors: {
+        // Existing primary (green) - keep for backward compatibility
         primary: {
           50: '#f0fdf4',
           100: '#dcfce7',
@@ -21,18 +22,47 @@ export default {
           800: '#166534',
           900: '#14532d',
         },
+        // UBER Design System Colors
+        uber: {
+          black: '#000000',
+          white: '#FFFFFF',
+          blue: '#276EF1',
+          green: '#05A357',
+          red: '#CD0A29',
+          gray: {
+            50: '#F6F6F6',
+            100: '#EEEEEE',
+            200: '#E2E2E2',
+            300: '#CBCBCB',
+            400: '#A8A8A8',
+            500: '#8B8B8B',
+            600: '#545454',
+            700: '#333333',
+          }
+        }
       },
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
         'glow': '0 0 20px rgba(34, 197, 94, 0.3)',
+        // UBER shadows
+        'uber-sm': '0 1px 2px rgba(0,0,0,0.05)',
+        'uber-md': '0 4px 6px rgba(0,0,0,0.08)',
+        'uber-lg': '0 10px 15px rgba(0,0,0,0.1)',
+        'uber-xl': '0 20px 25px rgba(0,0,0,0.12)',
       },
       borderRadius: {
         '4xl': '2rem',
+        // UBER border radius
+        'uber-sm': '8px',
+        'uber-md': '12px',
+        'uber-lg': '16px',
+        'uber-xl': '24px',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
         'slide-up': 'slideUp 0.4s ease-out',
         'scale-in': 'scaleIn 0.3s ease-out',
+        'pulse-soft': 'pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {
@@ -47,6 +77,14 @@ export default {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
+        pulseSoft: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
+      },
+      minHeight: {
+        'touch': '44px', // Minimum touch target
+        'button': '48px', // UBER minimum button height
       },
     },
   },
