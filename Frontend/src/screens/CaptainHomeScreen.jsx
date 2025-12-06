@@ -562,7 +562,7 @@ function CaptainHomeScreen() {
 
       {/* Captain details panel - Hidden when sidebar is open */}
       {showCaptainDetailsPanel && !isSidebarOpen && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto transition-all duration-300 ease-out">
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto transition-all duration-300 ease-out">
           <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           {/* Detalles del conductor */}
           <div className="flex justify-between items-center">

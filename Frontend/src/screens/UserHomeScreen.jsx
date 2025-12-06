@@ -586,7 +586,7 @@ function UserHomeScreen() {
       
       {/* Componente Buscar viaje - Bottom Sheet Style */}
       {showFindTripPanel && !isSidebarOpen && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
           <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           <h1 className="text-2xl font-semibold">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">
