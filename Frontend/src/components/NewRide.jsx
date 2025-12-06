@@ -26,6 +26,7 @@ function NewRide({
   acceptRide,
   endRide,
   verifyOTP,
+  cancelRide,
   error,
   unreadMessages = 0,
 }) {

@@ -268,6 +268,35 @@ function CaptainHomeScreen() {
     }
   };
 
+  const cancelRide = async () => {
+    try {
+      if (newRide._id !== "") {
+        setLoading(true);
+        await axios.post(
+          `${import.meta.env.VITE_SERVER_URL}/ride/cancel`,
+          {
+            rideId: newRide._id,
+          },
+          {
+            headers: {
+              token: token,
+            },
+          }
+        );
+        
+        setLoading(false);
+        showAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente', 'success');
+        
+        // Reset to initial state
+        clearRideData();
+      }
+    } catch (err) {
+      setLoading(false);
+      showAlert('Error', err.response?.data?.message || 'No se pudo cancelar el viaje', 'failure');
+      Console.log(err);
+    }
+  };
+
   const closeRideCompleted = () => {
     setShowRideCompleted(false);
     setCompletedRideData(null);
@@ -749,6 +778,7 @@ function CaptainHomeScreen() {
           acceptRide={acceptRide}
           verifyOTP={verifyOTP}
           endRide={endRide}
+          cancelRide={cancelRide}
           error={error}
           unreadMessages={unreadMessages}
         />
