@@ -8,6 +8,7 @@ import { ArrowLeft, Camera, Upload, X } from "lucide-react";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
+import StarRating from "../components/ui/StarRating";
 
 function CaptainEditProfile() {
   const token = localStorage.getItem("token");
@@ -269,6 +270,17 @@ function CaptainEditProfile() {
                 <Camera size={22} className="text-white" />
               </button>
             </div>
+            
+            {/* Rating Display Below Profile Image */}
+            {captain?.rating && (
+              <div className="mt-1">
+                <StarRating 
+                  average={captain.rating.average} 
+                  count={captain.rating.count}
+                  size={18}
+                />
+              </div>
+            )}
 
             {/* Hidden File Input */}
             <input

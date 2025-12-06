@@ -259,11 +259,28 @@ function ChatScreen() {
             className="cursor-pointer text-white"
             onClick={() => navigation(-1)}
           />
-          <div className="select-none rounded-full w-10 h-10 bg-white flex items-center justify-center">
-            <h1 className="text-lg font-semibold text-green-600">
-              {userData?.fullname?.firstname[0]}
-              {userData?.fullname?.lastname[0]}
-            </h1>
+          <div className="relative w-10 h-10">
+            {userData?.profileImage ? (
+              <img
+                src={userData.profileImage}
+                alt={`${userData?.fullname?.firstname} ${userData?.fullname?.lastname}`}
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div 
+              className={`select-none rounded-full w-10 h-10 bg-white flex items-center justify-center ${userData?.profileImage ? 'hidden' : 'flex'}`}
+            >
+              <h1 className="text-lg font-semibold text-green-600">
+                {userData?.fullname?.firstname[0]}
+                {userData?.fullname?.lastname[0]}
+              </h1>
+            </div>
           </div>
 
           <div className="flex-1">

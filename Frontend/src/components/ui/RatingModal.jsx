@@ -123,7 +123,7 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
             className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
           />
 
-          {/* Modal */}
+          {/* Modal with Glassmorphism */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -134,7 +134,14 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                 damping: 25,
                 stiffness: 300,
               }}
-              className="bg-white rounded-3xl shadow-uber-xl w-full max-w-[400px] md:max-w-[480px] p-8"
+              className="relative w-full max-w-[400px] md:max-w-[480px] p-8 rounded-3xl shadow-uber-xl overflow-hidden"
+              style={{
+                background: "rgba(255, 255, 255, 0.95)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.1), 0 2px 16px 0 rgba(0, 0, 0, 0.05)"
+              }}
             >
               {/* Header with Star Icon */}
               <div className="flex flex-col items-center mb-6">
