@@ -1,11 +1,9 @@
 import { useContext, useEffect, useState, useRef } from "react";
-import map from "/map.png";
 import axios from "axios";
 import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
-import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
@@ -276,7 +274,7 @@ function CaptainHomeScreen() {
   };
 
   const updateLocation = () => {
-    if (navigator.geolocation) {
+    if (navigator.geolocation && captain?._id && socket) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const location = {
@@ -294,6 +292,7 @@ function CaptainHomeScreen() {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
+          
           socket.emit("update-location-captain", {
             userId: captain._id,
             location: location,
@@ -317,12 +316,14 @@ function CaptainHomeScreen() {
     setShowCaptainDetailsPanel(true);
     setShowNewRidePanel(false);
     setNewRide(defaultRideData);
+    setCurrentRideStatus("pending");
     localStorage.removeItem("rideDetails");
     localStorage.removeItem("showPanel");
   };
 
+  // Socket connection and location updates
   useEffect(() => {
-    if (captain._id) {
+    if (captain?._id && socket) {
       socket.emit("join", {
         userId: captain._id,
         userType: "captain",
@@ -364,92 +365,101 @@ function CaptainHomeScreen() {
         }, 5000); // Update every 5 seconds
       }
       
-      // Configurar listeners de socket DENTRO del bloque captain._id
-      socket.on("new-ride", (data) => {
+      // Handler para nuevos viajes
+      const handleNewRide = (data) => {
         Console.log("Nuevo viaje disponible:", data);
-        // Vibrar y reproducir sonido
         vibrate([500, 200, 500, 200, 500]);
         playSound(NOTIFICATION_SOUNDS.newRide);
         
         setShowBtn("accept");
         setNewRide(data);
         setShowNewRidePanel(true);
-      });
+      };
 
-      socket.on("ride-cancelled", (data) => {
+      // Handler para viajes cancelados
+      const handleRideCancelled = (data) => {
         Console.log("Viaje cancelado", data);
         updateLocation();
         clearRideData();
-      });
+      };
+
+      socket.on("new-ride", handleNewRide);
+      socket.on("ride-cancelled", handleRideCancelled);
       
       return () => {
         clearInterval(locationInterval);
         if (activeRideLocationInterval) {
           clearInterval(activeRideLocationInterval);
         }
-        socket.off("new-ride");
-        socket.off("ride-cancelled");
+        socket.off("new-ride", handleNewRide);
+        socket.off("ride-cancelled", handleRideCancelled);
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [captain._id, showBtn, newRide._id]);
+  }, [captain?._id, socket, showBtn, newRide._id]);
 
+  // Guardar mensajes en localStorage
   useEffect(() => {
     localStorage.setItem("messages", JSON.stringify(messages));
   }, [messages]);
 
+  // Socket de mensajes - room handling
   useEffect(() => {
-    socket.emit("join-room", newRide._id);
+    if (socket && newRide._id && newRide._id !== "123456789012345678901234") {
+      socket.emit("join-room", newRide._id);
 
-    socket.on("receiveMessage", async (msg) => {
-      setMessages((prev) => [...prev, { msg, by: "other" }]);
-      setUnreadMessages((prev) => prev + 1);
-      
-      // Set message info for banner
-      setLastMessage({
-        sender: newRide?.user?.fullname?.firstname || "Pasajero",
-        text: msg
-      });
-      
-      // Show notification banner
-      setShowMessageBanner(true);
-      
-      // Play sound and vibrate
-      playSound(NOTIFICATION_SOUNDS.newMessage);
-      vibrate([200, 100, 200]);
-    });
+      const handleReceiveMessage = (msg) => {
+        setMessages((prev) => [...prev, { msg, by: "other" }]);
+        setUnreadMessages((prev) => prev + 1);
+        
+        // Set message info for banner
+        setLastMessage({
+          sender: newRide?.user?.fullname?.firstname || "Pasajero",
+          text: msg
+        });
+        
+        // Show notification banner
+        setShowMessageBanner(true);
+        
+        // Play sound and vibrate
+        playSound(NOTIFICATION_SOUNDS.newMessage);
+        vibrate([200, 100, 200]);
+      };
 
-    return () => {
-      socket.off("receiveMessage");
-    };
-  }, [newRide]);
+      socket.on("receiveMessage", handleReceiveMessage);
 
+      return () => {
+        socket.off("receiveMessage", handleReceiveMessage);
+      };
+    }
+  }, [newRide._id, socket]);
+
+  // Guardar detalles del viaje
   useEffect(() => {
     localStorage.setItem("rideDetails", JSON.stringify(newRide));
   }, [newRide]);
 
+  // Guardar estado de paneles
   useEffect(() => {
     localStorage.setItem("showPanel", JSON.stringify(showNewRidePanel));
     localStorage.setItem("showBtn", JSON.stringify(showBtn));
   }, [showNewRidePanel, showBtn]);
 
-  const calculateEarnings = () => {
-    let Totalearnings = 0;
-    let Todaysearning = 0;
+  // Calcular ganancias
+  useEffect(() => {
+    if (captain?.rides && Array.isArray(captain.rides)) {
+      let Totalearnings = 0;
+      let Todaysearning = 0;
+      let acceptedRides = 0;
+      let cancelledRides = 0;
+      let distanceTravelled = 0;
 
-    let acceptedRides = 0;
-    let cancelledRides = 0;
+      const today = new Date();
+      const todayWithoutTime = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
 
-    let distanceTravelled = 0;
-
-    const today = new Date();
-    const todayWithoutTime = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-
-    if (captain.rides && Array.isArray(captain.rides)) {
       captain.rides.forEach((ride) => {
         if (ride.status === "completed") {
           acceptedRides++;
@@ -469,33 +479,24 @@ function CaptainHomeScreen() {
         }
         if (ride.status === "cancelled") cancelledRides++;
       });
+
+      setEarnings({ total: Totalearnings, today: Todaysearning });
+      setRides({
+        accepted: acceptedRides,
+        cancelled: cancelledRides,
+        distanceTravelled: Math.round(distanceTravelled / 1000),
+      });
     }
+  }, [captain?.rides]);
 
-    setEarnings({ total: Totalearnings, today: Todaysearning });
-    setRides({
-      accepted: acceptedRides,
-      cancelled: cancelledRides,
-      distanceTravelled: Math.round(distanceTravelled / 1000),
-    });
-  };
-
+  // Debug socket
   useEffect(() => {
-    calculateEarnings();
-  }, [captain]);
-
-  useEffect(() => {
-    if (mapLocation.ltd && mapLocation.lng) {
-      Console.log(mapLocation);
+    if (socket?.id) {
+      Console.log("socket id:", socket.id);
     }
-  }, [mapLocation]);
+  }, [socket?.id]);
 
-  useEffect(() => {
-    if (socket.id) Console.log("socket id:", socket.id);
-  }, [socket.id]);
-
-  // Show loading state only while data is actually loading, not if it's already loaded
-  // The captain data comes from CaptainContext which loads on mount
-  // Don't block rendering - let the component render with safe defaults
+  // Safe captain data with defaults
   const captainData = captain || {
     fullname: { firstname: "Cargando", lastname: "" },
     _id: null,
