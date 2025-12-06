@@ -496,14 +496,19 @@ function UserHomeScreen() {
   useEffect(() => {
     socket.emit("join-room", confirmedRideData?._id);
 
-    socket.on("receiveMessage", (msg) => {
-      setMessages((prev) => [...prev, { msg, by: "other" }]);
+    socket.on("receiveMessage", (data) => {
+      // Fix: data is an object {msg, by, time}, not a string
+      const messageText = typeof data === 'string' ? data : (data?.msg || '');
+      const messageBy = typeof data === 'string' ? 'other' : (data?.by || 'other');
+      const messageTime = typeof data === 'string' ? '' : (data?.time || '');
+      
+      setMessages((prev) => [...prev, { msg: messageText, by: messageBy, time: messageTime }]);
       setUnreadMessages((prev) => prev + 1);
       
-      // Set message info for banner
+      // Set message info for banner - use msg property
       setLastMessage({
         sender: confirmedRideData?.captain?.fullname?.firstname || "Conductor",
-        text: msg
+        text: messageText
       });
       
       // Show notification banner

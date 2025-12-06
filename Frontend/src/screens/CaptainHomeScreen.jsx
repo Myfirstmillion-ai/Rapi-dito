@@ -437,14 +437,19 @@ function CaptainHomeScreen() {
     if (socket && newRide._id && newRide._id !== "123456789012345678901234") {
       socket.emit("join-room", newRide._id);
 
-      const handleReceiveMessage = (msg) => {
-        setMessages((prev) => [...prev, { msg, by: "other" }]);
+      const handleReceiveMessage = (data) => {
+        // Fix: data is an object {msg, by, time}, not a string
+        const messageText = typeof data === 'string' ? data : (data?.msg || '');
+        const messageBy = typeof data === 'string' ? 'other' : (data?.by || 'other');
+        const messageTime = typeof data === 'string' ? '' : (data?.time || '');
+        
+        setMessages((prev) => [...prev, { msg: messageText, by: messageBy, time: messageTime }]);
         setUnreadMessages((prev) => prev + 1);
         
-        // Set message info for banner
+        // Set message info for banner - use msg property
         setLastMessage({
           sender: newRide?.user?.fullname?.firstname || "Pasajero",
-          text: msg
+          text: messageText
         });
         
         // Show notification banner
