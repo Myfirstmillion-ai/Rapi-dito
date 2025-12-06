@@ -160,9 +160,7 @@ const Vehicle = ({
       <div className="flex-1 pr-4 py-4">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h1 className={`text-lg font-bold transition-colors ${
-              isSelected ? "text-white" : "text-white"
-            }`}>
+            <h1 className="text-lg font-bold text-white transition-colors">
               {vehicle.name}
             </h1>
             <p className={`text-sm transition-colors ${
@@ -200,9 +198,7 @@ const Vehicle = ({
         }`}>
           Tarifa
         </p>
-        <h3 className={`text-xl font-bold transition-colors ${
-          isSelected ? "text-white" : "text-white"
-        }`}>
+        <h3 className="text-xl font-bold text-white transition-colors">
           ${Math.floor(fare[vehicle.type] / 1000)}K
         </h3>
         <p className={`text-xs mt-1 ${
