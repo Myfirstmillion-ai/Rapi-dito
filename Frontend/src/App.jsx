@@ -31,6 +31,7 @@ import { ChevronLeft, Trash2 } from "lucide-react";
 import ToastProvider from "./components/notifications/ToastProvider";
 import RatingModalWrapper from "./components/RatingModalWrapper";
 import { AnimatePresence, motion } from "framer-motion";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
@@ -148,7 +149,11 @@ function AnimatedRoutes() {
               </CaptainProtectedWrapper>
             }
           />
-          <Route path="/:userType/chat/:rideId" element={<ChatScreen />} />
+          <Route path="/:userType/chat/:rideId" element={
+            <ErrorBoundary>
+              <ChatScreen />
+            </ErrorBoundary>
+          } />
           <Route path="/:userType/verify-email/" element={<VerifyEmail />} />
           <Route path="/:userType/forgot-password/" element={<ForgotPassword />} />
           <Route path="/:userType/reset-password/" element={<ResetPassword />} />
