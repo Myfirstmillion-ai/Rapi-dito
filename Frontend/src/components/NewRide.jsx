@@ -47,19 +47,19 @@ function NewRide({
           showPanel ? "bottom-0" : "-bottom-full"
         } ${
           isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden pb-safe`}
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden pb-safe`}
       >
         {/* Premium Drag Handle */}
         <div 
           onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-gray-50/50 active:bg-gray-100 transition-colors group"
+          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
         >
           <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             {isMinimized ? (
-              <ChevronUp size={18} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
             ) : (
-              <ChevronDown size={18} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
             )}
           </div>
         </div>
@@ -71,33 +71,33 @@ function NewRide({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="select-none rounded-full w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md ring-2 ring-green-100">
+                  <div className="select-none rounded-full w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md ring-2 ring-emerald-400/30">
                     <User size={20} className="text-white" />
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
                 </div>
                 <div>
-                  <h1 className="text-base font-bold text-gray-900">
+                  <h1 className="text-base font-bold text-white">
                     {rideData?.user?.fullname?.firstname} {rideData?.user?.fullname?.lastname}
                   </h1>
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <p className="text-xs text-slate-400 flex items-center gap-1">
                     <Navigation size={12} />
                     {(Number(rideData?.distance?.toFixed(2)) / 1000)?.toFixed(1)} km
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <h1 className="font-bold text-xl text-green-600">
+                <h1 className="font-bold text-xl text-emerald-400">
                   ${Math.floor(rideData?.fare / 1000)}K
                 </h1>
-                <p className="text-xs text-gray-500">Toca para más</p>
+                <p className="text-xs text-slate-400">Toca para más</p>
               </div>
             </div>
           ) : (
             /* Maximized View - Premium Details */
             <>
           {/* Premium User Card */}
-          <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-4 mb-4 shadow-sm">
+          <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-4 mb-4 shadow-lg">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0">
@@ -105,7 +105,7 @@ function NewRide({
                     <img 
                       src={rideData.user.profileImage} 
                       alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
-                      className="w-14 h-14 rounded-full object-cover shadow-lg ring-4 ring-green-50"
+                      className="w-14 h-14 rounded-full object-cover shadow-lg ring-4 ring-emerald-400/30"
                       loading="lazy"
                       onError={(e) => {
                         e.target.onerror = null;
@@ -115,33 +115,33 @@ function NewRide({
                     />
                   ) : null}
                   <div 
-                    className={`w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg ring-4 ring-green-50 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                    className={`w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg ring-4 ring-emerald-400/30 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
                   >
                     <span className="text-xl font-bold text-white">
                       {rideData?.user?.fullname?.firstname[0]}
                       {rideData?.user?.fullname?.lastname[0]}
                     </span>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-slate-900 animate-pulse"></div>
                 </div>
 
                 <div>
-                  <h1 className="text-lg font-bold text-gray-900 leading-tight">
+                  <h1 className="text-lg font-bold text-white leading-tight">
                     {rideData?.user?.fullname?.firstname}{" "}
                     {rideData?.user?.fullname?.lastname}
                   </h1>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <p className="text-sm text-slate-300 font-medium">
                     {rideData?.user?.phone || rideData?.user?.email}
                   </p>
                 </div>
               </div>
 
               <div className="text-right">
-                <p className="text-xs text-gray-500 font-medium mb-0.5">Tarifa</p>
-                <h1 className="font-bold text-2xl text-green-600 leading-tight">
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Tarifa</p>
+                <h1 className="font-bold text-2xl text-emerald-400 leading-tight">
                   ${Math.floor(rideData?.fare / 1000)}K
                 </h1>
-                <p className="text-xs text-gray-500 font-medium mt-0.5 flex items-center gap-1 justify-end">
+                <p className="text-xs text-slate-400 font-medium mt-0.5 flex items-center gap-1 justify-end">
                   <Navigation size={12} />
                   {(Number(rideData?.distance?.toFixed(2)) / 1000)?.toFixed(1)} km
                 </p>
@@ -158,7 +158,7 @@ function NewRide({
                   path={`/captain/chat/${rideData?._id}`}
                   title={"Enviar mensaje"}
                   icon={<SendHorizontal strokeWidth={2} size={18} />}
-                  classes={"bg-gray-100 hover:bg-gray-200 font-semibold text-sm text-gray-900 w-full rounded-xl shadow-sm border border-gray-200"}
+                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-sm border border-white/20"}
                 />
                 {unreadMessages > 0 && (
                   <MessageBadge count={unreadMessages} className="-top-1 -right-1" />
@@ -166,7 +166,7 @@ function NewRide({
               </div>
               <a 
                 href={"tel:" + rideData?.user?.phone}
-                className="flex items-center justify-center w-14 h-full rounded-xl bg-green-500 hover:bg-green-600 active:scale-95 transition-all shadow-sm"
+                className="flex items-center justify-center w-14 h-full rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all shadow-sm"
               >
                 <PhoneCall size={20} strokeWidth={2} className="text-white" />
               </a>
@@ -174,18 +174,18 @@ function NewRide({
           )}
 
           {/* Premium Route Display */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4 shadow-sm space-y-3">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 mb-4 shadow-lg space-y-3">
             {/* Pickup */}
             <div className="flex items-start gap-3">
-              <div className="mt-1 p-2 bg-green-100 rounded-lg">
-                <MapPinMinus size={18} className="text-green-600" />
+              <div className="mt-1 p-2 bg-emerald-500/20 backdrop-blur-sm rounded-lg border border-emerald-400/30">
+                <MapPinMinus size={18} className="text-emerald-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs text-gray-500 font-medium mb-0.5">Recogida</p>
-                <h1 className="text-base font-bold text-gray-900 leading-tight">
+                <p className="text-xs text-slate-300 font-medium mb-0.5">Recogida</p>
+                <h1 className="text-base font-bold text-white leading-tight">
                   {rideData.pickup.split(", ")[0]}
                 </h1>
-                <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
                   {rideData.pickup.split(", ").slice(1).join(", ")}
                 </p>
               </div>
@@ -193,36 +193,36 @@ function NewRide({
 
             {/* Separator */}
             <div className="flex items-center gap-2 py-1">
-              <div className="flex-1 border-t-2 border-dashed border-gray-200"></div>
-              <Navigation size={14} className="text-gray-400" />
-              <div className="flex-1 border-t-2 border-dashed border-gray-200"></div>
+              <div className="flex-1 border-t-2 border-dashed border-white/20"></div>
+              <Navigation size={14} className="text-slate-400" />
+              <div className="flex-1 border-t-2 border-dashed border-white/20"></div>
             </div>
 
             {/* Destination */}
             <div className="flex items-start gap-3">
-              <div className="mt-1 p-2 bg-red-100 rounded-lg">
-                <MapPinPlus size={18} className="text-red-600" />
+              <div className="mt-1 p-2 bg-red-500/20 backdrop-blur-sm rounded-lg border border-red-400/30">
+                <MapPinPlus size={18} className="text-red-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs text-gray-500 font-medium mb-0.5">Destino</p>
-                <h1 className="text-base font-bold text-gray-900 leading-tight">
+                <p className="text-xs text-slate-300 font-medium mb-0.5">Destino</p>
+                <h1 className="text-base font-bold text-white leading-tight">
                   {rideData.destination.split(", ")[0]}
                 </h1>
-                <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
                   {rideData.destination.split(", ").slice(1).join(", ")}
                 </p>
               </div>
             </div>
 
             {/* Fare */}
-            <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-200">
+            <div className="flex items-center justify-between pt-2 mt-2 border-t border-white/20">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-gray-100 rounded-lg">
-                  <CreditCard size={16} className="text-gray-700" />
+                <div className="p-1.5 bg-white/10 rounded-lg">
+                  <CreditCard size={16} className="text-slate-300" />
                 </div>
-                <span className="text-sm text-gray-600 font-medium">Efectivo</span>
+                <span className="text-sm text-slate-300 font-medium">Efectivo</span>
               </div>
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-white">
                 COP$ {rideData.fare?.toLocaleString('es-CO') || 0}
               </h1>
             </div>
@@ -235,13 +235,13 @@ function NewRide({
                 title={"Ignorar"}
                 loading={loading}
                 fun={ignoreRide}
-                classes={"bg-white text-gray-900 border-2 border-gray-300 hover:border-gray-400 font-semibold rounded-xl shadow-sm"}
+                classes={"bg-white/10 text-white border-2 border-white/20 hover:border-white/30 backdrop-blur-xl font-semibold rounded-xl shadow-sm"}
               />
               <Button 
                 title={"Aceptar Viaje"} 
                 fun={acceptRide} 
                 loading={loading}
-                classes={"bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 font-bold rounded-xl shadow-lg shadow-green-500/30"}
+                classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
               />
             </div>
           ) : showBtn === "otp" ? (
@@ -253,16 +253,16 @@ function NewRide({
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder={"Código OTP de 6 dígitos"}
-                className="w-full bg-gray-50 border-2 border-gray-200 focus:border-black px-4 py-4 rounded-xl outline-none text-base font-semibold text-center tracking-widest mb-3 transition-colors"
+                className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 px-4 py-4 rounded-xl outline-none text-base font-semibold text-center tracking-widest mb-3 transition-colors text-white placeholder:text-slate-400"
               />
               {error && (
-                <p className="text-red-600 text-sm mb-3 text-center font-medium bg-red-50 py-2 rounded-lg">{error}</p>
+                <p className="text-red-400 text-sm mb-3 text-center font-medium bg-red-500/20 backdrop-blur-sm py-2 rounded-lg border border-red-400/30">{error}</p>
               )}
               <Button 
                 title={"Verificar OTP"} 
                 loading={loading} 
                 fun={verifyOTP}
-                classes={"bg-black hover:bg-gray-800 font-bold rounded-xl shadow-lg"}
+                classes={"bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 font-bold rounded-xl shadow-lg"}
               />
             </>
           ) : (
@@ -270,7 +270,7 @@ function NewRide({
               title={"Finalizar Viaje"}
               fun={endRide}
               loading={loading}
-              classes={"bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 font-bold rounded-xl shadow-lg shadow-green-500/30"}
+              classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
             />
           )}
             </>

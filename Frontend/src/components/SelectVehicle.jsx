@@ -44,19 +44,19 @@ function SelectVehicle({
       <div
         className={`${showPanel ? "bottom-0" : "-bottom-full"} ${
           isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden pb-safe`}
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden pb-safe`}
       >
         {/* Premium Drag Handle */}
         <div 
           onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-gray-50/50 active:bg-gray-100 transition-colors group"
+          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
         >
           <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             {isMinimized ? (
-              <ChevronUp size={18} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
             ) : (
-              <ChevronDown size={18} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
             )}
           </div>
         </div>
@@ -66,17 +66,17 @@ function SelectVehicle({
         {isMinimized ? (
           /* Minimized View - Premium */
           <div className="text-center">
-            <h2 className="text-base font-bold text-gray-900">
+            <h2 className="text-base font-bold text-white">
               Selecciona tu vehículo
             </h2>
-            <p className="text-sm text-gray-500">Toca para ver opciones</p>
+            <p className="text-sm text-slate-400">Toca para ver opciones</p>
           </div>
         ) : (
           /* Maximized View - Premium */
           <>
             <div className="mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Elige tu viaje</h2>
-              <p className="text-sm text-gray-600">Selecciona el vehículo que prefieras</p>
+              <h2 className="text-2xl font-bold text-white mb-1">Elige tu viaje</h2>
+              <p className="text-sm text-slate-300">Selecciona el vehículo que prefieras</p>
             </div>
             <div className="space-y-3">
               {vehicles.map((vehicle) => (
@@ -131,10 +131,10 @@ const Vehicle = ({
         cursor-pointer group relative flex items-center rounded-2xl overflow-hidden
         transition-all duration-300 active:scale-[0.98]
         ${isSelected 
-          ? "bg-gradient-to-r from-blue-500 to-blue-600 border-2 border-blue-600 shadow-xl" 
+          ? "bg-gradient-to-r from-emerald-500 to-cyan-500 border-2 border-emerald-400 shadow-xl shadow-emerald-500/30" 
           : isHovered
-          ? "bg-gradient-to-r from-gray-50 to-white border-2 border-black shadow-lg"
-          : "bg-white border-2 border-gray-200 hover:border-gray-300 shadow-sm"
+          ? "bg-gradient-to-r from-white/15 to-white/10 border-2 border-emerald-400/50 backdrop-blur-xl shadow-lg"
+          : "bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:border-white/30 shadow-sm"
         }
       `}
     >
@@ -148,9 +148,9 @@ const Vehicle = ({
           alt={vehicle.name}
         />
         {isSelected && (
-          <div className="absolute inset-0 bg-blue-500/20 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute inset-0 bg-emerald-500/20 backdrop-blur-sm flex items-center justify-center">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center animate-bounce">
-              <Check size={24} className="text-blue-600" strokeWidth={3} />
+              <Check size={24} className="text-emerald-600" strokeWidth={3} />
             </div>
           </div>
         )}
@@ -161,12 +161,12 @@ const Vehicle = ({
         <div className="flex justify-between items-start mb-2">
           <div>
             <h1 className={`text-lg font-bold transition-colors ${
-              isSelected ? "text-white" : "text-gray-900"
+              isSelected ? "text-white" : "text-white"
             }`}>
               {vehicle.name}
             </h1>
             <p className={`text-sm transition-colors ${
-              isSelected ? "text-blue-100" : "text-gray-600"
+              isSelected ? "text-emerald-100" : "text-slate-300"
             }`}>
               {vehicle.description}
             </p>
@@ -176,16 +176,16 @@ const Vehicle = ({
         {/* Vehicle Details */}
         <div className="flex items-center gap-3 mt-2">
           <div className={`flex items-center gap-1 text-xs font-medium ${
-            isSelected ? "text-blue-100" : "text-gray-600"
+            isSelected ? "text-emerald-100" : "text-slate-300"
           }`}>
             <Clock size={14} />
             <span>{vehicle.eta}</span>
           </div>
           <div className={`w-1 h-1 rounded-full ${
-            isSelected ? "bg-blue-200" : "bg-gray-300"
+            isSelected ? "bg-emerald-200" : "bg-slate-400"
           }`}></div>
           <div className={`flex items-center gap-1 text-xs font-medium ${
-            isSelected ? "text-blue-100" : "text-gray-600"
+            isSelected ? "text-emerald-100" : "text-slate-300"
           }`}>
             <Users size={14} />
             <span>{vehicle.capacity}</span>
@@ -196,17 +196,17 @@ const Vehicle = ({
       {/* Price Section */}
       <div className="pr-4 py-4 text-right">
         <p className={`text-xs font-medium mb-1 ${
-          isSelected ? "text-blue-100" : "text-gray-500"
+          isSelected ? "text-emerald-100" : "text-slate-400"
         }`}>
           Tarifa
         </p>
         <h3 className={`text-xl font-bold transition-colors ${
-          isSelected ? "text-white" : "text-gray-900"
+          isSelected ? "text-white" : "text-white"
         }`}>
           ${Math.floor(fare[vehicle.type] / 1000)}K
         </h3>
         <p className={`text-xs mt-1 ${
-          isSelected ? "text-blue-100" : "text-gray-500"
+          isSelected ? "text-emerald-100" : "text-slate-400"
         }`}>
           COP$ {fare[vehicle.type]?.toLocaleString('es-CO') || 0}
         </p>
@@ -216,7 +216,7 @@ const Vehicle = ({
       {isSelected && (
         <div className="absolute top-3 right-3">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <Check size={18} className="text-blue-600" strokeWidth={3} />
+            <Check size={18} className="text-emerald-600" strokeWidth={3} />
           </div>
         </div>
       )}
