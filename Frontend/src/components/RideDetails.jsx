@@ -93,7 +93,7 @@ function RideDetails({
                     <img
                       src={
                         selectedVehicle === "car"
-                          ? "https://www.pngplay.com/wp-content/uploads/13/Car-Top-View-PNG-Photos.png"
+                          ? "/Uber-PNG-Photos.png"
                           : `/${selectedVehicle}.webp`
                       }
                       className="h-14 w-auto"
@@ -132,7 +132,7 @@ function RideDetails({
                 <img
                   src={
                     selectedVehicle === "car"
-                      ? "https://www.pngplay.com/wp-content/uploads/13/Car-Top-View-PNG-Photos.png"
+                      ? "/Uber-PNG-Photos.png"
                       : `/${selectedVehicle}.webp`
                   }
                   className={`${confirmedRideData ? "h-24" : "h-16"} w-auto`}

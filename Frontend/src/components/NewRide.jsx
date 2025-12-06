@@ -68,12 +68,30 @@ function NewRide({
         <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
 
           {isMinimized ? (
-            /* Minimized View - Premium Summary */
+            /* Minimized View - Premium Summary with User Profile Photo */
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="select-none rounded-full w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md ring-2 ring-emerald-400/30">
-                    <User size={20} className="text-white" />
+                <div className="relative flex-shrink-0">
+                  {rideData?.user?.profileImage ? (
+                    <img 
+                      src={rideData.user.profileImage} 
+                      alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
+                      className="w-12 h-12 rounded-full object-cover shadow-lg ring-2 ring-emerald-400/30"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md ring-2 ring-emerald-400/30 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                  >
+                    <span className="text-base font-bold text-white">
+                      {rideData?.user?.fullname?.firstname?.[0]?.toUpperCase() || ''}
+                      {rideData?.user?.fullname?.lastname?.[0]?.toUpperCase() || ''}
+                    </span>
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
                 </div>
@@ -264,7 +282,13 @@ function NewRide({
                   title={"Verificar OTP"} 
                   loading={loading} 
                   fun={verifyOTP}
-                  classes={"bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 font-bold rounded-xl shadow-lg"}
+                  classes={"bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 font-bold rounded-xl shadow-lg mb-3"}
+                />
+                <Button 
+                  title={"Cancelar Viaje"} 
+                  loading={loading} 
+                  fun={cancelRide}
+                  classes={"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 font-bold rounded-xl shadow-lg shadow-red-500/30"}
                 />
               </>
             ) : (

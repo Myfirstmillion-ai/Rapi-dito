@@ -7,7 +7,7 @@ const vehicles = [
     name: "Carro",
     description: "Viajes cómodos y seguros",
     type: "car",
-    image: "https://www.pngplay.com/wp-content/uploads/13/Car-Top-View-PNG-Photos.png",
+    image: "/Uber-PNG-Photos.png",
     price: 0,
     capacity: "4 personas",
     eta: "3-5 min",
