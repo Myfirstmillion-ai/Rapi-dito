@@ -21,7 +21,7 @@ function LocationSearchInput({
   const inputRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Debounced search function
+  // Debounced search function - faster debounce
   const debouncedSearch = useRef(
     debounce(async (searchQuery) => {
       if (searchQuery.length < 3) {
@@ -36,7 +36,7 @@ function LocationSearchInput({
       });
       setSuggestions(results);
       setIsLoading(false);
-    }, 300)
+    }, 200) // Reduced from 300ms to 200ms for faster response
   ).current;
 
   useEffect(() => {
@@ -114,9 +114,18 @@ function LocationSearchInput({
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
-      <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-          {isLoading ? <Loader size={20} className="animate-spin" /> : <Icon size={20} />}
+      <motion.div 
+        className="relative"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">
+          {isLoading ? (
+            <Loader size={20} className="animate-spin text-emerald-400" />
+          ) : (
+            <Icon size={20} className="text-emerald-400" />
+          )}
         </div>
         
         <input
@@ -128,50 +137,87 @@ function LocationSearchInput({
           placeholder={placeholder}
           autoFocus={autoFocus}
           className={cn(
-            "w-full bg-white px-12 py-3 rounded-lg border-2 border-gray-200",
-            "outline-none text-sm transition-all duration-200",
-            "focus:border-green-500 focus:ring-2 focus:ring-green-100",
+            "w-full bg-white/10 backdrop-blur-xl px-12 py-3 rounded-xl border-2 border-white/20",
+            "outline-none text-sm transition-all duration-200 text-white placeholder:text-slate-400",
+            "focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 focus:bg-white/15",
+            "hover:bg-white/15 hover:border-white/30",
             query && "pr-20"
           )}
         />
         
         {query && (
-          <button
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={handleClear}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/20 rounded-full transition-all active:scale-90 backdrop-blur-sm"
           >
-            <X size={18} className="text-gray-500" />
-          </button>
+            <X size={18} className="text-slate-300" />
+          </motion.button>
         )}
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {showSuggestions && suggestions.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 w-full mt-2 bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 overflow-hidden"
           >
-            {suggestions.map((suggestion) => (
-              <button
+            {suggestions.map((suggestion, index) => (
+              <motion.button
                 key={suggestion.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.03 }}
                 onClick={() => handleSelectLocation(suggestion)}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                className="w-full px-4 py-3 text-left hover:bg-white/10 active:bg-white/15 transition-all border-b border-white/5 last:border-b-0 group"
               >
                 <div className="flex items-start gap-3">
-                  <MapPin size={18} className="text-gray-400 mt-1 flex-shrink-0" />
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.2 }}
+                    className="p-2 bg-emerald-500/20 backdrop-blur-sm rounded-lg border border-emerald-400/30 mt-0.5"
+                  >
+                    <MapPin size={16} className="text-emerald-400" />
+                  </motion.div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-semibold text-white truncate group-hover:text-emerald-400 transition-colors">
                       {suggestion.text}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-slate-400 truncate mt-0.5">
                       {suggestion.place_name}
                     </p>
                   </div>
                 </div>
-              </button>
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Loading skeleton for better UX */}
+      <AnimatePresence>
+        {isLoading && showSuggestions && suggestions.length === 0 && query.length >= 3 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 w-full mt-2 bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 overflow-hidden p-3"
+          >
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-start gap-3 py-2">
+                <div className="w-10 h-10 bg-white/10 rounded-lg animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-white/10 rounded animate-pulse w-3/4" />
+                  <div className="h-3 bg-white/5 rounded animate-pulse w-full" />
+                </div>
+              </div>
             ))}
           </motion.div>
         )}
