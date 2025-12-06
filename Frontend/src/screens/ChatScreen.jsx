@@ -1,6 +1,6 @@
 import axios from "axios";
-import { ArrowLeft, Send, Check, CheckCheck } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Send, CheckCheck } from "lucide-react";
+import { useContext, useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
@@ -30,12 +30,25 @@ function ChatScreen() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [userData, setUserData] = useState(null);
-  const [socketID, setSocketID] = useState({});
   const [isTyping, setIsTyping] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [error, setError] = useState(null);
   const typingTimeoutRef = useRef(null);
 
-  const currentUser = JSON.parse(localStorage.getItem("userData"))?.data?._id || null;
+  // Safe JSON parsing with error handling
+  const getCurrentUser = () => {
+    try {
+      const userDataString = localStorage.getItem("userData");
+      if (!userDataString) return null;
+      const userData = JSON.parse(userDataString);
+      return userData?.data?._id || null;
+    } catch (e) {
+      Console.log("Error parsing user data:", e);
+      return null;
+    }
+  };
+
+  const currentUser = getCurrentUser();
 
   const scrollToBottom = () => {
     if (scrollableDivRef.current) {
@@ -43,11 +56,18 @@ function ChatScreen() {
     }
   };
 
-  const getUserDetails = async () => {
+  const getUserDetails = useCallback(async () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/ride/chat-details/${rideId}`
       );
+
+      // Validate response data
+      if (!response.data || !response.data.user || !response.data.captain) {
+        Console.log("Invalid response data from server");
+        setError("Error al cargar datos del chat");
+        return;
+      }
 
       // Proteger usuarios no autorizados de leer los chats
       if (currentUser !== response.data.user._id && currentUser !== response.data.captain._id) {
@@ -55,7 +75,10 @@ function ChatScreen() {
         navigation(-1);
         return;
       }
-      setMessages(response.data.messages);
+      
+      // Validate messages array
+      const validMessages = Array.isArray(response.data.messages) ? response.data.messages : [];
+      setMessages(validMessages);
 
       socket.emit("join-room", rideId);
       if (userType === "user") {
@@ -64,15 +87,11 @@ function ChatScreen() {
       if (userType === "captain") {
         setUserData(response.data.user);
       }
-      const socketIds = {
-        user: response.data.user.socketId,
-        captain: response.data.captain.socketId,
-      };
-      setSocketID(socketIds);
     } catch (error) {
-      Console.log("No existe tal viaje.");
+      Console.log("Error fetching chat details:", error);
+      setError("No se pudo cargar el chat. Por favor, intenta de nuevo.");
     }
-  };
+  }, [rideId, currentUser, navigation, socket, userType]);
 
   const handleTyping = () => {
     socket.emit("typing", { rideId, userType });
@@ -92,14 +111,19 @@ function ChatScreen() {
       return;
     }
 
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    socket.emit("message", { rideId: rideId, msg: message, userType: userType, time });
-    socket.emit("stop-typing", { rideId, userType });
-    setMessages((prev) => [...prev, { msg: message, by: userType, time, status: 'sent' }]);
+    try {
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      socket.emit("message", { rideId: rideId, msg: message, userType: userType, time });
+      socket.emit("stop-typing", { rideId, userType });
+      setMessages((prev) => [...prev, { msg: message, by: userType, time, status: 'sent' }]);
 
-    setMessage("");
-    if (inputRef.current) {
-      inputRef.current.focus();
+      setMessage("");
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    } catch (error) {
+      Console.log("Error sending message:", error);
+      setError("Error al enviar mensaje");
     }
   };
 
@@ -114,40 +138,116 @@ function ChatScreen() {
     }
   }, [userData]);
 
+  // Load chat details on mount
   useEffect(() => {
-    setTimeout(() => {
-      getUserDetails();
-    }, 2000);
-
-    socket.on("receiveMessage", ({ msg, by, time }) => {
-      setMessages((prev) => [...prev, { msg, by, time }]);
-      playSound();
-      setHasNewMessage(true);
-      
-      // Vibrar si está disponible
-      if (navigator.vibrate) {
-        navigator.vibrate([100]);
-      }
-    });
-
-    socket.on("user-typing", ({ userType: typingUser }) => {
-      if (typingUser !== userType) {
-        setIsTyping(true);
-      }
-    });
-
-    socket.on("user-stop-typing", ({ userType: typingUser }) => {
-      if (typingUser !== userType) {
-        setIsTyping(false);
-      }
-    });
-
-    return () => {
-      socket.off("receiveMessage");
-      socket.off("user-typing");
-      socket.off("user-stop-typing");
+    const loadChatDetails = async () => {
+      await getUserDetails();
     };
-  }, []);
+    
+    // Add a small delay to ensure socket is connected
+    const timeoutId = setTimeout(() => {
+      loadChatDetails();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [getUserDetails]); // Depend on getUserDetails
+
+  // Setup socket event listeners - FIX for white screen bug
+  useEffect(() => {
+    if (!socket || !rideId) return;
+
+    // Handle incoming messages with proper validation
+    const handleReceiveMessage = (data) => {
+      try {
+        // Validate message structure
+        if (!data || typeof data.msg !== 'string') {
+          Console.log('Invalid message data received:', data);
+          return;
+        }
+
+        const { msg, by, time } = data;
+        
+        setMessages((prev) => [...prev, { msg, by, time }]);
+        playSound();
+        setHasNewMessage(true);
+        
+        // Vibrar si está disponible
+        if (navigator.vibrate) {
+          navigator.vibrate([100]);
+        }
+      } catch (error) {
+        Console.log("Error handling received message:", error);
+      }
+    };
+
+    const handleUserTyping = ({ userType: typingUser }) => {
+      try {
+        if (typingUser !== userType) {
+          setIsTyping(true);
+        }
+      } catch (error) {
+        Console.log("Error handling typing event:", error);
+      }
+    };
+
+    const handleUserStopTyping = ({ userType: typingUser }) => {
+      try {
+        if (typingUser !== userType) {
+          setIsTyping(false);
+        }
+      } catch (error) {
+        Console.log("Error handling stop typing event:", error);
+      }
+    };
+
+    // Register event listeners
+    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("user-typing", handleUserTyping);
+    socket.on("user-stop-typing", handleUserStopTyping);
+
+    // Cleanup function - CRITICAL to prevent duplicate listeners
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("user-typing", handleUserTyping);
+      socket.off("user-stop-typing", handleUserStopTyping);
+    };
+  }, [socket, rideId, userType]); // Include all dependencies
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex flex-col h-dvh bg-gray-100 items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Error en el chat</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setError(null);
+                  getUserDetails();
+                }}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                Reintentar
+              </button>
+              <button
+                onClick={() => navigation(-1)}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (userData) {
     return (
@@ -202,10 +302,16 @@ function ChatScreen() {
             )}
             {messages.length > 0 &&
               messages.map((message, i) => {
+                // Validate message before rendering
+                if (!message || typeof message.msg !== 'string') {
+                  Console.log('Invalid message in render:', message);
+                  return null;
+                }
+                
                 const isMyMessage = message.by === userType;
                 return (
                   <div
-                    key={i}
+                    key={`${message.time}-${i}`}
                     className={`flex ${isMyMessage ? "justify-end" : "justify-start"} mb-1`}
                   >
                     <div
@@ -225,8 +331,8 @@ function ChatScreen() {
                       ></div>
                       
                       <p className="text-sm text-gray-800 break-words">{message.msg}</p>
-                      <div className={`flex items-center gap-1 justify-end mt-1 ${isMyMessage ? "" : ""}`}>
-                        <span className="text-[10px] text-gray-500">{message.time}</span>
+                      <div className={`flex items-center gap-1 justify-end mt-1`}>
+                        <span className="text-[10px] text-gray-500">{message.time || ''}</span>
                         {isMyMessage && (
                           <CheckCheck size={14} className="text-blue-500" />
                         )}
