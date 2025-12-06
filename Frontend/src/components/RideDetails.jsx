@@ -41,8 +41,9 @@ function RideDetails({
         className={`${
           showPanel ? "bottom-0" : "-bottom-full"
         } ${
-          isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden pb-safe`}
+          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
       >
         {/* Premium Drag Handle */}
         <div 
@@ -59,7 +60,7 @@ function RideDetails({
           </div>
         </div>
 
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
           {/* Searching Animation - Premium */}
           {rideCreated && !confirmedRideData && !isMinimized && (
             <div className="mb-4 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-2xl p-4">
@@ -248,22 +249,24 @@ function RideDetails({
               </h1>
             </div>
           </div>
-          {/* Premium Action Buttons */}
-          {rideCreated || confirmedRideData ? (
-            <Button
-              title={"Cancelar Viaje"}
-              loading={loading}
-              classes={"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 font-bold rounded-xl shadow-lg shadow-red-500/20"}
-              fun={cancelRide}
-            />
-          ) : (
-            <Button 
-              title={"Confirmar Viaje"} 
-              fun={createRide} 
-              loading={loading}
-              classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
-            />
-          )}
+          {/* Premium Action Buttons with Safe Bottom Padding */}
+          <div className="pb-4">
+            {rideCreated || confirmedRideData ? (
+              <Button
+                title={"Cancelar Viaje"}
+                loading={loading}
+                classes={"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 font-bold rounded-xl shadow-lg shadow-red-500/20"}
+                fun={cancelRide}
+              />
+            ) : (
+              <Button 
+                title={"Confirmar Viaje"} 
+                fun={createRide} 
+                loading={loading}
+                classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
+              />
+            )}
+          </div>
             </>
           )}
         </div>

@@ -46,8 +46,9 @@ function NewRide({
         className={`${
           showPanel ? "bottom-0" : "-bottom-full"
         } ${
-          isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden pb-safe`}
+          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
       >
         {/* Premium Drag Handle */}
         <div 
@@ -64,7 +65,7 @@ function NewRide({
           </div>
         </div>
         
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
 
           {isMinimized ? (
             /* Minimized View - Premium Summary */
@@ -228,51 +229,53 @@ function NewRide({
             </div>
           </div>
 
-          {/* Premium Action Buttons */}
-          {showBtn === "accept" ? (
-            <div className="flex gap-3">
+          {/* Premium Action Buttons with Safe Bottom Padding */}
+          <div className="pb-4">
+            {showBtn === "accept" ? (
+              <div className="flex gap-3">
+                <Button
+                  title={"Ignorar"}
+                  loading={loading}
+                  fun={ignoreRide}
+                  classes={"bg-white/10 text-white border-2 border-white/20 hover:border-white/30 backdrop-blur-xl font-semibold rounded-xl shadow-sm"}
+                />
+                <Button 
+                  title={"Aceptar Viaje"} 
+                  fun={acceptRide} 
+                  loading={loading}
+                  classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
+                />
+              </div>
+            ) : showBtn === "otp" ? (
+              <>
+                <input
+                  type="number"
+                  minLength={6}
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder={"Código OTP de 6 dígitos"}
+                  className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 px-4 py-4 rounded-xl outline-none text-base font-semibold text-center tracking-widest mb-3 transition-colors text-white placeholder:text-slate-400"
+                />
+                {error && (
+                  <p className="text-red-400 text-sm mb-3 text-center font-medium bg-red-500/20 backdrop-blur-sm py-2 rounded-lg border border-red-400/30">{error}</p>
+                )}
+                <Button 
+                  title={"Verificar OTP"} 
+                  loading={loading} 
+                  fun={verifyOTP}
+                  classes={"bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 font-bold rounded-xl shadow-lg"}
+                />
+              </>
+            ) : (
               <Button
-                title={"Ignorar"}
-                loading={loading}
-                fun={ignoreRide}
-                classes={"bg-white/10 text-white border-2 border-white/20 hover:border-white/30 backdrop-blur-xl font-semibold rounded-xl shadow-sm"}
-              />
-              <Button 
-                title={"Aceptar Viaje"} 
-                fun={acceptRide} 
+                title={"Finalizar Viaje"}
+                fun={endRide}
                 loading={loading}
                 classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
               />
-            </div>
-          ) : showBtn === "otp" ? (
-            <>
-              <input
-                type="number"
-                minLength={6}
-                maxLength={6}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder={"Código OTP de 6 dígitos"}
-                className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 px-4 py-4 rounded-xl outline-none text-base font-semibold text-center tracking-widest mb-3 transition-colors text-white placeholder:text-slate-400"
-              />
-              {error && (
-                <p className="text-red-400 text-sm mb-3 text-center font-medium bg-red-500/20 backdrop-blur-sm py-2 rounded-lg border border-red-400/30">{error}</p>
-              )}
-              <Button 
-                title={"Verificar OTP"} 
-                loading={loading} 
-                fun={verifyOTP}
-                classes={"bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 font-bold rounded-xl shadow-lg"}
-              />
-            </>
-          ) : (
-            <Button
-              title={"Finalizar Viaje"}
-              fun={endRide}
-              loading={loading}
-              classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
-            />
-          )}
+            )}
+          </div>
             </>
           )}
         </div>
