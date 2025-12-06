@@ -39,12 +39,29 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
     rides: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Ride",
       },
     ],
+    // Rating statistics
+    rating: {
+      average: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5,
+      },
+      count: {
+        type: Number,
+        default: 0,
+      },
+    },
   },
   { timestamps: true }
 );

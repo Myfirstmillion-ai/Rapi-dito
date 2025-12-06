@@ -1,10 +1,14 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import map from "/map.png";
 import axios from "axios";
 import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
+import EliteTrackingMap from "../components/maps/EliteTrackingMap";
+import MapboxStaticMap from "../components/maps/MapboxStaticMap";
+import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
+import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
@@ -66,16 +70,22 @@ function CaptainHomeScreen() {
 
   const { captain, setCaptain } = useCaptain();
   const { socket } = useContext(SocketDataContext);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { alert, showAlert, hideAlert } = useAlert();
+  
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showMessageBanner, setShowMessageBanner] = useState(false);
+  const [lastMessage, setLastMessage] = useState({ sender: "", text: "" });
 
   const [riderLocation, setRiderLocation] = useState({
     ltd: DEFAULT_LOCATION.lat,
     lng: DEFAULT_LOCATION.lng,
   });
-  const [mapLocation, setMapLocation] = useState(
-    `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-  );
+  const [mapCenter, setMapCenter] = useState({
+    lat: DEFAULT_LOCATION.lat,
+    lng: DEFAULT_LOCATION.lng
+  });
   const [earnings, setEarnings] = useState({
     total: 0,
     today: 0,
@@ -97,6 +107,9 @@ function CaptainHomeScreen() {
   const [error, setError] = useState("");
   const [showRideCompleted, setShowRideCompleted] = useState(false);
   const [completedRideData, setCompletedRideData] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentRideStatus, setCurrentRideStatus] = useState("pending");
+  const locationUpdateInterval = useRef(null);
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
@@ -106,6 +119,12 @@ function CaptainHomeScreen() {
   const [showBtn, setShowBtn] = useState(
     JSON.parse(localStorage.getItem("showBtn")) || "accept"
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Handle sidebar toggle - hide all panels when sidebar opens
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
 
   // Función para refrescar datos del conductor
   const refreshCaptainData = async () => {
@@ -143,14 +162,17 @@ function CaptainHomeScreen() {
         );
         setLoading(false);
         setShowBtn("otp");
+        setCurrentRideStatus("accepted"); // Driver on the way to pickup
         
         // Vibrar y reproducir sonido al aceptar
         vibrate([200, 100, 200]);
         playSound(NOTIFICATION_SOUNDS.rideAccepted);
         
-        setMapLocation(
-          `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng} to ${encodeURIComponent(newRide.pickup)}&output=embed`
-        );
+        // Update map center to driver's location
+        setMapCenter({
+          lat: riderLocation.ltd,
+          lng: riderLocation.lng
+        });
         Console.log(response);
       }
     } catch (error) {
@@ -175,10 +197,13 @@ function CaptainHomeScreen() {
             },
           }
         );
-        setMapLocation(
-          `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng} to ${encodeURIComponent(newRide.destination)}&output=embed`
-        );
+        // Update map center to current location
+        setMapCenter({
+          lat: riderLocation.ltd,
+          lng: riderLocation.lng
+        });
         setShowBtn("end-ride");
+        setCurrentRideStatus("ongoing"); // Ride in progress
         setLoading(false);
         Console.log(response);
       }
@@ -220,10 +245,13 @@ function CaptainHomeScreen() {
         // Mostrar pantalla de viaje completado
         setShowRideCompleted(true);
         
-        setMapLocation(
-          `https://www.google.com/maps?q=${riderLocation.ltd},${riderLocation.lng}&output=embed`
-        );
+        // Reset map to current location
+        setMapCenter({
+          lat: riderLocation.ltd,
+          lng: riderLocation.lng
+        });
         setShowBtn("accept");
+        setCurrentRideStatus("pending");
         setLoading(false);
         setShowCaptainDetailsPanel(false);
         setShowNewRidePanel(false);
@@ -251,28 +279,33 @@ function CaptainHomeScreen() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setRiderLocation({
+          const location = {
             ltd: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          
+          setRiderLocation(location);
+          setCurrentLocation({
+            lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
 
-          setMapLocation(
-            `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}&output=embed`
-          );
+          setMapCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
           socket.emit("update-location-captain", {
             userId: captain._id,
-            location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude,
-            },
+            location: location,
           });
         },
         (error) => {
           console.error("Error obteniendo posición:", error);
           // Usar ubicación por defecto
-          setMapLocation(
-            `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-          );
+          setMapCenter({
+            lat: DEFAULT_LOCATION.lat,
+            lng: DEFAULT_LOCATION.lng
+          });
         }
       );
     }
@@ -300,6 +333,37 @@ function CaptainHomeScreen() {
       // Actualizar ubicación cada 30 segundos
       const locationInterval = setInterval(updateLocation, 30000);
       
+      // Real-time location tracking for active rides
+      let activeRideLocationInterval = null;
+      
+      if (showBtn === "start" || showBtn === "end-ride") {
+        // During active ride, send location every 5 seconds
+        activeRideLocationInterval = setInterval(() => {
+          if (navigator.geolocation && newRide._id) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const location = {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                };
+                
+                // Send location update via socket
+                socket.emit("driver:locationUpdate", {
+                  driverId: captain._id,
+                  location,
+                  rideId: newRide._id,
+                });
+                
+                Console.log("Ubicación enviada:", location);
+              },
+              (error) => {
+                Console.log("Error obteniendo ubicación:", error);
+              }
+            );
+          }
+        }, 5000); // Update every 5 seconds
+      }
+      
       // Configurar listeners de socket DENTRO del bloque captain._id
       socket.on("new-ride", (data) => {
         Console.log("Nuevo viaje disponible:", data);
@@ -320,11 +384,15 @@ function CaptainHomeScreen() {
       
       return () => {
         clearInterval(locationInterval);
+        if (activeRideLocationInterval) {
+          clearInterval(activeRideLocationInterval);
+        }
         socket.off("new-ride");
         socket.off("ride-cancelled");
       };
     }
-  }, [captain]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captain._id, showBtn, newRide._id]);
 
   useEffect(() => {
     localStorage.setItem("messages", JSON.stringify(messages));
@@ -335,8 +403,20 @@ function CaptainHomeScreen() {
 
     socket.on("receiveMessage", async (msg) => {
       setMessages((prev) => [...prev, { msg, by: "other" }]);
+      setUnreadMessages((prev) => prev + 1);
+      
+      // Set message info for banner
+      setLastMessage({
+        sender: newRide?.user?.fullname?.firstname || "Pasajero",
+        text: msg
+      });
+      
+      // Show notification banner
+      setShowMessageBanner(true);
+      
+      // Play sound and vibrate
       playSound(NOTIFICATION_SOUNDS.newMessage);
-      vibrate([100]);
+      vibrate([200, 100, 200]);
     });
 
     return () => {
@@ -413,11 +493,17 @@ function CaptainHomeScreen() {
     if (socket.id) Console.log("socket id:", socket.id);
   }, [socket.id]);
 
+  // Show loading state only while data is actually loading, not if it's already loaded
+  // The captain data comes from CaptainContext which loads on mount
+  // Don't block rendering - let the component render with safe defaults
+  const captainData = captain || {
+    fullname: { firstname: "Cargando", lastname: "" },
+    _id: null,
+    vehicle: { type: "car", capacity: 4, number: "---", color: "Gris" }
+  };
+
   return (
-    <div
-      className="relative w-full h-dvh bg-contain bg-center"
-      style={{ backgroundImage: `url(${map})` }}
-    >
+    <div className="relative w-full h-dvh overflow-hidden">
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -425,15 +511,20 @@ function CaptainHomeScreen() {
         onClose={hideAlert}
         type={alert.type}
       />
-      <Sidebar />
-      <iframe
-        src={mapLocation}
-        className="map w-full h-[80vh] touch-none"
-        allowFullScreen={true}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        style={{ touchAction: "pan-x pan-y" }}
-      ></iframe>
+      <Sidebar onToggle={handleSidebarToggle} />
+      
+      {/* Map Container - Full Height */}
+      <div className="absolute inset-0 z-0">
+        <MapboxStaticMap
+          latitude={mapCenter.lat}
+          longitude={mapCenter.lng}
+          zoom={13}
+          interactive={true}
+          showMarker={true}
+          markerColor="#05A357"
+          className="w-full h-full"
+        />
+      </div>
 
       {/* Modal de viaje completado */}
       {showRideCompleted && completedRideData && (
@@ -468,25 +559,27 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      {showCaptainDetailsPanel && (
-        <div className="absolute bottom-0 flex flex-col justify-start p-4 gap-2 rounded-t-lg bg-white h-fit w-full shadow-lg">
+      {/* Captain details panel - Hidden when sidebar is open */}
+      {showCaptainDetailsPanel && !isSidebarOpen && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto transition-all duration-300 ease-out">
+          <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           {/* Detalles del conductor */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="my-2 select-none rounded-full w-10 h-10 bg-blue-400 mx-auto flex items-center justify-center">
                 <h1 className="text-lg text-white">
-                  {captain?.fullname?.firstname[0]}
-                  {captain?.fullname?.lastname[0]}
+                  {captainData?.fullname?.firstname?.[0] || "C"}
+                  {captainData?.fullname?.lastname?.[0] || ""}
                 </h1>
               </div>
 
               <div>
                 <h1 className="text-lg font-semibold leading-6">
-                  {captain?.fullname?.firstname} {captain?.fullname?.lastname}
+                  {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
                 </h1>
                 <p className="text-xs flex items-center gap-1 text-gray-500 ">
                   <Phone size={12} />
-                  {captain?.phone}
+                  {captainData?.phone || "---"}
                 </p>
               </div>
             </div>
@@ -529,20 +622,20 @@ function CaptainHomeScreen() {
           <div className="flex justify-between border-2 items-center pl-3 py-2 rounded-lg">
             <div>
               <h1 className="text-lg font-semibold leading-6 tracking-tighter ">
-                {captain?.vehicle?.number}
+                {captainData?.vehicle?.number || "---"}
               </h1>
               <p className="text-xs text-gray-500 flex items-center">
-                {captain?.vehicle?.color} |
-                <User size={12} strokeWidth={2.5} /> {captain?.vehicle?.capacity}
+                {captainData?.vehicle?.color || "Gris"} |
+                <User size={12} strokeWidth={2.5} /> {captainData?.vehicle?.capacity || 4}
               </p>
             </div>
 
             <img
               className="rounded-full h-16 scale-x-[-1]"
               src={
-                captain?.vehicle?.type === "car"
+                captainData?.vehicle?.type === "car"
                   ? "/car.png"
-                  : `/${captain?.vehicle?.type}.webp`
+                  : `/${captainData?.vehicle?.type || "car"}.webp`
               }
               alt="Imagen del vehículo"
             />
@@ -550,19 +643,36 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      <NewRide
-        rideData={newRide}
-        otp={otp}
-        setOtp={setOtp}
-        showBtn={showBtn}
-        showPanel={showNewRidePanel}
-        setShowPanel={setShowNewRidePanel}
-        showPreviousPanel={setShowCaptainDetailsPanel}
-        loading={loading}
-        acceptRide={acceptRide}
-        verifyOTP={verifyOTP}
-        endRide={endRide}
-        error={error}
+      {/* New ride panel - Hidden when sidebar is open */}
+      {!isSidebarOpen && (
+        <NewRide
+          rideData={newRide}
+          otp={otp}
+          setOtp={setOtp}
+          showBtn={showBtn}
+          showPanel={showNewRidePanel}
+          setShowPanel={setShowNewRidePanel}
+          showPreviousPanel={setShowCaptainDetailsPanel}
+          loading={loading}
+          acceptRide={acceptRide}
+          verifyOTP={verifyOTP}
+          endRide={endRide}
+          error={error}
+          unreadMessages={unreadMessages}
+        />
+      )}
+      
+      {/* Message Notification Banner */}
+      <MessageNotificationBanner
+        senderName={lastMessage.sender}
+        message={lastMessage.text}
+        show={showMessageBanner}
+        onClose={() => setShowMessageBanner(false)}
+        onTap={() => {
+          setShowMessageBanner(false);
+          setUnreadMessages(0);
+          navigate(`/captain/chat/${newRide?._id}`);
+        }}
       />
     </div>
   );

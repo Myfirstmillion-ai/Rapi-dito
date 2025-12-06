@@ -67,6 +67,35 @@ const rideSchema = new mongoose.Schema(
         _id: false
       },
     ],
+    // Rating system
+    rating: {
+      // Rating given by user to captain
+      userToCaptain: {
+        stars: {
+          type: Number,
+          min: 1,
+          max: 5,
+        },
+        comment: {
+          type: String,
+          maxlength: 250,
+        },
+        createdAt: Date,
+      },
+      // Rating given by captain to user
+      captainToUser: {
+        stars: {
+          type: Number,
+          min: 1,
+          max: 5,
+        },
+        comment: {
+          type: String,
+          maxlength: 250,
+        },
+        createdAt: Date,
+      },
+    },
   },
   { timestamps: true }
 );

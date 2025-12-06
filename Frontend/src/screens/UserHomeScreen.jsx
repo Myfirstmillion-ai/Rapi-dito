@@ -8,11 +8,17 @@ import {
   RideDetails,
   Sidebar,
 } from "../components";
+import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
+import EliteTrackingMap from "../components/maps/EliteTrackingMap";
+import MapboxStaticMap from "../components/maps/MapboxStaticMap";
+import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
-import { Navigation } from "lucide-react";
+import { Navigation, MessageCircle } from "lucide-react";
+import MessageBadge from "../components/ui/MessageBadge";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -50,17 +56,25 @@ function UserHomeScreen() {
   const token = localStorage.getItem("token");
   const { socket } = useContext(SocketDataContext);
   const { user } = useUser();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState(
     JSON.parse(localStorage.getItem("messages")) || []
   );
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showMessageBanner, setShowMessageBanner] = useState(false);
+  const [lastMessage, setLastMessage] = useState({ sender: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [selectedInput, setSelectedInput] = useState("pickup");
   const [locationSuggestion, setLocationSuggestion] = useState([]);
-  const [mapLocation, setMapLocation] = useState(
-    `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-  );
+  const [mapCenter, setMapCenter] = useState({
+    lat: DEFAULT_LOCATION.lat,
+    lng: DEFAULT_LOCATION.lng
+  });
   const [rideCreated, setRideCreated] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [driverLocation, setDriverLocation] = useState(null);
+  const [rideETA, setRideETA] = useState(null);
+  const [currentRideStatus, setCurrentRideStatus] = useState("pending");
 
   // Detalles del viaje
   const [pickupLocation, setPickupLocation] = useState("");
@@ -77,6 +91,12 @@ function UserHomeScreen() {
   const [showFindTripPanel, setShowFindTripPanel] = useState(true);
   const [showSelectVehiclePanel, setShowSelectVehiclePanel] = useState(false);
   const [showRideDetailsPanel, setShowRideDetailsPanel] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Handle sidebar toggle - hide all panels when sidebar opens
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
 
   // Obtener ubicación actual y convertirla a dirección
   const getCurrentLocation = async () => {
@@ -163,9 +183,8 @@ function UserHomeScreen() {
     Console.log(pickupLocation, destinationLocation);
     try {
       setLoading(true);
-      setMapLocation(
-        `https://www.google.com/maps?q=${encodeURIComponent(pickupLocation)} to ${encodeURIComponent(destinationLocation)}&output=embed`
-      );
+      // Note: Map will stay centered on current location
+      // Route will be shown when ride is created
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/ride/get-fare?pickup=${encodeURIComponent(pickupLocation)}&destination=${encodeURIComponent(destinationLocation)}`,
         {
@@ -279,23 +298,26 @@ function UserHomeScreen() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setMapLocation(
-            `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}&output=embed`
-          );
+          setMapCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
         },
         (error) => {
           console.error("Error obteniendo posición:", error);
           // Usar ubicación por defecto si hay error
-          setMapLocation(
-            `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-          );
+          setMapCenter({
+            lat: DEFAULT_LOCATION.lat,
+            lng: DEFAULT_LOCATION.lng
+          });
         }
       );
     } else {
       // Usar ubicación por defecto
-      setMapLocation(
-        `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-      );
+      setMapCenter({
+        lat: DEFAULT_LOCATION.lat,
+        lng: DEFAULT_LOCATION.lng
+      });
     }
   };
 
@@ -324,9 +346,22 @@ function UserHomeScreen() {
       vibrate([200, 100, 200, 100, 200]);
       playSound(NOTIFICATION_SOUNDS.rideConfirmed);
       
-      setMapLocation(
-        `https://www.google.com/maps?q=${data.captain.location.coordinates[1]},${data.captain.location.coordinates[0]} to ${encodeURIComponent(pickupLocation)}&output=embed`
-      );
+      // Set initial driver location and ride status
+      if (data.captain.location && data.captain.location.coordinates) {
+        setDriverLocation({
+          lng: data.captain.location.coordinates[0],
+          lat: data.captain.location.coordinates[1]
+        });
+      }
+      
+      setCurrentRideStatus("accepted"); // Driver on the way to pickup
+      // Update map center to driver's location
+      if (data.captain?.location?.coordinates) {
+        setMapCenter({
+          lat: data.captain.location.coordinates[1],
+          lng: data.captain.location.coordinates[0]
+        });
+      }
       setConfirmedRideData(data);
     });
 
@@ -334,9 +369,19 @@ function UserHomeScreen() {
       Console.log("Viaje iniciado");
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
-      setMapLocation(
-        `https://www.google.com/maps?q=${encodeURIComponent(data.pickup)} to ${encodeURIComponent(data.destination)}&output=embed`
-      );
+      setCurrentRideStatus("ongoing"); // Ride in progress
+      // Map will show route from pickup to destination via EliteTrackingMap
+    });
+
+    // Listen for driver location updates
+    socket.on("driver:locationUpdated", (data) => {
+      Console.log("Ubicación del conductor actualizada:", data);
+      if (data.location) {
+        setDriverLocation({
+          lng: data.location.lng,
+          lat: data.location.lat
+        });
+      }
     });
 
     socket.on("ride-ended", (data) => {
@@ -347,21 +392,25 @@ function UserHomeScreen() {
       setShowSelectVehiclePanel(false);
       setShowFindTripPanel(true);
       setDefaults();
+      setDriverLocation(null);
+      setCurrentRideStatus("pending");
       localStorage.removeItem("rideDetails");
       localStorage.removeItem("panelDetails");
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            setMapLocation(
-              `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}&output=embed`
-            );
+            setMapCenter({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            });
           },
           (error) => {
             console.error("Error obteniendo posición:", error);
-            setMapLocation(
-              `https://www.google.com/maps?q=${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}&output=embed`
-            );
+            setMapCenter({
+              lat: DEFAULT_LOCATION.lat,
+              lng: DEFAULT_LOCATION.lng
+            });
           }
         );
       }
@@ -371,6 +420,7 @@ function UserHomeScreen() {
       socket.off("ride-confirmed");
       socket.off("ride-started");
       socket.off("ride-ended");
+      socket.off("driver:locationUpdated");
     };
   }, [user, pickupLocation]);
 
@@ -433,8 +483,20 @@ function UserHomeScreen() {
 
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, { msg, by: "other" }]);
+      setUnreadMessages((prev) => prev + 1);
+      
+      // Set message info for banner
+      setLastMessage({
+        sender: confirmedRideData?.captain?.fullname?.firstname || "Conductor",
+        text: msg
+      });
+      
+      // Show notification banner
+      setShowMessageBanner(true);
+      
+      // Play sound and vibrate
       playSound(NOTIFICATION_SOUNDS.newMessage);
-      vibrate([100]);
+      vibrate([200, 100, 200]);
     });
 
     return () => {
@@ -442,24 +504,78 @@ function UserHomeScreen() {
     };
   }, [confirmedRideData]);
 
-  return (
-    <div
-      className="relative w-full h-dvh bg-contain bg-center"
-      style={{ backgroundImage: `url(${map})` }}
-    >
-      <Sidebar />
-      <iframe
-        src={mapLocation}
-        className="absolute map w-full h-[120vh] touch-none"
-        allowFullScreen={true}
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        style={{ touchAction: "pan-x pan-y" }}
-      ></iframe>
+  // Helper function to convert pickup/destination strings to coordinates
+  const parseLocationString = async (locationStr) => {
+    // For now, use geocoding to get coordinates from address
+    // In production, store coordinates when user selects from suggestions
+    try {
+      const response = await axios.get(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationStr)}.json`,
+        {
+          params: {
+            access_token: import.meta.env.VITE_MAPBOX_TOKEN,
+            limit: 1,
+          },
+        }
+      );
       
-      {/* Componente Buscar viaje */}
-      {showFindTripPanel && (
-        <div className="absolute b-0 flex flex-col justify-start p-4 pb-2 gap-4 rounded-b-lg bg-white h-fit w-full shadow-lg">
+      if (response.data.features && response.data.features.length > 0) {
+        const [lng, lat] = response.data.features[0].center;
+        return { lng, lat };
+      }
+    } catch (error) {
+      Console.log("Error geocoding location:", error);
+    }
+    return null;
+  };
+
+  // Handle ETA updates from tracking map
+  const handleETAUpdate = (data) => {
+    setRideETA(data);
+    Console.log("ETA actualizado:", data);
+  };
+
+  // Determine if we should show the elite tracking map
+  const showEliteMap = confirmedRideData && driverLocation;
+
+  return (
+    <div className="relative w-full h-dvh overflow-hidden">
+      <Sidebar onToggle={handleSidebarToggle} />
+      
+      {/* Map Container - Full Height */}
+      <div className="absolute inset-0 z-0">
+        {showEliteMap ? (
+          <EliteTrackingMap
+            driverLocation={driverLocation}
+            pickupLocation={confirmedRideData?.captain?.location?.coordinates 
+              ? { lng: confirmedRideData.captain.location.coordinates[0], lat: confirmedRideData.captain.location.coordinates[1] }
+              : null
+            }
+            dropoffLocation={null} // Will be set when ride starts
+            rideId={confirmedRideData._id}
+            rideStatus={currentRideStatus}
+            userType="user"
+            vehicleType={selectedVehicle}
+            onETAUpdate={handleETAUpdate}
+            className="w-full h-full"
+          />
+        ) : (
+          <MapboxStaticMap
+            latitude={mapCenter.lat}
+            longitude={mapCenter.lng}
+            zoom={13}
+            interactive={true}
+            showMarker={true}
+            markerColor="#276EF1"
+            className="w-full h-full"
+          />
+        )}
+      </div>
+      
+      {/* Componente Buscar viaje - Bottom Sheet Style */}
+      {showFindTripPanel && !isSidebarOpen && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
+          <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           <h1 className="text-2xl font-semibold">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">
             <div className="h-3/5 w-[3px] flex flex-col items-center justify-between bg-black rounded-full absolute mx-5">
@@ -522,30 +638,48 @@ function UserHomeScreen() {
         </div>
       )}
 
-      {/* Panel de selección de vehículo */}
-      <SelectVehicle
-        selectedVehicle={setSelectedVehicle}
-        showPanel={showSelectVehiclePanel}
-        setShowPanel={setShowSelectVehiclePanel}
-        showPreviousPanel={setShowFindTripPanel}
-        showNextPanel={setShowRideDetailsPanel}
-        fare={fare}
-      />
+      {/* Panel de selección de vehículo - Hidden when sidebar is open */}
+      {!isSidebarOpen && (
+        <SelectVehicle
+          selectedVehicle={setSelectedVehicle}
+          showPanel={showSelectVehiclePanel}
+          setShowPanel={setShowSelectVehiclePanel}
+          showPreviousPanel={setShowFindTripPanel}
+          showNextPanel={setShowRideDetailsPanel}
+          fare={fare}
+        />
+      )}
 
-      {/* Panel de detalles del viaje */}
-      <RideDetails
-        pickupLocation={pickupLocation}
-        destinationLocation={destinationLocation}
-        selectedVehicle={selectedVehicle}
-        fare={fare}
-        showPanel={showRideDetailsPanel}
-        setShowPanel={setShowRideDetailsPanel}
-        showPreviousPanel={setShowSelectVehiclePanel}
-        createRide={createRide}
-        cancelRide={cancelRide}
-        loading={loading}
-        rideCreated={rideCreated}
-        confirmedRideData={confirmedRideData}
+      {/* Panel de detalles del viaje - Hidden when sidebar is open */}
+      {!isSidebarOpen && (
+        <RideDetails
+          pickupLocation={pickupLocation}
+          destinationLocation={destinationLocation}
+          selectedVehicle={selectedVehicle}
+          fare={fare}
+          showPanel={showRideDetailsPanel}
+          setShowPanel={setShowRideDetailsPanel}
+          showPreviousPanel={setShowSelectVehiclePanel}
+          createRide={createRide}
+          cancelRide={cancelRide}
+          loading={loading}
+          rideCreated={rideCreated}
+          confirmedRideData={confirmedRideData}
+          unreadMessages={unreadMessages}
+        />
+      )}
+      
+      {/* Message Notification Banner */}
+      <MessageNotificationBanner
+        senderName={lastMessage.sender}
+        message={lastMessage.text}
+        show={showMessageBanner}
+        onClose={() => setShowMessageBanner(false)}
+        onTap={() => {
+          setShowMessageBanner(false);
+          setUnreadMessages(0);
+          navigate(`/user/chat/${confirmedRideData?._id}`);
+        }}
       />
     </div>
   );

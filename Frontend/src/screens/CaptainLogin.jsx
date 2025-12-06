@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Heading, Input } from "../components";
+import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import Console from "../utils/console";
 
 function CaptainLogin() {
   const [responseError, setResponseError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     handleSubmit,
@@ -48,54 +49,112 @@ function CaptainLogin() {
   }, [responseError]);
 
   return (
-    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6">
-      <div>
-        <Heading title={"Inicio de Conductor 🚗"} />
-        <form onSubmit={handleSubmit(loginCaptain)}>
-          <Input
-            label={"Correo electrónico"}
-            type={"email"}
-            name={"email"}
-            register={register}
-            error={errors.email}
-          />
-          <Input
-            label={"Contraseña"}
-            type={"password"}
-            name={"password"}
-            register={register}
-            error={errors.password}
-          />
-          {responseError && (
-            <p className="text-sm text-center mb-4 text-red-500">
-              {responseError}
-            </p>
-          )}
-          <Link to="/captain/forgot-password" className="text-sm mb-2 inline-block">
-            ¿Olvidaste tu contraseña?
-          </Link>
-          <Button title={"Iniciar Sesión"} loading={loading} type="submit" />
-        </form>
-        <p className="text-sm font-normal text-center mt-4">
-          ¿No tienes una cuenta?{" "}
-          <Link to={"/captain/signup"} className="font-semibold">
-            Regístrate
-          </Link>
-        </p>
-
+    <div className="w-full min-h-screen bg-white flex flex-col">
+      {/* Logo Section */}
+      <div className="w-full pt-8 pb-16 px-6 text-center">
+        <div className="text-3xl font-black tracking-tight text-black">
+          RAPIDITO
+          <span className="inline-block w-2 h-2 bg-[#00E676] rounded-full ml-1 mb-2"></span>
+        </div>
       </div>
-      <div>
-        <Button
-          type={"link"}
-          path={"/login"}
-          title={"Iniciar como Usuario"}
-          classes={"bg-green-500"}
-        />
-        <p className="text-xs font-normal text-center self-end mt-6">
-          Este sitio está protegido por reCAPTCHA y aplican la{" "}
-          <span className="font-semibold underline">Política de Privacidad</span> y{" "}
-          <span className="font-semibold underline">Términos de Servicio</span> de Google.
-        </p>
+
+      {/* Form Container */}
+      <div className="flex-1 px-6 pb-8">
+        <div className="max-w-md mx-auto">
+          {/* Subtitle Message */}
+          <p className="text-center text-base text-gray-600 mb-8">
+            Comienza a ganar con RAPIDITO
+          </p>
+
+          {/* Title */}
+          <h2 className="text-2xl md:text-3xl font-bold text-black mb-8">
+            Iniciar sesión como conductor
+          </h2>
+
+          {/* Error Message */}
+          {responseError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+              {responseError}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(loginCaptain)} className="space-y-4">
+            {/* Email Input */}
+            <div>
+              <input
+                type="email"
+                placeholder="Ingresa tu email"
+                {...register("email", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">El email es requerido</p>
+              )}
+            </div>
+
+            {/* Password Input */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                {...register("password", { required: true })}
+                className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">La contraseña es requerida</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 bg-black text-white text-base font-medium rounded hover:bg-gray-800 hover:shadow-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              style={{
+                borderBottom: loading ? 'none' : '2px solid #00E676'
+              }}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                "Iniciar sesión"
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-gray-300"></div>
+            <span className="px-4 text-sm text-gray-500">o</span>
+            <div className="flex-1 border-t border-gray-300"></div>
+          </div>
+
+          {/* Sign Up Link */}
+          <p className="text-center text-sm text-gray-600">
+            ¿No tienes cuenta?{" "}
+            <Link to="/captain/signup" className="font-bold text-black hover:underline">
+              Regístrate
+            </Link>
+          </p>
+
+          {/* Link to User Login */}
+          <p className="text-center text-sm text-gray-600 mt-4">
+            ¿Quieres solicitar un viaje?{" "}
+            <Link to="/login" className="font-bold text-black hover:underline">
+              Iniciar como pasajero
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

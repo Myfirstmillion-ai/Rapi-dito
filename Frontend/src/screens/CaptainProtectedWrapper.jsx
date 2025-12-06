@@ -27,15 +27,17 @@ function CaptainProtectedWrapper({ children }) {
       })
       .then((response) => {
         if (response.status === 200) {
-          const captain = response.data.captain;
-          setCaptain(captain);
+          const captainData = response.data.captain;
+          setCaptain(captainData);
           localStorage.setItem(
             "userData",
-            JSON.stringify({ type: "captain", data: captain, }));
+            JSON.stringify({ type: "captain", data: captainData })
+          );
+          setIsVerified(captainData.emailVerified);
         }
-        setIsVerified(captain.emailVerified)
       })
       .catch((err) => {
+        console.error("Error fetching captain profile:", err);
         localStorage.removeItem("token");
         localStorage.removeItem("userData");
         navigate("/captain/login");
@@ -43,7 +45,7 @@ function CaptainProtectedWrapper({ children }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [token]);
+  }, [token, navigate, setCaptain]);
 
   if (loading) return <Loading />;
 
