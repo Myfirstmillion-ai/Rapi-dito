@@ -69,6 +69,16 @@ function CaptainSignup() {
 
   return (
     <div className="w-full min-h-screen bg-white flex flex-col overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      {/* Back Button */}
+      <button
+        onClick={() => navigation('/')}
+        className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors z-10"
+        aria-label="Volver a inicio"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-medium">Volver</span>
+      </button>
+
       {/* Logo Section */}
       <div className="w-full pt-8 pb-16 px-6 text-center">
         <div className="text-3xl font-black tracking-tight text-black">
