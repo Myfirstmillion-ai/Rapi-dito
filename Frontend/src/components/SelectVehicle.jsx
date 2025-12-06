@@ -17,7 +17,7 @@ const vehicles = [
     name: "Moto",
     description: "Viajes rápidos y económicos",
     type: "bike",
-    image: "bike.webp",
+    image: "/bike.webp",
     price: 0,
     capacity: "1 persona",
     eta: "2-4 min",

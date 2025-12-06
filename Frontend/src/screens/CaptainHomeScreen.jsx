@@ -741,6 +741,12 @@ function CaptainHomeScreen() {
                   <h3 className="text-xl font-bold text-white tracking-tight mb-1">
                     {captainData?.vehicle?.number || "---"}
                   </h3>
+                  {/* Vehicle Make and Model */}
+                  {(captainData?.vehicle?.make || captainData?.vehicle?.model) && (
+                    <p className="text-sm font-medium text-emerald-400 mb-2">
+                      {captainData?.vehicle?.make || ""} {captainData?.vehicle?.model || ""}
+                    </p>
+                  )}
                   <div className="flex items-center gap-3 text-sm text-gray-300">
                     <span className="flex items-center gap-1">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: captainData?.vehicle?.color?.toLowerCase() === 'rojo' ? '#EF4444' : captainData?.vehicle?.color?.toLowerCase() === 'azul' ? '#3B82F6' : captainData?.vehicle?.color?.toLowerCase() === 'negro' ? '#1F2937' : captainData?.vehicle?.color?.toLowerCase() === 'blanco' ? '#F3F4F6' : '#9CA3AF' }}></div>
