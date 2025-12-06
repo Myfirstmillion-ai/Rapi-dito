@@ -59,6 +59,13 @@ function EliteTrackingMap({
   const { socket } = useContext(SocketDataContext);
   const lastDriverLocation = useRef(null);
   const updateInterval = useRef(null);
+  
+  // Enhanced tracking states
+  const [trackingError, setTrackingError] = useState(null);
+  const [locationTimeout, setLocationTimeout] = useState(false);
+  const [lastLocationUpdate, setLastLocationUpdate] = useState(Date.now());
+  const locationTimeoutRef = useRef(null);
+  const routeRecalculationCount = useRef(0);
 
   // Determine vehicle emoji
   const vehicleEmoji = vehicleType === "bike" ? "🛵" : "🚗";
@@ -385,8 +392,17 @@ function EliteTrackingMap({
 
     updateRoute();
 
-    // Update route every 10 seconds for real-time accuracy
-    updateInterval.current = setInterval(updateRoute, 10000);
+    // Adaptive route recalculation: 30s for first 5 updates, then 60s
+    // This balances accuracy with API quota and performance
+    const getRecalculationInterval = () => {
+      return routeRecalculationCount.current < 5 ? 30000 : 60000;
+    };
+
+    // Update route with adaptive timing
+    updateInterval.current = setInterval(() => {
+      routeRecalculationCount.current++;
+      updateRoute();
+    }, getRecalculationInterval());
 
     return () => {
       if (updateInterval.current) {
@@ -422,7 +438,34 @@ function EliteTrackingMap({
     }
   }, [driverLocation, pickupLocation, dropoffLocation, isPrePickup, isInProgress, isMapLoaded]);
 
-  // Listen for real-time location updates via socket
+  // Enhanced location timeout detection (30 seconds threshold)
+  useEffect(() => {
+    if (!driverLocation) return;
+
+    // Reset timeout when location updates
+    setLastLocationUpdate(Date.now());
+    setLocationTimeout(false);
+    setTrackingError(null);
+
+    // Clear existing timeout
+    if (locationTimeoutRef.current) {
+      clearTimeout(locationTimeoutRef.current);
+    }
+
+    // Set new timeout (30 seconds)
+    locationTimeoutRef.current = setTimeout(() => {
+      setLocationTimeout(true);
+      setTrackingError('GPS_TIMEOUT');
+    }, 30000);
+
+    return () => {
+      if (locationTimeoutRef.current) {
+        clearTimeout(locationTimeoutRef.current);
+      }
+    };
+  }, [driverLocation]);
+
+  // Listen for real-time location updates via socket with error handling
   useEffect(() => {
     if (!socket || !rideId) return;
 
@@ -430,13 +473,22 @@ function EliteTrackingMap({
       if (data.rideId === rideId && data.location) {
         // Location update will be handled by parent component
         // which will update driverLocation prop
+        setTrackingError(null);
+        setLocationTimeout(false);
       }
     };
 
+    const handleLocationError = (error) => {
+      console.error('Location update error:', error);
+      setTrackingError('GPS_ERROR');
+    };
+
     socket.on('driver:locationUpdated', handleLocationUpdate);
+    socket.on('driver:locationError', handleLocationError);
 
     return () => {
       socket.off('driver:locationUpdated', handleLocationUpdate);
+      socket.off('driver:locationError', handleLocationError);
     };
   }, [socket, rideId]);
 
@@ -484,6 +536,29 @@ function EliteTrackingMap({
             <div className="text-sm font-semibold text-black">
               {isPrePickup ? "Conductor en camino" : "En viaje"}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error States */}
+      {locationTimeout && userType === "user" && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm font-medium">Esperando ubicación del conductor...</span>
+          </div>
+        </div>
+      )}
+
+      {trackingError === 'GPS_ERROR' && userType === "user" && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm font-medium">Error de GPS. Reconectando...</span>
           </div>
         </div>
       )}
