@@ -93,10 +93,10 @@ function RideDetails({
                     <img
                       src={
                         selectedVehicle === "car"
-                          ? "/car.png"
+                          ? "https://www.pngplay.com/wp-content/uploads/13/Car-Top-View-PNG-Photos.png"
                           : `/${selectedVehicle}.webp`
                       }
-                      className="h-14 w-auto mix-blend-multiply"
+                      className="h-14 w-auto"
                       alt="Vehículo"
                     />
                   </div>
@@ -132,10 +132,10 @@ function RideDetails({
                 <img
                   src={
                     selectedVehicle === "car"
-                      ? "/car.png"
+                      ? "https://www.pngplay.com/wp-content/uploads/13/Car-Top-View-PNG-Photos.png"
                       : `/${selectedVehicle}.webp`
                   }
-                  className={`${confirmedRideData ? "h-24" : "h-16"} w-auto mix-blend-multiply`}
+                  className={`${confirmedRideData ? "h-24" : "h-16"} w-auto`}
                   alt="Vehículo"
                 />
               </div>

@@ -7,7 +7,7 @@ const vehicles = [
     name: "Carro",
     description: "Viajes cómodos y seguros",
     type: "car",
-    image: "car.png",
+    image: "https://www.pngplay.com/wp-content/uploads/13/Car-Top-View-PNG-Photos.png",
     price: 0,
     capacity: "4 personas",
     eta: "3-5 min",
@@ -142,8 +142,8 @@ const Vehicle = ({
       {/* Vehicle Image Section */}
       <div className="relative p-4 flex items-center justify-center w-32">
         <img
-          src={`/${vehicle.image}`}
-          className={`w-28 h-auto mix-blend-multiply transition-transform duration-300 ${
+          src={vehicle.image.startsWith('http') ? vehicle.image : `/${vehicle.image}`}
+          className={`w-28 h-auto transition-transform duration-300 ${
             isHovered ? "scale-110" : "scale-100"
           }`}
           alt={vehicle.name}

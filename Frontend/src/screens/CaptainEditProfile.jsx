@@ -153,6 +153,8 @@ function CaptainEditProfile() {
         number: data.number,
         capacity: data.capacity,
         type: typeMap[data.type.toLowerCase()] || data.type.toLowerCase(),
+        brand: data.brand,
+        model: data.model,
       },
     };
     Console.log(captainData);
@@ -370,6 +372,22 @@ function CaptainEditProfile() {
               register={register}
               error={errors.capacity}
               defaultValue={captain.vehicle.capacity}
+            />
+          </div>
+          <div className="flex gap-4 -my-2">
+            <Input
+              label={"Marca"}
+              name={"brand"}
+              register={register}
+              error={errors.brand}
+              defaultValue={captain.vehicle.brand || ''}
+            />
+            <Input
+              label={"Modelo"}
+              name={"model"}
+              register={register}
+              error={errors.model}
+              defaultValue={captain.vehicle.model || ''}
             />
           </div>
           <Input
