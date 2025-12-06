@@ -59,7 +59,7 @@ function RideDetails({
           </div>
         </div>
 
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto -webkit-overflow-scrolling-touch" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
           {/* Searching Animation - Premium */}
           {rideCreated && !confirmedRideData && !isMinimized && (
             <div className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">

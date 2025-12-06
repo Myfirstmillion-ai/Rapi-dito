@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useUser } from "../contexts/UserContext";
-import map from "/map.png";
 import {
   Button,
   LocationSuggestions,
@@ -8,7 +7,6 @@ import {
   RideDetails,
   Sidebar,
 } from "../components";
-import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
@@ -17,8 +15,7 @@ import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
-import { Navigation, MessageCircle } from "lucide-react";
-import MessageBadge from "../components/ui/MessageBadge";
+import { Navigation } from "lucide-react";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -73,7 +70,6 @@ function UserHomeScreen() {
   const [rideCreated, setRideCreated] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [driverLocation, setDriverLocation] = useState(null);
-  const [rideETA, setRideETA] = useState(null);
   const [currentRideStatus, setCurrentRideStatus] = useState("pending");
 
   const [pickupCoordinates, setPickupCoordinates] = useState(null);
@@ -384,7 +380,7 @@ function UserHomeScreen() {
       setConfirmedRideData(data);
     });
 
-    socket.on("ride-started", (data) => {
+    socket.on("ride-started", () => {
       Console.log("Viaje iniciado");
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
@@ -403,7 +399,7 @@ function UserHomeScreen() {
       }
     });
 
-    socket.on("ride-ended", (data) => {
+    socket.on("ride-ended", () => {
       Console.log("Viaje Finalizado");
       playSound(NOTIFICATION_SOUNDS.rideEnded);
       vibrate([500]);

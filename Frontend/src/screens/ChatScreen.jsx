@@ -258,7 +258,6 @@ function ChatScreen() {
               ref={inputRef}
               placeholder="Escribe un mensaje..."
               className="w-full outline-none text-sm bg-transparent text-gray-900 placeholder-gray-500"
-              style={{ color: '#1F2937' }}
               value={message}
               onChange={(e) => {
                 setMessage(e.target.value);
