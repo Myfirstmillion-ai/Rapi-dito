@@ -52,24 +52,34 @@ function LiveTrackingMap({
   // Initialize map
   useEffect(() => {
     if (map.current) return; // Initialize map only once
+    if (!mapContainer.current) return; // Ensure container exists
 
     const initialCenter = driverLocation || pickupLocation || [-72.4430, 7.8146];
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: initialCenter,
-      zoom: 14,
-      interactive: true,
-    });
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: initialCenter,
+        zoom: 14,
+        interactive: true,
+        preserveDrawingBuffer: true, // Helps with WebGL compatibility
+      });
 
-    map.current.on('load', () => {
-      setIsMapLoaded(true);
-      onMapLoad?.(map.current);
-    });
+      map.current.on('load', () => {
+        setIsMapLoaded(true);
+        onMapLoad?.(map.current);
+      });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e.error);
+      });
+
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    } catch (error) {
+      console.error('Failed to initialize Mapbox map:', error);
+    }
 
     return () => {
       map.current?.remove();
@@ -273,6 +283,7 @@ function LiveTrackingMap({
       <div 
         ref={mapContainer} 
         className="w-full h-full rounded-uber-lg overflow-hidden"
+        style={{ minHeight: '400px' }}
       />
       
       {/* Glassmorphism ETA Overlay */}

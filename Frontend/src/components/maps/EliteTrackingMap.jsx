@@ -77,6 +77,7 @@ function EliteTrackingMap({
   // Initialize map
   useEffect(() => {
     if (map.current) return;
+    if (!mapContainer.current) return; // Ensure container exists
 
     const initialCenter = driverLocation 
       ? [driverLocation.lng, driverLocation.lat]
@@ -84,50 +85,59 @@ function EliteTrackingMap({
       ? [pickupLocation.lng, pickupLocation.lat]
       : [-72.4430, 7.8146]; // Default: San Antonio del Táchira
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: initialCenter,
-      zoom: 14,
-      pitch: 0,
-      bearing: 0,
-    });
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: initialCenter,
+        zoom: 14,
+        pitch: 0,
+        bearing: 0,
+        preserveDrawingBuffer: true, // Helps with WebGL compatibility
+      });
 
-    map.current.on('load', () => {
-      setIsMapLoaded(true);
-      
-      // Add route source (empty initially)
-      map.current.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: []
+      map.current.on('load', () => {
+        setIsMapLoaded(true);
+        
+        // Add route source (empty initially)
+        map.current.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: []
+            }
           }
-        }
+        });
+
+        // Add route layer with UBER blue color
+        map.current.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#4A90E2',
+            'line-width': 5,
+            'line-opacity': 0.7
+          }
+        });
       });
 
-      // Add route layer with UBER blue color
-      map.current.addLayer({
-        id: 'route',
-        type: 'line',
-        source: 'route',
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        paint: {
-          'line-color': '#4A90E2',
-          'line-width': 5,
-          'line-opacity': 0.7
-        }
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e.error);
       });
-    });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    } catch (error) {
+      console.error('Failed to initialize Mapbox map:', error);
+    }
 
     return () => {
       if (updateInterval.current) {
@@ -498,6 +508,7 @@ function EliteTrackingMap({
       <div 
         ref={mapContainer} 
         className="w-full h-full"
+        style={{ minHeight: '400px' }}
       />
       
       {/* ETA and Distance Info Overlay */}

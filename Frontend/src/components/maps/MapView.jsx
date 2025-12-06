@@ -24,23 +24,33 @@ function MapView({
   // Initialize map
   useEffect(() => {
     if (map.current) return; // Initialize map only once
+    if (!mapContainer.current) return; // Ensure container exists
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: style,
-      center: center,
-      zoom: zoom,
-      interactive: interactive,
-    });
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: style,
+        center: center,
+        zoom: zoom,
+        interactive: interactive,
+        preserveDrawingBuffer: true, // Helps with WebGL compatibility
+      });
 
-    map.current.on('load', () => {
-      setIsMapLoaded(true);
-      onMapLoad?.(map.current);
-    });
+      map.current.on('load', () => {
+        setIsMapLoaded(true);
+        onMapLoad?.(map.current);
+      });
 
-    // Add navigation controls
-    if (interactive) {
-      map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e.error);
+      });
+
+      // Add navigation controls
+      if (interactive) {
+        map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      }
+    } catch (error) {
+      console.error('Failed to initialize Mapbox map:', error);
     }
 
     return () => {
@@ -147,6 +157,7 @@ function MapView({
     <div 
       ref={mapContainer} 
       className={cn("w-full h-full rounded-lg overflow-hidden", className)}
+      style={{ minHeight: '300px' }}
     />
   );
 }

@@ -45,23 +45,33 @@ function RealTimeTrackingMap({
   // Initialize map
   useEffect(() => {
     if (map.current) return;
+    if (!mapContainer.current) return; // Ensure container exists
 
     const initialCenter = driverLocation || pickupLocation || [-72.4430, 7.8146];
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: initialCenter,
-      zoom: 14,
-      interactive: true,
-    });
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: initialCenter,
+        zoom: 14,
+        interactive: true,
+        preserveDrawingBuffer: true, // Helps with WebGL compatibility
+      });
 
-    map.current.on('load', () => {
-      setIsMapLoaded(true);
-    });
+      map.current.on('load', () => {
+        setIsMapLoaded(true);
+      });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e.error);
+      });
+
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+    } catch (error) {
+      console.error('Failed to initialize Mapbox map:', error);
+    }
 
     return () => {
       map.current?.remove();
@@ -223,6 +233,7 @@ function RealTimeTrackingMap({
       <div 
         ref={mapContainer} 
         className="w-full h-full"
+        style={{ minHeight: '400px' }}
       />
     </div>
   );
