@@ -10,6 +10,10 @@ import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
  * <ErrorBoundary>
  *   <YourComponent />
  * </ErrorBoundary>
+ * 
+ * @param {Object} props
+ * @param {Function} props.onReset - Optional callback when user clicks retry
+ * @param {string} props.fallbackUrl - Optional URL to navigate on "Go Home" (default: '/')
  */
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -32,16 +36,18 @@ class ErrorBoundary extends Component {
     console.error('Error Info:', errorInfo);
     
     // Store error details in state
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    });
+    this.setState({ error, errorInfo });
 
     // You can also log the error to an error reporting service here
     // Example: logErrorToService(error, errorInfo);
   }
 
   handleReset = () => {
+    // Call optional onReset callback
+    if (this.props.onReset) {
+      this.props.onReset();
+    }
+    
     // Reset the error boundary state
     this.setState({ 
       hasError: false, 
@@ -51,8 +57,9 @@ class ErrorBoundary extends Component {
   };
 
   handleGoHome = () => {
-    // Navigate to home page
-    window.location.href = '/';
+    // Navigate to home page (fallback URL or root)
+    const fallbackUrl = this.props.fallbackUrl || '/';
+    window.location.href = fallbackUrl;
   };
 
   render() {
