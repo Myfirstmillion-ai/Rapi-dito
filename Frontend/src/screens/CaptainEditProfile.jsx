@@ -153,6 +153,8 @@ function CaptainEditProfile() {
         number: data.number,
         capacity: data.capacity,
         type: typeMap[data.type.toLowerCase()] || data.type.toLowerCase(),
+        brand: data.brand || "",
+        model: data.model || "",
       },
     };
     Console.log(captainData);
@@ -168,6 +170,21 @@ function CaptainEditProfile() {
         }
       );
       Console.log(response);
+      
+      // Update captain context with new data
+      const updatedCaptain = {
+        ...captain,
+        ...captainData
+      };
+      setCaptain(updatedCaptain);
+      
+      // Update localStorage
+      const userData = JSON.parse(localStorage.getItem("userData"));
+      if (userData) {
+        userData.data = updatedCaptain;
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+      
       showAlert('¡Actualización exitosa!', 'Tu perfil ha sido actualizado correctamente', 'success');
       
       setTimeout(() => {
@@ -189,7 +206,7 @@ function CaptainEditProfile() {
   }, [responseError]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto pb-safe" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto overflow-x-hidden pb-safe" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
       {/* Animated Grid Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0" style={{
@@ -370,6 +387,22 @@ function CaptainEditProfile() {
               register={register}
               error={errors.capacity}
               defaultValue={captain.vehicle.capacity}
+            />
+          </div>
+          <div className="flex gap-4 -my-2">
+            <Input
+              label={"Marca"}
+              name={"brand"}
+              register={register}
+              error={errors.brand}
+              defaultValue={captain.vehicle.brand || ''}
+            />
+            <Input
+              label={"Modelo"}
+              name={"model"}
+              register={register}
+              error={errors.model}
+              defaultValue={captain.vehicle.model || ''}
             />
           </div>
           <Input

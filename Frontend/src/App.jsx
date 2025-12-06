@@ -31,11 +31,12 @@ import { ChevronLeft, Trash2 } from "lucide-react";
 import ToastProvider from "./components/notifications/ToastProvider";
 import RatingModalWrapper from "./components/RatingModalWrapper";
 import { AnimatePresence, motion } from "framer-motion";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
-    <div className="w-full min-h-screen-safe flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
-      <div className="relative w-full sm:min-w-[400px] sm:max-w-[430px] md:max-w-[400px] min-h-screen-safe sm:h-[95vh] sm:max-h-[900px] bg-white sm:overflow-hidden sm:rounded-3xl sm:shadow-2xl transition-all duration-300 ease-in-out">
+    <div className="w-full min-h-screen-safe flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 overflow-x-hidden">
+      <div className="relative w-full sm:min-w-[400px] sm:max-w-[430px] md:max-w-[400px] min-h-screen-safe sm:h-[95vh] sm:max-h-[900px] bg-white overflow-x-hidden overflow-y-auto sm:rounded-3xl sm:shadow-2xl transition-all duration-300 ease-in-out">
         {/* Botón de reseteo de emergencia */}
         <div className="absolute top-36 -right-11 opacity-20 hover:opacity-100 z-50 flex items-center p-1 PL-0 gap-1 bg-zinc-50 border-2 border-r-0 border-gray-300 hover:-translate-x-11 rounded-l-md transition-all duration-300">
           <ChevronLeft />
@@ -148,7 +149,11 @@ function AnimatedRoutes() {
               </CaptainProtectedWrapper>
             }
           />
-          <Route path="/:userType/chat/:rideId" element={<ChatScreen />} />
+          <Route path="/:userType/chat/:rideId" element={
+            <ErrorBoundary>
+              <ChatScreen />
+            </ErrorBoundary>
+          } />
           <Route path="/:userType/verify-email/" element={<VerifyEmail />} />
           <Route path="/:userType/forgot-password/" element={<ForgotPassword />} />
           <Route path="/:userType/reset-password/" element={<ResetPassword />} />

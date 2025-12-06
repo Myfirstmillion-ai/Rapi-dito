@@ -6,7 +6,7 @@ import Console from '../utils/console';
 import axios from 'axios';
 import { useAlert } from '../hooks/useAlert';
 import { Alert } from '../components';
-import { Lock, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const allowedParams = ["user", "captain"];
@@ -96,13 +96,23 @@ function ResetPassword() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 relative overflow-hidden">
+        <div className="w-full min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 relative overflow-x-hidden">
             {/* Animated Grid Background */}
             <div className="absolute inset-0 opacity-20">
                 <div className="absolute inset-0" style={{
                     backgroundImage: `radial-gradient(circle, rgb(16 185 129) 1px, transparent 1px)`,
                     backgroundSize: '40px 40px'
                 }} />
+            </div>
+
+            {/* Back Button */}
+            <div className="absolute top-4 left-4 z-50">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all active:scale-95 border border-white/20 backdrop-blur-xl"
+                >
+                    <ArrowLeft strokeWidth={2.5} size={24} className="text-white" />
+                </button>
             </div>
 
             {/* Content */}

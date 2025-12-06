@@ -85,6 +85,16 @@ export default {
       minHeight: {
         'touch': '44px', // Minimum touch target
         'button': '48px', // UBER minimum button height
+        'screen-dvh': '100dvh', // Dynamic viewport height
+      },
+      height: {
+        'screen-dvh': '100dvh', // Dynamic viewport height
+      },
+      maxHeight: {
+        'screen-dvh': '100dvh', // Dynamic viewport height
+      },
+      maxWidth: {
+        'screen': '100vw', // Full viewport width
       },
       zIndex: {
         '0': '0',
@@ -117,5 +127,14 @@ export default {
     },
   },
   plugins: [],
+  // Safelist critical utility classes to prevent purging
+  safelist: [
+    'overflow-x-hidden',
+    'overflow-y-auto',
+    'w-full',
+    'h-full',
+    'min-h-screen',
+    'max-w-full',
+  ],
 };
 

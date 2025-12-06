@@ -584,22 +584,22 @@ function UserHomeScreen() {
         )}
       </div>
       
-      {/* Componente Buscar viaje - Bottom Sheet Style */}
+      {/* Componente Buscar viaje - Bottom Sheet Style with Glassmorphism */}
       {showFindTripPanel && !isSidebarOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
-          <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
-          <h1 className="text-2xl font-semibold">Buscar viaje</h1>
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-3xl bg-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
+          <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-2"></div>
+          <h1 className="text-2xl font-semibold text-white">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">
-            <div className="h-3/5 w-[3px] flex flex-col items-center justify-between bg-black rounded-full absolute mx-5">
-              <div className="w-2 h-2 rounded-full border-[3px] bg-white border-black"></div>
-              <div className="w-2 h-2 rounded-sm border-[3px] bg-white border-black"></div>
+            <div className="h-3/5 w-[3px] flex flex-col items-center justify-between bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full absolute mx-5">
+              <div className="w-2 h-2 rounded-full border-[3px] bg-slate-900 border-emerald-400"></div>
+              <div className="w-2 h-2 rounded-sm border-[3px] bg-slate-900 border-cyan-400"></div>
             </div>
             <div className="w-full">
               <div className="relative">
                 <input
                   id="pickup"
                   placeholder="Agregar punto de recogida"
-                  className="w-full bg-zinc-100 pl-10 pr-12 py-3 rounded-lg outline-black text-sm mb-2 truncate"
+                  className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 pl-10 pr-12 py-3 rounded-xl outline-none text-sm mb-2 truncate transition-all text-white placeholder:text-slate-400"
                   value={pickupLocation}
                   onChange={onChangeHandler}
                   autoComplete="off"
@@ -607,7 +607,7 @@ function UserHomeScreen() {
                 <button
                   onClick={getCurrentLocation}
                   disabled={gettingLocation}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 -mt-1 p-2 rounded-full bg-green-500 hover:bg-green-600 active:bg-green-700 transition-all duration-200 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 -mt-1 p-2 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 transition-all duration-200 text-white disabled:bg-slate-700 disabled:cursor-not-allowed shadow-lg"
                   title="Usar ubicación actual"
                 >
                   <Navigation 
@@ -619,7 +619,7 @@ function UserHomeScreen() {
               <input
                 id="destination"
                 placeholder="Agregar destino"
-                className="w-full bg-zinc-100 pl-10 pr-4 py-3 rounded-lg outline-black text-sm truncate"
+                className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 pl-10 pr-4 py-3 rounded-xl outline-none text-sm truncate transition-all text-white placeholder:text-slate-400"
                 value={destinationLocation}
                 onChange={onChangeHandler}
                 autoComplete="off"

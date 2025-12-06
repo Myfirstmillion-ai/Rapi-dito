@@ -29,7 +29,9 @@ module.exports.registerCaptain = asyncHandler(async (req, res) => {
     vehicle.color,
     vehicle.number,
     vehicle.capacity,
-    vehicle.type
+    vehicle.type,
+    vehicle.brand || "",
+    vehicle.model || ""
   );
 
   const token = captain.generateAuthToken();

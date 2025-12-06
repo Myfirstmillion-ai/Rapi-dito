@@ -12,11 +12,12 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
  * 
  * Features:
  * - Interactive Mapbox GL JS map
- * - Animated driver marker with pulse effect
- * - Pickup (blue) and dropoff (green) markers
- * - Route visualization with Mapbox Directions API
+ * - Animated driver marker with vehicle-specific icons (car/bike)
+ * - User pickup marker with pin emoji (📍)
+ * - Dropoff destination marker (green)
+ * - Route visualization with polyline
+ * - Glassmorphism ETA overlay display
  * - Smooth driver location updates with easeTo()
- * - ETA overlay display
  * - Auto fitBounds for full route view
  * 
  * @param {Object} props
@@ -26,6 +27,7 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
  * @param {Object} props.route - Route geometry from Mapbox Directions
  * @param {number} props.eta - Estimated time of arrival in minutes
  * @param {string} props.driverName - Driver name for display
+ * @param {string} props.vehicleType - Vehicle type ('car' or 'bike')
  * @param {Function} props.onMapLoad - Callback when map loads
  * @param {string} props.className - Additional CSS classes
  */
@@ -36,6 +38,7 @@ function LiveTrackingMap({
   route = null,
   eta = null,
   driverName = "Conductor",
+  vehicleType = "car",
   onMapLoad,
   className,
 }) {
@@ -73,7 +76,7 @@ function LiveTrackingMap({
     };
   }, []);
 
-  // Create custom driver marker with pulse animation
+  // Create custom driver marker with vehicle-specific icon
   useEffect(() => {
     if (!map.current || !isMapLoaded || !driverLocation) return;
 
@@ -82,35 +85,27 @@ function LiveTrackingMap({
       driverMarker.current.remove();
     }
 
-    // Create custom marker element using DOM methods for security
+    // Create custom marker element using vehicle-specific image
     const el = document.createElement('div');
     el.className = 'driver-marker';
     
     const container = document.createElement('div');
     container.className = 'relative';
     
+    // Vehicle image based on type
+    const vehicleImage = vehicleType === 'car' ? '/Uber-PNG-Photos.png' : '/bike.webp';
+    
+    const img = document.createElement('img');
+    img.src = vehicleImage;
+    img.className = 'w-12 h-12 rounded-full border-2 border-white shadow-lg object-contain bg-white/90';
+    img.alt = vehicleType === 'car' ? 'Carro' : 'Moto';
+    
+    // Pulse animation background
     const pulse = document.createElement('div');
-    pulse.className = 'absolute inset-0 bg-uber-blue rounded-full animate-ping opacity-75';
+    pulse.className = 'absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-50';
     
-    const markerDiv = document.createElement('div');
-    markerDiv.className = 'relative w-12 h-12 bg-uber-black rounded-full border-4 border-white shadow-uber-lg flex items-center justify-center';
-    
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'w-6 h-6 text-white');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('stroke-linecap', 'round');
-    path.setAttribute('stroke-linejoin', 'round');
-    path.setAttribute('stroke-width', '2');
-    path.setAttribute('d', 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z');
-    
-    svg.appendChild(path);
-    markerDiv.appendChild(svg);
     container.appendChild(pulse);
-    container.appendChild(markerDiv);
+    container.appendChild(img);
     el.appendChild(container);
 
     driverMarker.current = new mapboxgl.Marker(el)
@@ -126,7 +121,7 @@ function LiveTrackingMap({
         driverMarker.current.remove();
       }
     };
-  }, [driverLocation, isMapLoaded, driverName]);
+  }, [driverLocation, isMapLoaded, driverName, vehicleType]);
 
   // Update driver location with smooth animation
   useEffect(() => {
@@ -145,7 +140,7 @@ function LiveTrackingMap({
     }
   }, [driverLocation]);
 
-  // Add pickup marker (blue)
+  // Add pickup marker (user pin 📍)
   useEffect(() => {
     if (!map.current || !isMapLoaded || !pickupLocation) return;
 
@@ -153,34 +148,17 @@ function LiveTrackingMap({
       pickupMarker.current.remove();
     }
 
-    // Create pickup marker using DOM methods
+    // Create pickup marker using pin emoji
     const el = document.createElement('div');
-    const container = document.createElement('div');
-    container.className = 'relative';
-    
-    const markerDiv = document.createElement('div');
-    markerDiv.className = 'w-10 h-10 bg-uber-blue rounded-full border-4 border-white shadow-uber-md flex items-center justify-center';
-    
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'w-5 h-5 text-white');
-    svg.setAttribute('fill', 'currentColor');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', '12');
-    circle.setAttribute('cy', '12');
-    circle.setAttribute('r', '3');
-    
-    svg.appendChild(circle);
-    markerDiv.appendChild(svg);
-    container.appendChild(markerDiv);
-    el.appendChild(container);
+    el.className = 'text-4xl leading-none';
+    el.textContent = '📍';
+    el.style.cursor = 'pointer';
 
     pickupMarker.current = new mapboxgl.Marker(el)
       .setLngLat(pickupLocation)
       .setPopup(
         new mapboxgl.Popup({ offset: 25, closeButton: false })
-          .setHTML('<div class="text-center font-semibold text-uber-blue">Recogida</div>')
+          .setHTML('<div class="text-center font-semibold text-blue-600">Usuario</div>')
       )
       .addTo(map.current);
 
@@ -270,9 +248,9 @@ function LiveTrackingMap({
         'line-cap': 'round',
       },
       paint: {
-        'line-color': '#000000',
-        'line-width': 6,
-        'line-opacity': 0.8,
+        'line-color': '#10b981', // Emerald color
+        'line-width': 4,
+        'line-opacity': 0.9,
       },
     });
 
@@ -297,28 +275,32 @@ function LiveTrackingMap({
         className="w-full h-full rounded-uber-lg overflow-hidden"
       />
       
-      {/* ETA Overlay */}
+      {/* Glassmorphism ETA Overlay */}
       {eta !== null && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white rounded-uber-lg shadow-uber-lg px-6 py-3 flex items-center gap-3 z-10">
-          <div className="w-10 h-10 bg-uber-green rounded-full flex items-center justify-center">
-            <Clock size={20} className="text-white" />
-          </div>
-          <div>
-            <p className="text-xs text-uber-gray-600 font-medium">Tiempo estimado</p>
-            <p className="text-xl font-bold text-uber-black">{eta} min</p>
+        <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-2xl px-5 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)] z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center shadow-md">
+              <Clock size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-300 font-medium">Tiempo estimado</p>
+              <p className="text-xl font-bold text-white">{eta} min</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Driver info overlay (optional) */}
+      {/* Driver info overlay - Glassmorphism */}
       {driverName && driverLocation && (
-        <div className="absolute bottom-4 left-4 bg-white rounded-uber-lg shadow-uber-lg px-4 py-3 flex items-center gap-3 z-10">
-          <div className="w-10 h-10 bg-uber-black rounded-full flex items-center justify-center">
-            <Navigation size={20} className="text-white" />
-          </div>
-          <div>
-            <p className="text-xs text-uber-gray-600 font-medium">Conductor</p>
-            <p className="text-sm font-bold text-uber-black">{driverName}</p>
+        <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.3)] z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center shadow-md">
+              <Navigation size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-300 font-medium">Conductor</p>
+              <p className="text-sm font-bold text-white">{driverName}</p>
+            </div>
           </div>
         </div>
       )}

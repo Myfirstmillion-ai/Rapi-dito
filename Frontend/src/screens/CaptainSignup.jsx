@@ -34,6 +34,8 @@ function CaptainSignup() {
         number: data.number,
         capacity: data.capacity,
         type: data.type,
+        brand: data.brand,
+        model: data.model,
       },
     };
     Console.log(captainData);
@@ -309,9 +311,8 @@ function CaptainSignup() {
                         className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
                       >
                         <option value="" className="bg-slate-900">Tipo de vehículo</option>
-                        <option value="car" className="bg-slate-900">Auto</option>
-                        <option value="auto" className="bg-slate-900">Auto pequeño</option>
-                        <option value="moto" className="bg-slate-900">Moto</option>
+                        <option value="car" className="bg-slate-900">Carro</option>
+                        <option value="bike" className="bg-slate-900">Moto</option>
                       </select>
                       {errors.type && (
                         <p className="mt-2 text-sm text-red-300">El tipo es requerido</p>
@@ -341,6 +342,32 @@ function CaptainSignup() {
                       />
                       {errors.color && (
                         <p className="mt-2 text-sm text-red-300">El color es requerido</p>
+                      )}
+                    </div>
+
+                    {/* Brand */}
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Marca del vehículo"
+                        {...register("brand", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.brand && (
+                        <p className="mt-2 text-sm text-red-300">La marca es requerida</p>
+                      )}
+                    </div>
+
+                    {/* Model */}
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Modelo del vehículo"
+                        {...register("model", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.model && (
+                        <p className="mt-2 text-sm text-red-300">El modelo es requerido</p>
                       )}
                     </div>
 

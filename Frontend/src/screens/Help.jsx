@@ -104,7 +104,7 @@ function Help() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto pb-safe">
+    <div className="w-full min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto overflow-x-hidden pb-safe">
       {/* Animated Background Grid */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0" style={{

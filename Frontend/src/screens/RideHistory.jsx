@@ -98,7 +98,7 @@ function RideHistory() {
   }, [user.rides]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 relative overflow-hidden">
+    <div className="w-full min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 relative overflow-x-hidden">
       {/* Animated Grid Background */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
