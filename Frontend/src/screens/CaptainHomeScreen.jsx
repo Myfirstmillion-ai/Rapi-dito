@@ -744,7 +744,7 @@ function CaptainHomeScreen() {
                   {/* Vehicle Make and Model */}
                   {(captainData?.vehicle?.make || captainData?.vehicle?.model) && (
                     <p className="text-sm font-medium text-emerald-400 mb-2">
-                      {captainData?.vehicle?.make || ""} {captainData?.vehicle?.model || ""}
+                      {[captainData?.vehicle?.make, captainData?.vehicle?.model].filter(Boolean).join(' ')}
                     </p>
                   )}
                   <div className="flex items-center gap-3 text-sm text-gray-300">
