@@ -16,6 +16,7 @@ import {
   Activity,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function RideHistory() {
   const navigation = useNavigate();
@@ -97,27 +98,46 @@ function RideHistory() {
   }, [user.rides]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 relative overflow-hidden">
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle, rgb(16 185 129) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+      </div>
+
       {/* Premium Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10">
         <div className="px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 mb-4"
+          >
             <button
               onClick={() => navigation(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all active:scale-95 border border-white/20"
             >
-              <ArrowLeft strokeWidth={2.5} size={24} />
+              <ArrowLeft strokeWidth={2.5} size={24} className="text-white" />
             </button>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">Historial</h1>
-              <p className="text-sm text-gray-500">{stats.total} viajes realizados</p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                Historial
+              </h1>
+              <p className="text-sm text-slate-400">{stats.total} viajes realizados</p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Search Bar */}
-          <div className="relative">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="relative"
+          >
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               size={20}
             />
             <input
@@ -125,34 +145,47 @@ function RideHistory() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por origen o destino..."
-              className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-black focus:bg-white transition-all text-sm placeholder:text-gray-400"
+              className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-slate-400 text-white backdrop-blur-xl"
             />
-          </div>
+          </motion.div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-2 mt-3">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-3 gap-2 mt-3"
+          >
             <StatsCard
-              icon={<Activity size={16} className="text-blue-600" />}
+              icon={<Activity size={16} className="text-blue-400" />}
               label="Total"
               value={stats.total}
+              gradient="from-blue-500/20 to-blue-600/20"
               />
             <StatsCard
-              icon={<CreditCard size={16} className="text-green-600" />}
+              icon={<CreditCard size={16} className="text-emerald-400" />}
               label="Gastado"
               value={`$${Math.round(stats.totalSpent / 1000)}K`}
+              gradient="from-emerald-500/20 to-green-600/20"
             />
             <StatsCard
-              icon={<TrendingUp size={16} className="text-purple-600" />}
+              icon={<TrendingUp size={16} className="text-purple-400" />}
               label="Promedio"
               value={`$${Math.round(stats.avgFare / 1000)}K`}
+              gradient="from-purple-500/20 to-pink-600/20"
             />
-          </div>
+          </motion.div>
 
           {/* Filter Toggle */}
-          <div className="flex items-center gap-2 mt-3">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center gap-2 mt-3"
+          >
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-sm font-medium text-white border border-white/20 backdrop-blur-xl"
             >
               <Filter size={16} />
               Filtros
@@ -161,32 +194,32 @@ function RideHistory() {
               <div className="flex gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
                 <button
                   onClick={() => setSortBy("date")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     sortBy === "date"
-                      ? "bg-black text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
+                      ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white"
+                      : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   }`}
                 >
                   Fecha
                 </button>
                 <button
                   onClick={() => setSortBy("price")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     sortBy === "price"
-                      ? "bg-black text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
+                      ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white"
+                      : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   }`}
                 >
                   Precio
                 </button>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Rides List */}
-      <div className="px-4 pb-20 pt-4">
+      <div className="px-4 pb-20 pt-4 relative">
         {/* Today Section */}
         <RideSection
           title="Hoy"
@@ -215,19 +248,23 @@ function RideHistory() {
         {filteredRides.today.length === 0 &&
           filteredRides.yesterday.length === 0 &&
           filteredRides.earlier.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar size={32} className="text-gray-400" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-16"
+            >
+              <div className="w-20 h-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar size={32} className="text-slate-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg font-semibold text-white mb-1">
                 No hay viajes
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-slate-400">
                 {searchQuery
                   ? "No se encontraron resultados para tu búsqueda"
                   : "Aún no has realizado ningún viaje"}
               </p>
-            </div>
+            </motion.div>
           )}
       </div>
     </div>
@@ -235,13 +272,13 @@ function RideHistory() {
 }
 
 // Stats Card Component
-const StatsCard = ({ icon, label, value }) => (
-  <div className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
+const StatsCard = ({ icon, label, value, gradient }) => (
+  <div className={`bg-gradient-to-br ${gradient} backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-lg`}>
     <div className="flex items-center gap-2 mb-1">
       {icon}
-      <span className="text-xs text-gray-500 font-medium">{label}</span>
+      <span className="text-xs text-white/80 font-medium">{label}</span>
     </div>
-    <p className="text-lg font-bold text-gray-900">{value}</p>
+    <p className="text-lg font-bold text-white">{value}</p>
   </div>
 );
 
@@ -257,14 +294,14 @@ const RideSection = ({ title, rides, expandedRide, setExpandedRide }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full mb-3 group"
       >
-        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <h2 className="text-lg font-bold text-white">{title}</h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500 font-medium">
+          <span className="text-sm text-slate-400 font-medium">
             {rides.length} {rides.length === 1 ? "viaje" : "viajes"}
           </span>
           <ChevronUp
             size={20}
-            className={`text-gray-400 transition-transform duration-300 ${
+            className={`text-slate-400 transition-transform duration-300 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
@@ -331,31 +368,31 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
   return (
     <div
       onClick={onToggle}
-      className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-200 active:scale-[0.99]"
+      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 cursor-pointer hover:bg-white/10 hover:border-emerald-500/50 transition-all duration-200 active:scale-[0.99]"
     >
       {/* Header Section */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <div className="p-1.5 bg-gray-100 rounded-lg">
-              <VehicleIcon size={16} className="text-gray-700" />
+            <div className="p-1.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg">
+              <VehicleIcon size={16} className="text-emerald-400" />
             </div>
-            <span className="text-sm font-semibold text-gray-900 capitalize">
+            <span className="text-sm font-semibold text-white capitalize">
               {ride.vehicleType === "car" ? "Carro" : "Moto"}
             </span>
             {ride.status && (
               <span
                 className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                   ride.status === "completed"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
+                    ? "bg-green-500/20 text-green-300 border border-green-500/30"
+                    : "bg-red-500/20 text-red-300 border border-red-500/30"
                 }`}
               >
                 {ride.status === "completed" ? "Completado" : "Cancelado"}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-3 text-xs text-slate-400">
             <span className="flex items-center gap-1">
               <Calendar size={12} />
               {formatDate(ride.createdAt)}
@@ -368,11 +405,11 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
         </div>
 
         <div className="text-right">
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-white">
             ${ride.fare?.toLocaleString("es-CO") || 0}
           </p>
           {ride.distance && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-slate-400">
               {(Number(ride.distance.toFixed(2)) / 1000).toFixed(1)} km
             </p>
           )}
@@ -383,24 +420,24 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
       <div className="space-y-2">
         <div className="flex items-start gap-3">
           <div className="flex flex-col items-center pt-1">
-            <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-white ring-2 ring-green-500"></div>
-            <div className="w-0.5 h-8 bg-gradient-to-b from-green-500 via-gray-300 to-red-500 my-0.5"></div>
-            <div className="w-3 h-3 rounded-sm bg-red-500 border-2 border-white ring-2 ring-red-500"></div>
+            <div className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 ring-2 ring-emerald-500/50"></div>
+            <div className="w-0.5 h-8 bg-gradient-to-b from-emerald-500 via-slate-600 to-red-500 my-0.5"></div>
+            <div className="w-3 h-3 rounded-sm bg-red-500 border-2 border-slate-900 ring-2 ring-red-500/50"></div>
           </div>
           <div className="flex-1 space-y-4">
             <div>
-              <p className="text-sm font-semibold text-gray-900 line-clamp-1">
+              <p className="text-sm font-semibold text-white line-clamp-1">
                 {ride.pickup?.split(", ")[0] || "Origen"}
               </p>
-              <p className="text-xs text-gray-500 line-clamp-1">
+              <p className="text-xs text-slate-400 line-clamp-1">
                 {ride.pickup?.split(", ").slice(1).join(", ") || ""}
               </p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900 line-clamp-1">
+              <p className="text-sm font-semibold text-white line-clamp-1">
                 {ride.destination?.split(", ")[0] || "Destino"}
               </p>
-              <p className="text-xs text-gray-500 line-clamp-1">
+              <p className="text-xs text-slate-400 line-clamp-1">
                 {ride.destination?.split(", ").slice(1).join(", ") || ""}
               </p>
             </div>
@@ -410,16 +447,16 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
 
       {/* Expanded Details */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="mt-4 pt-4 border-t border-white/10 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Rating */}
           {hasRating && (
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 backdrop-blur-xl">
               <Star size={16} className="fill-amber-400 text-amber-400" />
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-white">
                 Calificación: {ride.rating}/5
               </span>
               {ride.ratingComment && (
-                <span className="text-xs text-gray-600 ml-auto">
+                <span className="text-xs text-slate-300 ml-auto">
                   "{ride.ratingComment}"
                 </span>
               )}
@@ -429,17 +466,17 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
           {/* Additional Info */}
           <div className="grid grid-cols-2 gap-3">
             {ride.duration && (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-500 mb-1">Duración</p>
-                <p className="text-sm font-semibold text-gray-900">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-3">
+                <p className="text-xs text-slate-400 mb-1">Duración</p>
+                <p className="text-sm font-semibold text-white">
                   {ride.duration} min
                 </p>
               </div>
             )}
             {ride.captain && (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-500 mb-1">Conductor</p>
-                <p className="text-sm font-semibold text-gray-900 truncate">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-3">
+                <p className="text-xs text-slate-400 mb-1">Conductor</p>
+                <p className="text-sm font-semibold text-white truncate">
                   {ride.captain.fullname?.firstname || "N/A"}
                 </p>
               </div>
@@ -447,7 +484,7 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
           </div>
 
           {/* View Details Button */}
-          <button className="w-full flex items-center justify-center gap-2 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
+          <button className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg hover:shadow-lg hover:shadow-emerald-500/50 transition-all font-medium text-sm">
             Ver detalles completos
             <ChevronRight size={16} />
           </button>
