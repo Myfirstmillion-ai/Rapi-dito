@@ -28,6 +28,7 @@ import Blog from "./Blog";
 import Careers from "./Careers";
 import Terms from "./Terms";
 import Privacy from "./Privacy";
+import Help from "./Help";
 
 export {
   GetStarted,
@@ -51,5 +52,6 @@ export {
   Blog,
   Careers,
   Terms,
-  Privacy
+  Privacy,
+  Help
 };

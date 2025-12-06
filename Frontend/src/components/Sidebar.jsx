@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { ChevronRight, CircleUserRound, History, KeyRound, Menu, X } from "lucide-react";
+import { ChevronRight, CircleUserRound, History, KeyRound, Menu, X, HelpCircle } from "lucide-react";
 import Button from "./Button";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -142,6 +142,19 @@ function Sidebar({ onToggle }) {
           >
             <div className="flex gap-3">
               <KeyRound /> <h1>Cambiar Contraseña</h1>
+            </div>
+            <div>
+              <ChevronRight />
+            </div>
+          </Link>
+
+          <Link
+            to="/help"
+            className="flex items-center justify-between py-4 cursor-pointer hover:bg-zinc-100 rounded-xl px-3 transition-colors duration-200"
+            onClick={toggleSidebar}
+          >
+            <div className="flex gap-3">
+              <HelpCircle /> <h1>Centro de Ayuda</h1>
             </div>
             <div>
               <ChevronRight />

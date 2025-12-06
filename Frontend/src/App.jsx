@@ -21,7 +21,8 @@ import {
   Blog,
   Careers,
   Terms,
-  Privacy
+  Privacy,
+  Help
 } from "./screens/";
 import { logger } from "./utils/logger";
 import { SocketDataContext } from "./contexts/SocketContext";
@@ -158,6 +159,7 @@ function AnimatedRoutes() {
           <Route path="/careers" element={<Careers />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/help" element={<Help />} />
 
           <Route path="*" element={<Error />} />
         </Routes>
