@@ -44,7 +44,7 @@ function SelectVehicle({
       <div
         className={`${showPanel ? "bottom-0" : "-bottom-full"} ${
           isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] absolute bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden`}
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] absolute bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden pb-safe`}
       >
         {/* Premium Drag Handle */}
         <div 
