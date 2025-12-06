@@ -23,8 +23,8 @@ export const Alert = ({ heading, text, isVisible, onClose, type }) => {
     if (!shouldRender) return null;
 
     return (
-        <div className={`absolute text-center left-0 top-0 w-full bg-black min-h-dvh flex justify-center items-center z-50 backdrop-blur-sm transition-all duration-300 ${isAnimating ? 'bg-opacity-60' : 'bg-opacity-0'}`}>
-            <div className={`w-4/5 p-5 pt-7 bg-white rounded-xl transition-all duration-300 transform ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
+        <div className={`fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300 ${isAnimating ? 'bg-black/60' : 'bg-black/0'}`}>
+            <div className={`w-4/5 max-w-md p-5 pt-7 bg-white rounded-xl transition-all duration-300 transform ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
                 <h1 className='font-semibold text-base'>{heading}</h1>
                 <p className='text-sm font-normal text-zinc-600 mt-4 mb-6 text-pretty'>{text}</p>
                 <Button

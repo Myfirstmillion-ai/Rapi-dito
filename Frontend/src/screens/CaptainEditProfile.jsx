@@ -431,7 +431,7 @@ function CaptainEditProfile() {
             name={"type"}
             register={register}
             error={errors.type}
-            defaultValue={captain.vehicle.type === 'car' ? 'Carro' : 'Moto'}
+            defaultValue={captain.vehicle.type === 'car' ? 'carro' : 'moto'}
           />
           {responseError && (
             <p className="text-sm text-center mb-4 text-red-500">

@@ -58,11 +58,11 @@ function Sidebar({ onToggle }) {
   
   return (
     <>
-      {/* Hamburger Menu Button */}
+      {/* Hamburger Menu Button - Positioned to avoid map controls */}
       <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="m-3 mt-4 absolute right-0 top-0 z-500 cursor-pointer bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+        className="m-3 mt-4 absolute left-0 top-0 z-40 cursor-pointer bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
         onClick={toggleSidebar}
       >
         {showSidebar ? (
