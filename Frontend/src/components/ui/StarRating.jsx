@@ -39,9 +39,9 @@ function StarRating({ average = 0, count = 0, size = 16, className, showCount = 
         
         {/* Half star */}
         {hasHalfStar && (
-          <div className="relative">
+          <div className="relative inline-block">
             <Star size={size} className="text-gray-300 fill-gray-300" />
-            <div className="absolute inset-0 overflow-hidden" style={{ width: '50%' }}>
+            <div className="absolute inset-0 overflow-hidden w-1/2">
               <Star size={size} className="text-yellow-500 fill-yellow-500" />
             </div>
           </div>

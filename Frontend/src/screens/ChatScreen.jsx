@@ -267,14 +267,16 @@ function ChatScreen() {
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
                 loading="lazy"
                 onError={(e) => {
-                  e.target.onerror = null;
                   e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
+                  if (e.target.nextElementSibling) {
+                    e.target.nextElementSibling.classList.remove('hidden');
+                    e.target.nextElementSibling.classList.add('flex');
+                  }
                 }}
               />
             ) : null}
             <div 
-              className={`select-none rounded-full w-10 h-10 bg-white flex items-center justify-center ${userData?.profileImage ? 'hidden' : 'flex'}`}
+              className={`select-none rounded-full w-10 h-10 bg-white items-center justify-center ${userData?.profileImage ? 'hidden' : 'flex'}`}
             >
               <h1 className="text-lg font-semibold text-green-600">
                 {userData?.fullname?.firstname[0]}
