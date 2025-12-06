@@ -84,6 +84,7 @@ function UserHomeScreen() {
     bike: 0,
   });
   const [confirmedRideData, setConfirmedRideData] = useState(null);
+  const [rideETA, setRideETA] = useState(null); // Added missing state for ETA tracking
   const rideTimeout = useRef(null);
 
   // Paneles

@@ -154,7 +154,7 @@ const Vehicle = ({
       {/* Vehicle Image Section */}
       <div className="relative p-4 flex items-center justify-center w-32">
         <img
-          src={vehicle.image.startsWith('http') ? vehicle.image : `/${vehicle.image}`}
+          src={vehicle.image}
           className={`w-28 h-auto transition-transform duration-300 ${
             isHovered ? "scale-110" : "scale-100"
           }`}
