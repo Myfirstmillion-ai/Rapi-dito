@@ -33,7 +33,7 @@ function MapView({
         center: center,
         zoom: zoom,
         interactive: interactive,
-        preserveDrawingBuffer: true, // Helps with WebGL compatibility
+        preserveDrawingBuffer: true, // Prevents WebGL context loss and improves compatibility with certain browsers/devices
       });
 
       map.current.on('load', () => {
