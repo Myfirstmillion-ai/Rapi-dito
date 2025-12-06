@@ -6,26 +6,25 @@ const authMiddleware = require("../middlewares/auth.middleware");
 
 // Middleware to accept both user and captain authentication
 const authUserOrCaptain = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.replace('Bearer ', '');
+  const token = req.cookies.token || req.headers.token || req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized User" });
+    return res.status(401).json({ message: "No autorizado - Token requerido" });
   }
 
   // Try user auth first
   try {
-    await authMiddleware.authUser(req, res, () => {});
-    return next();
-  } catch (error) {
+    return authMiddleware.authUser(req, res, next);
+  } catch (userError) {
     // User auth failed, try captain auth
-  }
-
-  // Try captain auth
-  try {
-    await authMiddleware.authCaptain(req, res, () => {});
-    return next();
-  } catch (error) {
-    return res.status(401).json({ message: "Unauthorized User" });
+    try {
+      return authMiddleware.authCaptain(req, res, next);
+    } catch (captainError) {
+      return res.status(401).json({ 
+        message: "No autorizado - Token inválido",
+        error: "Invalid token for both user and captain" 
+      });
+    }
   }
 };
 
