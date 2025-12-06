@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, ChevronRight, Car } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ChevronRight, Car, UserCircle, Sparkles, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import Console from "../utils/console";
 
@@ -68,279 +69,320 @@ function CaptainSignup() {
   }, [responseError]);
 
   return (
-    <div className="w-full min-h-screen bg-white flex flex-col overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 flex flex-col overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgb(16 185 129 / 0.3) 1px, transparent 0)',
+          backgroundSize: '40px 40px'
+        }}></div>
+      </div>
+
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-transparent"></div>
+
       {/* Back Button */}
       <button
         onClick={() => navigation('/')}
-        className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors z-10"
+        className="absolute top-6 left-6 flex items-center gap-2 text-white/70 hover:text-white transition-colors z-20 backdrop-blur-sm bg-white/5 px-3 py-2 rounded-lg border border-white/10"
         aria-label="Volver a inicio"
       >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="font-medium">Volver</span>
+        <ArrowLeft className="w-4 h-4" />
+        <span className="font-medium text-sm">Volver</span>
       </button>
 
-      {/* Logo Section */}
-      <div className="w-full pt-8 pb-16 px-6 text-center">
-        <div className="text-3xl font-black tracking-tight text-black">
-          RAPIDITO
-          <span className="inline-block w-2 h-2 bg-[#00E676] rounded-full ml-1 mb-2"></span>
-        </div>
-      </div>
-
-      {/* Form Container */}
-      <div className="flex-1 px-6 pb-8">
-        <div className="max-w-md mx-auto">
-          {/* Title */}
-          <h2 className="text-2xl md:text-3xl font-bold text-black mb-2">
-            Regístrate como conductor
-          </h2>
-
-          {/* Subtitle */}
-          <p className="text-base text-gray-600 mb-8">
-            Gana dinero en San Antonio del Táchira
-          </p>
-
-          {/* Error Message */}
-          {responseError && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
-              {responseError}
+      {/* Content Container */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          {/* Logo Badge */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="flex justify-center mb-8"
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-2xl blur-xl opacity-50"></div>
+              <div className="relative bg-gradient-to-r from-emerald-500 to-cyan-500 p-4 rounded-2xl">
+                <Car className="w-8 h-8 text-white" />
+              </div>
             </div>
-          )}
+          </motion.div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(signupCaptain)} className="space-y-4">
-            {!showVehiclePanel ? (
-              <>
-                {/* Personal Information Section */}
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Car size={20} className="text-black" />
+          {/* Title */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-8"
+          >
+            <h1 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-r from-white via-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+              Únete a RAPIDITO
+            </h1>
+            <p className="text-white/60 text-base">Gana dinero en San Antonio del Táchira</p>
+          </motion.div>
+
+          {/* Form Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl"
+          >
+            {/* Error Message */}
+            {responseError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 backdrop-blur-xl bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm"
+              >
+                {responseError}
+              </motion.div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit(signupCaptain)} className="space-y-5">
+              <AnimatePresence mode="wait">
+                {!showVehiclePanel ? (
+                  <motion.div
+                    key="personal"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {/* Section Header */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center">
+                        <UserCircle size={20} className="text-emerald-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-white">Información Personal</h3>
+                        <p className="text-xs text-white/50">Cuéntanos sobre ti</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-black">Información Personal</h3>
-                      <p className="text-sm text-gray-600">Cuéntanos sobre ti</p>
+
+                    {/* First Name */}
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Nombre"
+                        {...register("firstname", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.firstname && (
+                        <p className="mt-2 text-sm text-red-300">El nombre es requerido</p>
+                      )}
                     </div>
-                  </div>
 
-                  {/* First Name */}
-                  <div className="mb-4">
-                    <input
-                      type="text"
-                      placeholder="Nombre"
-                      {...register("firstname", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.firstname && (
-                      <p className="mt-1 text-sm text-red-600">El nombre es requerido</p>
-                    )}
-                  </div>
+                    {/* Last Name */}
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Apellido"
+                        {...register("lastname", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.lastname && (
+                        <p className="mt-2 text-sm text-red-300">El apellido es requerido</p>
+                      )}
+                    </div>
 
-                  {/* Last Name */}
-                  <div className="mb-4">
-                    <input
-                      type="text"
-                      placeholder="Apellido"
-                      {...register("lastname", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.lastname && (
-                      <p className="mt-1 text-sm text-red-600">El apellido es requerido</p>
-                    )}
-                  </div>
+                    {/* Email */}
+                    <div className="mb-4">
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        {...register("email", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.email && (
+                        <p className="mt-2 text-sm text-red-300">El email es requerido</p>
+                      )}
+                    </div>
 
-                  {/* Email */}
-                  <div className="mb-4">
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      {...register("email", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-600">El email es requerido</p>
-                    )}
-                  </div>
+                    {/* Phone */}
+                    <div className="mb-4">
+                      <input
+                        type="tel"
+                        placeholder="Teléfono"
+                        {...register("phone", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.phone && (
+                        <p className="mt-2 text-sm text-red-300">El teléfono es requerido</p>
+                      )}
+                    </div>
 
-                  {/* Phone */}
-                  <div className="mb-4">
-                    <input
-                      type="tel"
-                      placeholder="Teléfono"
-                      {...register("phone", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-red-600">El teléfono es requerido</p>
-                    )}
-                  </div>
+                    {/* Password */}
+                    <div className="relative mb-4">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Contraseña"
+                        {...register("password", { required: true, minLength: 6 })}
+                        className="w-full h-12 px-4 pr-12 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                      {errors.password && (
+                        <p className="mt-2 text-sm text-red-300">
+                          {errors.password.type === "minLength" 
+                            ? "Mínimo 6 caracteres" 
+                            : "La contraseña es requerida"}
+                        </p>
+                      )}
+                    </div>
 
-                  {/* Password */}
-                  <div className="relative mb-4">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Contraseña"
-                      {...register("password", { required: true, minLength: 6 })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
+                    {/* Next Button */}
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition-colors"
+                      onClick={() => setShowVehiclePanel(true)}
+                      className="w-full h-12 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-base font-bold rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 mt-6"
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      <span>Siguiente paso</span>
+                      <ChevronRight size={20} />
                     </button>
-                    {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.password.type === "minLength" 
-                          ? "La contraseña debe tener al menos 6 caracteres" 
-                          : "La contraseña es requerida"}
-                      </p>
-                    )}
-                  </div>
-                </div>
 
-                {/* Next Button */}
-                <button
-                  type="button"
-                  onClick={() => setShowVehiclePanel(true)}
-                  className="w-full h-14 bg-black text-white text-base font-medium rounded hover:bg-gray-800 transition-all duration-150 flex items-center justify-center gap-2 mt-6"
-                >
-                  Siguiente paso
-                  <ChevronRight size={20} />
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Vehicle Information Section */}
-                <div className="mb-6">
-                  {/* Back Button */}
-                  <button
-                    type="button"
-                    onClick={() => setShowVehiclePanel(false)}
-                    className="flex items-center gap-2 text-black hover:text-gray-600 transition-colors mb-6"
+                    {/* Terms */}
+                    <p className="text-xs text-white/40 text-center mt-4 leading-relaxed">
+                      Al continuar, aceptas los{" "}
+                      <a href="#" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+                        Términos
+                      </a>{" "}
+                      y{" "}
+                      <a href="#" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+                        Privacidad
+                      </a>
+                    </p>
+
+                    {/* Login Link */}
+                    <p className="text-center text-sm text-white/60 mt-4">
+                      ¿Ya tienes cuenta?{" "}
+                      <Link to="/captain/login" className="font-bold text-white hover:text-emerald-300 transition-colors">
+                        Inicia sesión
+                      </Link>
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="vehicle"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <ArrowLeft size={20} />
-                    <span className="text-base font-medium">Atrás</span>
-                  </button>
-
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Car size={20} className="text-black" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-black">Información del Vehículo</h3>
-                      <p className="text-sm text-gray-600">Datos de tu vehículo</p>
-                    </div>
-                  </div>
-
-                  {/* Vehicle Type */}
-                  <div className="mb-4">
-                    <select
-                      {...register("type", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
+                    {/* Back Button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowVehiclePanel(false)}
+                      className="flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-6 backdrop-blur-sm bg-white/5 px-3 py-2 rounded-lg border border-white/10"
                     >
-                      <option value="">Tipo de vehículo</option>
-                      <option value="car">Auto</option>
-                      <option value="auto">Auto pequeño</option>
-                      <option value="moto">Moto</option>
-                    </select>
-                    {errors.type && (
-                      <p className="mt-1 text-sm text-red-600">El tipo de vehículo es requerido</p>
-                    )}
-                  </div>
+                      <ArrowLeft size={16} />
+                      <span className="text-sm font-medium">Atrás</span>
+                    </button>
 
-                  {/* Vehicle Number */}
-                  <div className="mb-4">
-                    <input
-                      type="text"
-                      placeholder="Placa del vehículo"
-                      {...register("number", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.number && (
-                      <p className="mt-1 text-sm text-red-600">La placa es requerida</p>
-                    )}
-                  </div>
-
-                  {/* Color */}
-                  <div className="mb-4">
-                    <input
-                      type="text"
-                      placeholder="Color del vehículo"
-                      {...register("color", { required: true })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.color && (
-                      <p className="mt-1 text-sm text-red-600">El color es requerido</p>
-                    )}
-                  </div>
-
-                  {/* Capacity */}
-                  <div className="mb-4">
-                    <input
-                      type="number"
-                      placeholder="Capacidad de pasajeros"
-                      {...register("capacity", { required: true, min: 1 })}
-                      className="w-full h-14 px-4 bg-[#EEEEEE] border border-transparent rounded text-base text-black placeholder-gray-500 focus:outline-none focus:border-black focus:bg-white transition-all duration-150"
-                    />
-                    {errors.capacity && (
-                      <p className="mt-1 text-sm text-red-600">La capacidad es requerida</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-14 bg-black text-white text-base font-medium rounded hover:bg-gray-800 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-                  style={{
-                    borderBottom: loading ? 'none' : '2px solid #00E676'
-                  }}
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    {/* Section Header */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center">
+                        <Car size={20} className="text-emerald-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-white">Tu Vehículo</h3>
+                        <p className="text-xs text-white/50">Datos del vehículo</p>
+                      </div>
                     </div>
-                  ) : (
-                    "Crear cuenta"
-                  )}
-                </button>
 
-                {/* Info Text */}
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  Revisaremos tu solicitud en 24-48 horas
-                </p>
-              </>
-            )}
-          </form>
+                    {/* Vehicle Type */}
+                    <div className="mb-4">
+                      <select
+                        {...register("type", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      >
+                        <option value="" className="bg-slate-900">Tipo de vehículo</option>
+                        <option value="car" className="bg-slate-900">Auto</option>
+                        <option value="auto" className="bg-slate-900">Auto pequeño</option>
+                        <option value="moto" className="bg-slate-900">Moto</option>
+                      </select>
+                      {errors.type && (
+                        <p className="mt-2 text-sm text-red-300">El tipo es requerido</p>
+                      )}
+                    </div>
 
-          {/* Terms (only on first step) */}
-          {!showVehiclePanel && (
-            <p className="text-xs text-gray-500 text-center mt-6 leading-relaxed">
-              Al continuar, aceptas los{" "}
-              <a href="#" className="underline hover:text-black transition-colors">
-                Términos y Condiciones
-              </a>{" "}
-              y la{" "}
-              <a href="#" className="underline hover:text-black transition-colors">
-                Política de Privacidad
-              </a>{" "}
-              de RAPIDITO
-            </p>
-          )}
+                    {/* Vehicle Number */}
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Placa del vehículo"
+                        {...register("number", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.number && (
+                        <p className="mt-2 text-sm text-red-300">La placa es requerida</p>
+                      )}
+                    </div>
 
-          {/* Login Link (only on first step) */}
-          {!showVehiclePanel && (
-            <p className="text-center text-sm text-gray-600 mt-6">
-              ¿Ya tienes cuenta?{" "}
-              <Link to="/captain/login" className="font-bold text-black hover:underline">
-                Inicia sesión
-              </Link>
-            </p>
-          )}
-        </div>
+                    {/* Color */}
+                    <div className="mb-4">
+                      <input
+                        type="text"
+                        placeholder="Color del vehículo"
+                        {...register("color", { required: true })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.color && (
+                        <p className="mt-2 text-sm text-red-300">El color es requerido</p>
+                      )}
+                    </div>
+
+                    {/* Capacity */}
+                    <div className="mb-4">
+                      <input
+                        type="number"
+                        placeholder="Capacidad de pasajeros"
+                        {...register("capacity", { required: true, min: 1 })}
+                        className="w-full h-12 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                      />
+                      {errors.capacity && (
+                        <p className="mt-2 text-sm text-red-300">La capacidad es requerida</p>
+                      )}
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-12 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-base font-bold rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 mt-6"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <Zap className="w-5 h-5" />
+                          <span>Crear cuenta</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Info Text */}
+                    <p className="text-xs text-white/40 text-center mt-4">
+                      Revisaremos tu solicitud en 24-48 horas
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
