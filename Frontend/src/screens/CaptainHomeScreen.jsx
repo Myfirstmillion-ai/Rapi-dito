@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useCaptain } from "../contexts/CaptainContext";
-import { Phone, User } from "lucide-react";
+import { Phone, User, ChevronDown, ChevronUp, TrendingUp, MapPin, DollarSign, Award } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
@@ -111,6 +111,7 @@ function CaptainHomeScreen() {
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
+  const [isPanelExpanded, setIsPanelExpanded] = useState(true);
   const [showNewRidePanel, setShowNewRidePanel] = useState(
     JSON.parse(localStorage.getItem("showPanel")) || false
   );
@@ -560,86 +561,176 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      {/* Captain details panel - Hidden when sidebar is open */}
+      {/* Captain Premium Dashboard - Hidden when sidebar is open */}
       {showCaptainDetailsPanel && !isSidebarOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-2 rounded-t-2xl bg-white shadow-uber-xl max-h-[50vh] overflow-y-auto transition-all duration-300 ease-out">
-          <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
-          {/* Detalles del conductor */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="my-2 select-none rounded-full w-10 h-10 bg-blue-400 mx-auto flex items-center justify-center">
-                <h1 className="text-lg text-white">
-                  {captainData?.fullname?.firstname?.[0] || "C"}
-                  {captainData?.fullname?.lastname?.[0] || ""}
-                </h1>
-              </div>
-
-              <div>
-                <h1 className="text-lg font-semibold leading-6">
-                  {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
-                </h1>
-                <p className="text-xs flex items-center gap-1 text-gray-500 ">
-                  <Phone size={12} />
-                  {captainData?.phone || "---"}
-                </p>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p className="text-xs text-gray-500 ">Ganancias hoy</p>
-              <h1 className="font-semibold">COP$ {earnings.today.toLocaleString('es-CO')}</h1>
-            </div>
+        <div className={`fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl transition-all duration-500 ease-in-out ${
+          isPanelExpanded ? 'max-h-[75vh]' : 'max-h-[100px]'
+        } rounded-t-3xl overflow-hidden`}>
+          {/* Glassmorphism overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+          
+          {/* Handle bar and toggle */}
+          <div className="relative">
+            <button
+              onClick={() => setIsPanelExpanded(!isPanelExpanded)}
+              className="w-full py-3 flex flex-col items-center gap-1 hover:bg-white/5 transition-colors active:scale-95"
+            >
+              <div className="w-12 h-1.5 bg-white/30 rounded-full"></div>
+              {isPanelExpanded ? (
+                <ChevronDown className="w-5 h-5 text-white/60 mt-1" />
+              ) : (
+                <ChevronUp className="w-5 h-5 text-white/60 mt-1" />
+              )}
+            </button>
           </div>
 
-          {/* Detalles de viajes */}
-          <div className="flex justify-around items-center mt-2 py-4 rounded-lg bg-zinc-800">
-            <div className="flex flex-col items-center text-white">
-              <h1 className="mb-1 text-xl">{rides?.accepted}</h1>
-              <p className="text-xs text-gray-400 text-center leading-3">
-                Viajes
-                <br />
-                Completados
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-white">
-              <h1 className="mb-1 text-xl">{rides?.distanceTravelled}</h1>
-              <p className="text-xs text-gray-400 text-center leading-3">
-                Km
-                <br />
-                Recorridos
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-white">
-              <h1 className="mb-1 text-xl">{rides?.cancelled}</h1>
-              <p className="text-xs text-gray-400 text-center leading-3">
-                Viajes
-                <br />
-                Cancelados
-              </p>
-            </div>
-          </div>
+          <div className="relative px-5 pb-safe overflow-y-auto" style={{ maxHeight: isPanelExpanded ? 'calc(75vh - 60px)' : '0' }}>
+            {/* Header - Driver Profile */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+              <div className="flex items-center gap-4">
+                {/* Profile Photo with Ring */}
+                <div className="relative">
+                  {captain?.profileImage ? (
+                    <img
+                      src={captain.profileImage}
+                      alt="Profile"
+                      className="w-16 h-16 rounded-full object-cover ring-4 ring-emerald-500/50 shadow-xl"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center ring-4 ring-emerald-500/50 shadow-xl"
+                    style={{ display: captain?.profileImage ? 'none' : 'flex' }}
+                  >
+                    <span className="text-2xl font-black text-white">
+                      {captainData?.fullname?.firstname?.[0] || "C"}
+                      {captainData?.fullname?.lastname?.[0] || ""}
+                    </span>
+                  </div>
+                  {/* Online indicator */}
+                  <div className="absolute bottom-0 right-0 w-5 h-5 bg-emerald-400 rounded-full border-4 border-slate-900 shadow-lg"></div>
+                </div>
 
-          {/* Detalles del vehículo */}
-          <div className="flex justify-between border-2 items-center pl-3 py-2 rounded-lg">
-            <div>
-              <h1 className="text-lg font-semibold leading-6 tracking-tighter ">
-                {captainData?.vehicle?.number || "---"}
-              </h1>
-              <p className="text-xs text-gray-500 flex items-center">
-                {captainData?.vehicle?.color || "Gris"} |
-                <User size={12} strokeWidth={2.5} /> {captainData?.vehicle?.capacity || 4}
-              </p>
+                {/* Driver Info */}
+                <div>
+                  <h1 className="text-xl font-bold text-white leading-tight">
+                    {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Phone size={14} className="text-emerald-400" />
+                    <p className="text-sm text-gray-300">{captainData?.phone || "---"}</p>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Award size={14} className="text-yellow-400" />
+                    <span className="text-xs text-yellow-400 font-semibold">Conductor Pro</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Today's Earnings Highlight */}
+              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 rounded-2xl shadow-xl">
+                <p className="text-xs text-emerald-100 font-medium">Hoy</p>
+                <div className="flex items-baseline gap-1">
+                  <DollarSign size={18} className="text-white" />
+                  <h1 className="text-2xl font-black text-white">{(earnings.today / 1000).toFixed(1)}K</h1>
+                </div>
+                <p className="text-[10px] text-emerald-100">COP</p>
+              </div>
             </div>
 
-            <img
-              className="rounded-full h-16 scale-x-[-1]"
-              src={
-                captainData?.vehicle?.type === "car"
-                  ? "/car.png"
-                  : `/${captainData?.vehicle?.type || "car"}.webp`
-              }
-              alt="Imagen del vehículo"
-            />
+            {/* Stats Grid - Premium Cards */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {/* Total Earnings */}
+              <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-400/30 rounded-2xl p-4 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-blue-500/30 rounded-lg flex items-center justify-center">
+                    <TrendingUp size={16} className="text-blue-400" />
+                  </div>
+                  <p className="text-xs text-blue-200 font-medium">Total</p>
+                </div>
+                <h3 className="text-2xl font-black text-white">${(earnings.total / 1000).toFixed(1)}K</h3>
+                <p className="text-[10px] text-blue-200 mt-1">Ganancias acumuladas</p>
+              </div>
+
+              {/* Distance */}
+              <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-400/30 rounded-2xl p-4 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-purple-500/30 rounded-lg flex items-center justify-center">
+                    <MapPin size={16} className="text-purple-400" />
+                  </div>
+                  <p className="text-xs text-purple-200 font-medium">Distancia</p>
+                </div>
+                <h3 className="text-2xl font-black text-white">{rides?.distanceTravelled}</h3>
+                <p className="text-[10px] text-purple-200 mt-1">Kilómetros recorridos</p>
+              </div>
+            </div>
+
+            {/* Performance Stats */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 mb-5 shadow-lg">
+              <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                <Award size={16} className="text-yellow-400" />
+                Rendimiento
+              </h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-emerald-500/20 flex items-center justify-center border-2 border-emerald-500/50">
+                    <span className="text-xl font-black text-emerald-400">{rides?.accepted}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">Viajes<br />Completados</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-yellow-500/20 flex items-center justify-center border-2 border-yellow-500/50">
+                    <span className="text-xl font-black text-yellow-400">
+                      {rides?.accepted > 0 ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) : 0}%
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">Tasa de<br />Aceptación</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-red-500/20 flex items-center justify-center border-2 border-red-500/50">
+                    <span className="text-xl font-black text-red-400">{rides?.cancelled}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-tight">Viajes<br />Cancelados</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Vehicle Info Card */}
+            <div className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-xs text-gray-400 mb-1">Vehículo</p>
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-1">
+                    {captainData?.vehicle?.number || "---"}
+                  </h3>
+                  <div className="flex items-center gap-3 text-sm text-gray-300">
+                    <span className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: captainData?.vehicle?.color?.toLowerCase() === 'rojo' ? '#EF4444' : captainData?.vehicle?.color?.toLowerCase() === 'azul' ? '#3B82F6' : captainData?.vehicle?.color?.toLowerCase() === 'negro' ? '#1F2937' : captainData?.vehicle?.color?.toLowerCase() === 'blanco' ? '#F3F4F6' : '#9CA3AF' }}></div>
+                      {captainData?.vehicle?.color || "Gris"}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <User size={14} />
+                      {captainData?.vehicle?.capacity || 4}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-white/10 rounded-xl p-2">
+                  <img
+                    className="h-14 scale-x-[-1] filter drop-shadow-lg"
+                    src={
+                      captainData?.vehicle?.type === "car"
+                        ? "/car.png"
+                        : `/${captainData?.vehicle?.type || "car"}.webp`
+                    }
+                    alt="Vehículo"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
