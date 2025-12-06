@@ -189,7 +189,15 @@ function CaptainEditProfile() {
   }, [responseError]);
 
   return (
-    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto pb-safe" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      {/* Animated Grid Background */}
+      <div className="fixed inset-0 opacity-20 pointer-events-none">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, rgb(16 185 129) 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }}></div>
+      </div>
+
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -197,24 +205,28 @@ function CaptainEditProfile() {
         onClose={hideAlert}
         type={alert.type}
       />
-      <div className="overflow-auto pb-6">
-        <div className="flex gap-3 mb-6">
-          <ArrowLeft
-            strokeWidth={3}
-            className="mt-[5px] cursor-pointer"
+      
+      <div className="relative overflow-auto pb-6 p-4 pt-6">
+        <div className="flex items-center gap-3 mb-6">
+          <button
             onClick={() => navigation(-1)}
-          />
-          <Heading title={"Editar Perfil"} />
+            className="p-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/20 transition-all"
+          >
+            <ArrowLeft size={24} className="text-white" strokeWidth={3} />
+          </button>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            Editar Perfil
+          </h1>
         </div>
 
-        {/* Profile Image Section - UBER Premium Style */}
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-black mb-4">Foto de perfil</h3>
+        {/* Profile Image Section */}
+        <div className="mb-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Foto de perfil</h3>
           
           <div className="flex flex-col items-center gap-4">
             {/* Image Preview Circle */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-zinc-100 border-4 border-white shadow-xl">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-4 border-white/20 shadow-2xl">
                 {imagePreview || captain?.profileImage ? (
                   <img 
                     src={imagePreview || captain?.profileImage} 
@@ -222,22 +234,22 @@ function CaptainEditProfile() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
-                    <span className="text-5xl font-black text-green-600">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-500 to-green-600">
+                    <span className="text-5xl font-black text-white">
                       {captain?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
                     </span>
                   </div>
                 )}
               </div>
               
-              {/* Camera Icon Button - UBER Style */}
+              {/* Camera Icon Button */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-zinc-800 active:scale-95 transition-all duration-150"
+                className="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-emerald-500/50 active:scale-95 transition-all duration-150"
                 disabled={uploadingImage}
               >
-                <Camera size={20} className="text-white" />
+                <Camera size={22} className="text-white" />
               </button>
             </div>
 
@@ -250,13 +262,13 @@ function CaptainEditProfile() {
               className="hidden"
             />
 
-            {/* Action Buttons - UBER Style */}
+            {/* Action Buttons */}
             {imagePreview && selectedFile && (
               <div className="flex gap-3 w-full max-w-sm">
                 <button
                   type="button"
                   onClick={handleCancelSelection}
-                  className="flex-1 py-3 px-4 bg-white border-2 border-zinc-200 rounded-lg text-black font-medium hover:bg-zinc-50 active:scale-98 transition-all duration-150"
+                  className="flex-1 py-3 px-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-medium hover:bg-white/20 active:scale-98 transition-all duration-150"
                   disabled={uploadingImage}
                 >
                   Cancelar
@@ -264,7 +276,7 @@ function CaptainEditProfile() {
                 <button
                   type="button"
                   onClick={handleImageUpload}
-                  className="flex-1 py-3 px-4 bg-black rounded-lg text-white font-medium hover:bg-zinc-800 active:scale-98 transition-all duration-150 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-emerald-500/50 active:scale-98 transition-all duration-150 flex items-center justify-center gap-2"
                   disabled={uploadingImage}
                 >
                   {uploadingImage ? (
@@ -279,16 +291,16 @@ function CaptainEditProfile() {
               </div>
             )}
 
-            {/* Delete Button - Only if image exists */}
+            {/* Delete Button */}
             {!imagePreview && captain?.profileImage && (
               <button
                 type="button"
                 onClick={handleImageDelete}
-                className="py-2 px-4 text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-2 active:scale-95 transition-all duration-150"
+                className="py-2 px-4 text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-2 active:scale-95 transition-all duration-150"
                 disabled={uploadingImage}
               >
                 {uploadingImage ? (
-                  <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
                     <X size={16} />
@@ -299,17 +311,15 @@ function CaptainEditProfile() {
             )}
 
             {/* Helper Text */}
-            <p className="text-xs text-zinc-500 text-center max-w-xs">
+            <p className="text-xs text-slate-400 text-center max-w-xs">
               Formatos: JPEG, JPG, PNG, WEBP • Tamaño máximo: 5MB
             </p>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-zinc-200 mb-6"></div>
-
         {/* Form Fields */}
-        <h3 className="text-lg font-bold text-black mb-4">Información personal</h3>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Información personal</h3>
         
         <Input
           label={"Correo electrónico"}
@@ -390,6 +400,7 @@ function CaptainEditProfile() {
             classes={"mt-4"}
           />
         </form>
+        </div>
       </div>
     </div>
   );
