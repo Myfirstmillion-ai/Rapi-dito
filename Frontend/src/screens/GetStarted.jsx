@@ -32,7 +32,7 @@ function GetStarted() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1600&q=80')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1600&q=80')`,
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>

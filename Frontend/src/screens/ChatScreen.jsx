@@ -251,13 +251,14 @@ function ChatScreen() {
           </div>
         </div>
 
-        {/* Input de mensaje estilo WhatsApp */}
-        <div className="flex items-center p-2 bg-gray-200 gap-2">
-          <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2 shadow-sm">
+        {/* Input de mensaje estilo WhatsApp - Improved Visibility */}
+        <div className="flex items-center p-2 bg-gray-100 gap-2">
+          <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2.5 shadow-sm border border-gray-200">
             <input
               ref={inputRef}
               placeholder="Escribe un mensaje..."
-              className="w-full outline-none text-sm bg-transparent"
+              className="w-full outline-none text-sm bg-transparent text-gray-900 placeholder-gray-500"
+              style={{ color: '#1F2937' }}
               value={message}
               onChange={(e) => {
                 setMessage(e.target.value);

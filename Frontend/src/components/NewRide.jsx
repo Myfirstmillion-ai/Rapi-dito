@@ -64,7 +64,7 @@ function NewRide({
           </div>
         </div>
         
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto">
+        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto -webkit-overflow-scrolling-touch" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
 
           {isMinimized ? (
             /* Minimized View - Premium Summary */
@@ -100,8 +100,23 @@ function NewRide({
           <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-4 mb-4 shadow-sm">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="select-none rounded-full w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg ring-4 ring-green-50">
+                <div className="relative flex-shrink-0">
+                  {rideData?.user?.profileImage ? (
+                    <img 
+                      src={rideData.user.profileImage} 
+                      alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
+                      className="w-14 h-14 rounded-full object-cover shadow-lg ring-4 ring-green-50"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className={`w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg ring-4 ring-green-50 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                  >
                     <span className="text-xl font-bold text-white">
                       {rideData?.user?.fullname?.firstname[0]}
                       {rideData?.user?.fullname?.lastname[0]}

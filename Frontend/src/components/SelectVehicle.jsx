@@ -61,7 +61,7 @@ function SelectVehicle({
           </div>
         </div>
 
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto">
+        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto -webkit-overflow-scrolling-touch" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
 
         {isMinimized ? (
           /* Minimized View - Premium */

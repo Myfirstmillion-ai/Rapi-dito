@@ -49,7 +49,7 @@ function UserLogin() {
   }, [responseError]);
 
   return (
-    <div className="w-full min-h-screen bg-white flex flex-col">
+    <div className="w-full min-h-screen bg-white flex flex-col overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
       {/* Logo Section */}
       <div className="w-full pt-8 pb-16 px-6 text-center">
         <div className="text-3xl font-black tracking-tight text-black">

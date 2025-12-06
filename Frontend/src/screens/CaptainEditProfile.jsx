@@ -189,7 +189,7 @@ function CaptainEditProfile() {
   }, [responseError]);
 
   return (
-    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6 overflow-y-auto">
+    <div className="w-full h-dvh flex flex-col justify-between p-4 pt-6 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
       <Alert
         heading={alert.heading}
         text={alert.text}
