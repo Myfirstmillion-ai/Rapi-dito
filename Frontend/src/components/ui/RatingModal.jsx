@@ -55,20 +55,30 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
     try {
       const token = localStorage.getItem("token");
       
+      // Debug: Log token to verify it exists
+      console.log('Token en submit:', token ? 'Token presente' : 'Token ausente');
+      
       if (!token) {
         toast.error("Sesión expirada. Por favor inicia sesión nuevamente");
         setIsSubmitting(false);
         return;
       }
 
+      // Prepare the payload with explicit rateeId
+      const payload = {
+        rideId: rideData.rideId,
+        stars: selectedStars,
+        comment: comment.trim(),
+        raterType: rideData.raterType,
+        // Explicitly pass rateeId from rideData
+        rateeId: rideData.rateeId || rideData.userId || rideData.captainId,
+      };
+
+      console.log('Rating payload:', payload);
+
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/ratings/submit`,
-        {
-          rideId: rideData.rideId,
-          stars: selectedStars,
-          comment: comment.trim(),
-          raterType: rideData.raterType,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,

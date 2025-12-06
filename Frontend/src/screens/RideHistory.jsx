@@ -464,20 +464,18 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
           )}
 
           {/* Additional Info */}
-          <div className="grid grid-cols-2 gap-3">
-            {ride.duration && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-3">
-                <p className="text-xs text-slate-400 mb-1">Duración</p>
-                <p className="text-sm font-semibold text-white">
-                  {ride.duration} min
-                </p>
-              </div>
-            )}
-            {ride.captain && (
+          <div className="grid grid-cols-1 gap-3">
+            {(ride.captain || ride.driver) && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-3">
                 <p className="text-xs text-slate-400 mb-1">Conductor</p>
                 <p className="text-sm font-semibold text-white truncate">
-                  {ride.captain.fullname?.firstname || "N/A"}
+                  {ride.captain?.fullname?.firstname || 
+                   ride.captain?.firstname || 
+                   ride.driver?.fullname?.firstname || 
+                   ride.driver?.firstname ||
+                   ride.captain?.name ||
+                   ride.driver?.name ||
+                   "Sin información"}
                 </p>
               </div>
             )}

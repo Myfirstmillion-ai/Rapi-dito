@@ -62,13 +62,14 @@ function Sidebar({ onToggle }) {
       <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="m-3 mt-4 absolute left-0 top-0 z-40 cursor-pointer bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+        style={{ zIndex: 9999 }}
+        className="m-3 mt-4 absolute left-0 top-0 cursor-pointer bg-gray-900 backdrop-blur-md p-3 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-200 border-2 border-white/20"
         onClick={toggleSidebar}
       >
         {showSidebar ? (
-          <X size={24} className="text-gray-900" />
+          <X size={24} className="text-white font-bold" />
         ) : (
-          <Menu size={24} className="text-gray-900" />
+          <Menu size={24} className="text-white font-bold" />
         )}
       </motion.div>
 
