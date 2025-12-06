@@ -25,7 +25,7 @@ function GetStarted() {
   }, [navigate]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-hidden">
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-x-hidden">
       {/* Premium Header with Glassmorphism */}
       <motion.header 
         initial={{ y: -100, opacity: 0 }}
@@ -248,7 +248,7 @@ function GetStarted() {
                 <div className="space-y-2">
                   <Link to="/terms" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Términos</Link>
                   <Link to="/privacy" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Privacidad</Link>
-                  <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Ayuda</a>
+                  <Link to="/help" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Ayuda</Link>
                 </div>
               </div>
             </div>
