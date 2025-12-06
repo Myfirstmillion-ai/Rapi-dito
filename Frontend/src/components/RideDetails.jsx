@@ -180,6 +180,11 @@ function RideDetails({
                     <p className="capitalize text-xs text-slate-300 font-medium">
                       {confirmedRideData?.captain?.vehicle?.color}{" "}
                       {confirmedRideData?.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
+                      {(confirmedRideData?.captain?.vehicle?.brand || confirmedRideData?.captain?.vehicle?.model) && (
+                        <span className="block mt-0.5">
+                          {confirmedRideData?.captain?.vehicle?.brand} {confirmedRideData?.captain?.vehicle?.model}
+                        </span>
+                      )}
                     </p>
                     <div className="mt-2 inline-block bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
                       OTP: {confirmedRideData?.otp}

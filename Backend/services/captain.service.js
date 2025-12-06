@@ -9,7 +9,9 @@ module.exports.createCaptain = async (
   color,
   number,
   capacity,
-  type
+  type,
+  brand = "",
+  model = ""
 ) => {
   if (!firstname || !email || !password) {
     throw new Error("All fields are required");
@@ -30,6 +32,8 @@ module.exports.createCaptain = async (
       number,
       capacity,
       type,
+      brand,
+      model,
     },
   });
 

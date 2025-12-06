@@ -65,6 +65,14 @@ const captainSchema = new mongoose.Schema(
         required: true,
         enum: ["car", "bike", "carro", "moto"],
       },
+      brand: {
+        type: String,
+        default: "",
+      },
+      model: {
+        type: String,
+        default: "",
+      },
     },
 
     location: {

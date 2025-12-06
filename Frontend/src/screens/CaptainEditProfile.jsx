@@ -153,8 +153,8 @@ function CaptainEditProfile() {
         number: data.number,
         capacity: data.capacity,
         type: typeMap[data.type.toLowerCase()] || data.type.toLowerCase(),
-        brand: data.brand,
-        model: data.model,
+        brand: data.brand || "",
+        model: data.model || "",
       },
     };
     Console.log(captainData);
@@ -170,6 +170,21 @@ function CaptainEditProfile() {
         }
       );
       Console.log(response);
+      
+      // Update captain context with new data
+      const updatedCaptain = {
+        ...captain,
+        ...captainData
+      };
+      setCaptain(updatedCaptain);
+      
+      // Update localStorage
+      const userData = JSON.parse(localStorage.getItem("userData"));
+      if (userData) {
+        userData.data = updatedCaptain;
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+      
       showAlert('¡Actualización exitosa!', 'Tu perfil ha sido actualizado correctamente', 'success');
       
       setTimeout(() => {
