@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, MapPin, Shield, DollarSign, Star, Heart, Coffee } from "lucide-react";
 
@@ -238,16 +238,16 @@ function GetStarted() {
               <div>
                 <h4 className="text-white font-semibold mb-3">Empresa</h4>
                 <div className="space-y-2">
-                  <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Sobre Nosotros</a>
-                  <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Blog</a>
-                  <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Carreras</a>
+                  <Link to="/about" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Sobre Nosotros</Link>
+                  <Link to="/blog" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Blog</Link>
+                  <Link to="/careers" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Carreras</Link>
                 </div>
               </div>
               <div>
                 <h4 className="text-white font-semibold mb-3">Legal</h4>
                 <div className="space-y-2">
-                  <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Términos</a>
-                  <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Privacidad</a>
+                  <Link to="/terms" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Términos</Link>
+                  <Link to="/privacy" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Privacidad</Link>
                   <a href="#" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Ayuda</a>
                 </div>
               </div>

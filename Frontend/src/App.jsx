@@ -16,7 +16,12 @@ import {
   ChatScreen,
   VerifyEmail,
   ResetPassword,
-  ForgotPassword
+  ForgotPassword,
+  AboutUs,
+  Blog,
+  Careers,
+  Terms,
+  Privacy
 } from "./screens/";
 import { logger } from "./utils/logger";
 import { SocketDataContext } from "./contexts/SocketContext";
@@ -146,6 +151,13 @@ function AnimatedRoutes() {
           <Route path="/:userType/verify-email/" element={<VerifyEmail />} />
           <Route path="/:userType/forgot-password/" element={<ForgotPassword />} />
           <Route path="/:userType/reset-password/" element={<ResetPassword />} />
+
+          {/* Information pages */}
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
 
           <Route path="*" element={<Error />} />
         </Routes>
