@@ -10,6 +10,7 @@ import {
   GripHorizontal,
   Navigation,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 import Button from "./Button";
 import MessageBadge from "./ui/MessageBadge";
@@ -61,6 +62,20 @@ function RideDetails({
         </div>
 
         <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
+          {/* Back Button - Only show before ride is created */}
+          {!rideCreated && !confirmedRideData && !isMinimized && showPreviousPanel && (
+            <button
+              onClick={() => {
+                setShowPanel(false);
+                showPreviousPanel(true);
+              }}
+              className="mb-3 flex items-center gap-2 text-white/80 hover:text-white transition-colors group"
+            >
+              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Cambiar vehículo</span>
+            </button>
+          )}
+          
           {/* Searching Animation - Premium */}
           {rideCreated && !confirmedRideData && !isMinimized && (
             <div className="mb-4 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-2xl p-4">
@@ -73,7 +88,6 @@ function RideDetails({
               </div>
             </div>
           )}
-          
           {isMinimized ? (
             /* Minimized View - Premium Summary with Profile Photo */
             <div className="flex justify-between items-center">

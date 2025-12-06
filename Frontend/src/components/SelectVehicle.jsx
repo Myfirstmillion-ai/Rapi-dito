@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, GripHorizontal, Check, Clock, Users } from "lucide-react";
 
 const vehicles = [
@@ -34,10 +34,18 @@ function SelectVehicle({
 }) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [hoveredVehicle, setHoveredVehicle] = useState(null);
+  const [currentlySelected, setCurrentlySelected] = useState(null);
 
   const toggleMinimize = () => {
     setIsMinimized(!isMinimized);
   };
+
+  // Reset selection when panel closes
+  useEffect(() => {
+    if (!showPanel) {
+      setCurrentlySelected(null);
+    }
+  }, [showPanel]);
 
   return (
     <>
@@ -91,6 +99,8 @@ function SelectVehicle({
                   isHovered={hoveredVehicle === vehicle.id}
                   onHover={() => setHoveredVehicle(vehicle.id)}
                   onLeave={() => setHoveredVehicle(null)}
+                  currentlySelected={currentlySelected}
+                  setCurrentlySelected={setCurrentlySelected}
                 />
               ))}
             </div>
@@ -111,11 +121,13 @@ const Vehicle = ({
   isHovered,
   onHover,
   onLeave,
+  currentlySelected,
+  setCurrentlySelected,
 }) => {
-  const [isSelected, setIsSelected] = useState(false);
+  const isSelected = currentlySelected === vehicle.id;
 
   const handleSelect = () => {
-    setIsSelected(true);
+    setCurrentlySelected(vehicle.id);
     setTimeout(() => {
       selectedVehicle(vehicle.type);
       setShowPanel(false);
