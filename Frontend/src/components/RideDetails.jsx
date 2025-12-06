@@ -75,24 +75,41 @@ function RideDetails({
           )}
           
           {isMinimized ? (
-            /* Minimized View - Premium Summary */
+            /* Minimized View - Premium Summary with Profile Photo */
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src={
-                      selectedVehicle === "car"
-                        ? "/car.png"
-                        : `/${selectedVehicle}.webp`
-                    }
-                    className="h-14 w-auto mix-blend-multiply"
-                    alt="Vehículo"
-                  />
-                </div>
+                {confirmedRideData?.captain?.profileImage ? (
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-400/50 shadow-lg">
+                      <img 
+                        src={confirmedRideData.captain.profileImage} 
+                        alt="Conductor" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img
+                      src={
+                        selectedVehicle === "car"
+                          ? "/car.png"
+                          : `/${selectedVehicle}.webp`
+                      }
+                      className="h-14 w-auto mix-blend-multiply"
+                      alt="Vehículo"
+                    />
+                  </div>
+                )}
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">Tu viaje</p>
+                  <p className="text-xs text-slate-400 font-medium">
+                    {confirmedRideData ? "Tu conductor" : "Tu viaje"}
+                  </p>
                   <h1 className="text-base font-bold text-white capitalize">
-                    {selectedVehicle === "car" ? "Carro" : "Moto"}
+                    {confirmedRideData 
+                      ? `${confirmedRideData.captain?.fullname?.firstname || ''} ${confirmedRideData.captain?.fullname?.lastname?.[0] || ''}.`
+                      : selectedVehicle === "car" ? "Carro" : "Moto"
+                    }
                   </h1>
                 </div>
               </div>

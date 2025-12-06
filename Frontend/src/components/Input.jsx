@@ -1,7 +1,7 @@
 function Input({ label, type, name, placeholder, defaultValue, register, error, options, disabled }) {
   return (
     <div className="my-2">
-      <h1 className="font-semibold ">{label}</h1>
+      <h1 className="font-semibold text-white">{label}</h1>
       {type == "select" ? (
         <select
           {...register(name)}
