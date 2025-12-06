@@ -44,7 +44,7 @@ function BottomSheet({
             }}
             className={cn(
               "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50",
-              "max-h-[90vh] overflow-y-auto"
+              "max-h-[90vh] overflow-y-auto pb-safe"
             )}
             style={{ height }}
           >

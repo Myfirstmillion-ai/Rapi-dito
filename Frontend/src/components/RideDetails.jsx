@@ -42,7 +42,7 @@ function RideDetails({
           showPanel ? "bottom-0" : "-bottom-full"
         } ${
           isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] absolute bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden`}
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden pb-safe`}
       >
         {/* Premium Drag Handle */}
         <div 
@@ -59,7 +59,7 @@ function RideDetails({
           </div>
         </div>
 
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto">
+        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
           {/* Searching Animation - Premium */}
           {rideCreated && !confirmedRideData && !isMinimized && (
             <div className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">
@@ -123,21 +123,49 @@ function RideDetails({
               </div>
 
               {confirmedRideData?._id && (
-                <div className="text-right space-y-1">
-                  <p className="text-xs text-gray-600 font-medium">Tu conductor</p>
-                  <h1 className="text-base font-bold text-gray-900">
-                    {confirmedRideData?.captain?.fullname?.firstname}{" "}
-                    {confirmedRideData?.captain?.fullname?.lastname}
-                  </h1>
-                  <h1 className="font-bold text-lg text-gray-900">
-                    {confirmedRideData?.captain?.vehicle?.number}
-                  </h1>
-                  <p className="capitalize text-xs text-gray-600 font-medium">
-                    {confirmedRideData?.captain?.vehicle?.color}{" "}
-                    {confirmedRideData?.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
-                  </p>
-                  <div className="mt-2 inline-block bg-black text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
-                    OTP: {confirmedRideData?.otp}
+                <div className="flex items-start gap-3">
+                  {/* Driver Profile Photo */}
+                  <div className="flex-shrink-0">
+                    {confirmedRideData?.captain?.profileImage ? (
+                      <img 
+                        src={confirmedRideData.captain.profileImage} 
+                        alt={`${confirmedRideData?.captain?.fullname?.firstname} ${confirmedRideData?.captain?.fullname?.lastname}`}
+                        className="w-20 h-20 rounded-full object-cover border-4 border-blue-100 shadow-lg"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg border-4 border-blue-100 ${confirmedRideData?.captain?.profileImage ? 'hidden' : 'flex'}`}
+                    >
+                      <span className="text-2xl font-black text-white">
+                        {confirmedRideData?.captain?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
+                        {confirmedRideData?.captain?.fullname?.lastname?.[0]?.toUpperCase() || ''}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Driver Info */}
+                  <div className="text-left space-y-1 flex-1">
+                    <p className="text-xs text-gray-600 font-medium">Tu conductor</p>
+                    <h1 className="text-base font-bold text-gray-900">
+                      {confirmedRideData?.captain?.fullname?.firstname}{" "}
+                      {confirmedRideData?.captain?.fullname?.lastname}
+                    </h1>
+                    <h1 className="font-bold text-lg text-gray-900">
+                      {confirmedRideData?.captain?.vehicle?.number}
+                    </h1>
+                    <p className="capitalize text-xs text-gray-600 font-medium">
+                      {confirmedRideData?.captain?.vehicle?.color}{" "}
+                      {confirmedRideData?.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
+                    </p>
+                    <div className="mt-2 inline-block bg-black text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+                      OTP: {confirmedRideData?.otp}
+                    </div>
                   </div>
                 </div>
               )}

@@ -47,7 +47,7 @@ function NewRide({
           showPanel ? "bottom-0" : "-bottom-full"
         } ${
           isMinimized ? "max-h-[25%]" : "max-h-[65%]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] absolute bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden`}
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-white w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-10 overflow-hidden pb-safe`}
       >
         {/* Premium Drag Handle */}
         <div 
@@ -64,7 +64,7 @@ function NewRide({
           </div>
         </div>
         
-        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto">
+        <div className="px-4 pb-4 max-h-[calc(65vh-60px)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
 
           {isMinimized ? (
             /* Minimized View - Premium Summary */
@@ -100,8 +100,23 @@ function NewRide({
           <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-4 mb-4 shadow-sm">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="select-none rounded-full w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg ring-4 ring-green-50">
+                <div className="relative flex-shrink-0">
+                  {rideData?.user?.profileImage ? (
+                    <img 
+                      src={rideData.user.profileImage} 
+                      alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
+                      className="w-14 h-14 rounded-full object-cover shadow-lg ring-4 ring-green-50"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className={`w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg ring-4 ring-green-50 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                  >
                     <span className="text-xl font-bold text-white">
                       {rideData?.user?.fullname?.firstname[0]}
                       {rideData?.user?.fullname?.lastname[0]}

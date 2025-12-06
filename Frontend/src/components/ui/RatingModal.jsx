@@ -54,7 +54,14 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
+      
+      if (!token) {
+        toast.error("Sesión expirada. Por favor inicia sesión nuevamente");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/ratings/submit`,
         {
           rideId: rideData.rideId,
@@ -69,6 +76,7 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
         }
       );
 
+      console.log("Rating submitted successfully:", response.data);
       toast.success("¡Gracias por tu calificación!");
       
       // Call onSubmit callback
@@ -81,7 +89,20 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
       setComment("");
     } catch (error) {
       console.error("Error submitting rating:", error);
-      toast.error(error.response?.data?.message || "Error al enviar calificación");
+      console.error("Error response:", error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || "Error al enviar calificación";
+      const errorReason = error.response?.data?.reason;
+      
+      if (error.response?.status === 401) {
+        toast.error("Sesión expirada. Por favor inicia sesión nuevamente");
+      } else if (error.response?.status === 403) {
+        toast.error(errorReason || errorMessage);
+      } else if (error.response?.status === 400) {
+        toast.error(errorMessage);
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -128,10 +149,29 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                 </p>
               </div>
 
-              {/* Avatar and Name */}
+              {/* Avatar and Name with Profile Photo */}
               <div className="flex flex-col items-center mb-6">
-                <div className="w-20 h-20 bg-uber-gray-200 rounded-full flex items-center justify-center mb-3">
-                  <User size={40} className="text-uber-gray-600" />
+                <div className="relative w-20 h-20 mb-3">
+                  {rideData.ratee.profileImage ? (
+                    <img
+                      src={rideData.ratee.profileImage}
+                      alt={rideData.ratee.name}
+                      className="w-20 h-20 rounded-full object-cover shadow-lg ring-4 ring-gray-100"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className={`w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-gray-100 ${rideData.ratee.profileImage ? 'hidden' : 'flex'}`}
+                  >
+                    <span className="text-3xl font-black text-white">
+                      {rideData.ratee.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-lg font-semibold text-uber-black">
                   {rideData.ratee.name}

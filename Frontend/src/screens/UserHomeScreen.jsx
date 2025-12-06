@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useUser } from "../contexts/UserContext";
-import map from "/map.png";
 import {
   Button,
   LocationSuggestions,
@@ -8,7 +7,6 @@ import {
   RideDetails,
   Sidebar,
 } from "../components";
-import RealTimeTrackingMap from "../components/maps/RealTimeTrackingMap";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
@@ -17,8 +15,7 @@ import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
-import { Navigation, MessageCircle } from "lucide-react";
-import MessageBadge from "../components/ui/MessageBadge";
+import { Navigation } from "lucide-react";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -73,8 +70,10 @@ function UserHomeScreen() {
   const [rideCreated, setRideCreated] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [driverLocation, setDriverLocation] = useState(null);
-  const [rideETA, setRideETA] = useState(null);
   const [currentRideStatus, setCurrentRideStatus] = useState("pending");
+
+  const [pickupCoordinates, setPickupCoordinates] = useState(null);
+  const [destinationCoordinates, setDestinationCoordinates] = useState(null);
 
   // Detalles del viaje
   const [pickupLocation, setPickupLocation] = useState("");
@@ -195,6 +194,14 @@ function UserHomeScreen() {
       );
       Console.log(response);
       setFare(response.data.fare);
+      
+      // Store coordinates if available
+      if (response.data.pickupCoordinates) {
+        setPickupCoordinates(response.data.pickupCoordinates);
+      }
+      if (response.data.destinationCoordinates) {
+        setDestinationCoordinates(response.data.destinationCoordinates);
+      }
 
       setShowFindTripPanel(false);
       setShowSelectVehiclePanel(true);
@@ -354,6 +361,14 @@ function UserHomeScreen() {
         });
       }
       
+      // Set pickup and destination coordinates from the response
+      if (data.pickupCoordinates) {
+        setPickupCoordinates(data.pickupCoordinates);
+      }
+      if (data.destinationCoordinates) {
+        setDestinationCoordinates(data.destinationCoordinates);
+      }
+      
       setCurrentRideStatus("accepted"); // Driver on the way to pickup
       // Update map center to driver's location
       if (data.captain?.location?.coordinates) {
@@ -365,7 +380,7 @@ function UserHomeScreen() {
       setConfirmedRideData(data);
     });
 
-    socket.on("ride-started", (data) => {
+    socket.on("ride-started", () => {
       Console.log("Viaje iniciado");
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
@@ -384,7 +399,7 @@ function UserHomeScreen() {
       }
     });
 
-    socket.on("ride-ended", (data) => {
+    socket.on("ride-ended", () => {
       Console.log("Viaje Finalizado");
       playSound(NOTIFICATION_SOUNDS.rideEnded);
       vibrate([500]);
@@ -547,11 +562,8 @@ function UserHomeScreen() {
         {showEliteMap ? (
           <EliteTrackingMap
             driverLocation={driverLocation}
-            pickupLocation={confirmedRideData?.captain?.location?.coordinates 
-              ? { lng: confirmedRideData.captain.location.coordinates[0], lat: confirmedRideData.captain.location.coordinates[1] }
-              : null
-            }
-            dropoffLocation={null} // Will be set when ride starts
+            pickupLocation={pickupCoordinates}
+            dropoffLocation={currentRideStatus === "ongoing" ? destinationCoordinates : null}
             rideId={confirmedRideData._id}
             rideStatus={currentRideStatus}
             userType="user"
@@ -574,7 +586,7 @@ function UserHomeScreen() {
       
       {/* Componente Buscar viaje - Bottom Sheet Style */}
       {showFindTripPanel && !isSidebarOpen && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-6 gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-2xl bg-white shadow-uber-xl max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
           <div className="w-12 h-1.5 bg-uber-gray-300 rounded-full mx-auto mb-2"></div>
           <h1 className="text-2xl font-semibold">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">

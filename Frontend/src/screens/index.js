@@ -23,6 +23,13 @@ import VerifyEmail from "./VerifyEmail";
 import ResetPassword from "./ResetPassword";
 import ForgotPassword from "./ForgotPassword";
 
+import AboutUs from "./AboutUs";
+import Blog from "./Blog";
+import Careers from "./Careers";
+import Terms from "./Terms";
+import Privacy from "./Privacy";
+import Help from "./Help";
+
 export {
   GetStarted,
   UserSignup,
@@ -40,5 +47,11 @@ export {
   ChatScreen,
   VerifyEmail,
   ResetPassword,
-  ForgotPassword
+  ForgotPassword,
+  AboutUs,
+  Blog,
+  Careers,
+  Terms,
+  Privacy,
+  Help
 };

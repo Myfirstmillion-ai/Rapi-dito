@@ -99,6 +99,21 @@ export default {
         '400': '400',
         '500': '500',
       },
+      // Safe area spacing
+      padding: {
+        'safe': 'env(safe-area-inset-bottom, 0px)',
+        'safe-top': 'env(safe-area-inset-top, 0px)',
+        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
+        'safe-left': 'env(safe-area-inset-left, 0px)',
+        'safe-right': 'env(safe-area-inset-right, 0px)',
+      },
+      margin: {
+        'safe': 'env(safe-area-inset-bottom, 0px)',
+        'safe-top': 'env(safe-area-inset-top, 0px)',
+        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
+        'safe-left': 'env(safe-area-inset-left, 0px)',
+        'safe-right': 'env(safe-area-inset-right, 0px)',
+      },
     },
   },
   plugins: [],

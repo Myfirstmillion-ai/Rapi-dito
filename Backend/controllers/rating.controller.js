@@ -30,15 +30,17 @@ module.exports.submitRating = async (req, res) => {
     // Verify ride is completed
     if (ride.status !== "completed") {
       return res.status(400).json({ 
-        message: "Solo puedes calificar viajes completados" 
+        message: "Solo puedes calificar viajes completados",
+        currentStatus: ride.status
       });
     }
 
     // Verify the rater is part of this ride
     if (raterType === "user") {
-      if (ride.user._id.toString() !== req.user._id.toString()) {
+      if (!req.user || ride.user._id.toString() !== req.user._id.toString()) {
         return res.status(403).json({ 
-          message: "No autorizado para calificar este viaje" 
+          message: "No estás autorizado para calificar este viaje",
+          reason: "No eres el pasajero de este viaje"
         });
       }
 
@@ -81,9 +83,10 @@ module.exports.submitRating = async (req, res) => {
       }
 
     } else if (raterType === "captain") {
-      if (ride.captain._id.toString() !== req.captain._id.toString()) {
+      if (!req.captain || ride.captain._id.toString() !== req.captain._id.toString()) {
         return res.status(403).json({ 
-          message: "No autorizado para calificar este viaje" 
+          message: "No estás autorizado para calificar este viaje",
+          reason: "No eres el conductor de este viaje"
         });
       }
 
@@ -135,7 +138,18 @@ module.exports.submitRating = async (req, res) => {
     });
   } catch (err) {
     console.error("Error submitting rating:", err);
-    return res.status(500).json({ message: err.message });
+    console.error("Error details:", {
+      rideId,
+      raterType,
+      stars,
+      userAuth: !!req.user,
+      captainAuth: !!req.captain,
+    });
+    return res.status(500).json({ 
+      message: "Error al procesar la calificación",
+      error: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 
