@@ -76,6 +76,9 @@ function UserHomeScreen() {
   const [rideETA, setRideETA] = useState(null);
   const [currentRideStatus, setCurrentRideStatus] = useState("pending");
 
+  const [pickupCoordinates, setPickupCoordinates] = useState(null);
+  const [destinationCoordinates, setDestinationCoordinates] = useState(null);
+
   // Detalles del viaje
   const [pickupLocation, setPickupLocation] = useState("");
   const [destinationLocation, setDestinationLocation] = useState("");
@@ -195,6 +198,14 @@ function UserHomeScreen() {
       );
       Console.log(response);
       setFare(response.data.fare);
+      
+      // Store coordinates if available
+      if (response.data.pickupCoordinates) {
+        setPickupCoordinates(response.data.pickupCoordinates);
+      }
+      if (response.data.destinationCoordinates) {
+        setDestinationCoordinates(response.data.destinationCoordinates);
+      }
 
       setShowFindTripPanel(false);
       setShowSelectVehiclePanel(true);
@@ -352,6 +363,14 @@ function UserHomeScreen() {
           lng: data.captain.location.coordinates[0],
           lat: data.captain.location.coordinates[1]
         });
+      }
+      
+      // Set pickup and destination coordinates from the response
+      if (data.pickupCoordinates) {
+        setPickupCoordinates(data.pickupCoordinates);
+      }
+      if (data.destinationCoordinates) {
+        setDestinationCoordinates(data.destinationCoordinates);
       }
       
       setCurrentRideStatus("accepted"); // Driver on the way to pickup
@@ -547,11 +566,8 @@ function UserHomeScreen() {
         {showEliteMap ? (
           <EliteTrackingMap
             driverLocation={driverLocation}
-            pickupLocation={confirmedRideData?.captain?.location?.coordinates 
-              ? { lng: confirmedRideData.captain.location.coordinates[0], lat: confirmedRideData.captain.location.coordinates[1] }
-              : null
-            }
-            dropoffLocation={null} // Will be set when ride starts
+            pickupLocation={pickupCoordinates}
+            dropoffLocation={currentRideStatus === "ongoing" ? destinationCoordinates : null}
             rideId={confirmedRideData._id}
             rideStatus={currentRideStatus}
             userType="user"

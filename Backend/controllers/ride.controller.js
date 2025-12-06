@@ -115,7 +115,23 @@ module.exports.getFare = async (req, res) => {
       pickup,
       destination
     );
-    return res.status(200).json({ fare, distanceTime });
+    
+    // Get coordinates for pickup and destination
+    const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+    const destinationCoordinates = await mapService.getAddressCoordinate(destination);
+    
+    return res.status(200).json({ 
+      fare, 
+      distanceTime,
+      pickupCoordinates: {
+        lat: pickupCoordinates.ltd,
+        lng: pickupCoordinates.lng
+      },
+      destinationCoordinates: {
+        lat: destinationCoordinates.ltd,
+        lng: destinationCoordinates.lng
+      }
+    });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
@@ -136,17 +152,33 @@ module.exports.confirmRide = async (req, res) => {
       captain: req.captain,
     });
 
+    // Get coordinates for pickup and destination
+    const pickupCoordinates = await mapService.getAddressCoordinate(ride.pickup);
+    const destinationCoordinates = await mapService.getAddressCoordinate(ride.destination);
+    
+    // Add coordinates to ride data for client
+    const rideWithCoordinates = {
+      ...ride.toObject(),
+      pickupCoordinates: {
+        lat: pickupCoordinates.ltd,
+        lng: pickupCoordinates.lng
+      },
+      destinationCoordinates: {
+        lat: destinationCoordinates.ltd,
+        lng: destinationCoordinates.lng
+      }
+    };
+
     // Notify the user that their ride was accepted
     sendMessageToSocketId(ride.user.socketId, {
       event: "ride-confirmed",
-      data: ride,
+      data: rideWithCoordinates,
     });
 
     // Broadcast to all other captains that this ride is no longer available
     // This is done asynchronously to not block the response
     Promise.resolve().then(async () => {
       try {
-        const pickupCoordinates = await mapService.getAddressCoordinate(ride.pickup);
         const captainsInRadius = await mapService.getCaptainsInTheRadius(
           pickupCoordinates.ltd,
           pickupCoordinates.lng,
