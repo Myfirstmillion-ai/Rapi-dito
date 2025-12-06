@@ -39,11 +39,11 @@ function LocationSuggestions({
           whileTap={{ scale: 0.98 }}
           onClick={() => {
             Console.log(suggestion);
-            if (input == "pickup") {
+            if (input === "pickup") {
               setPickupLocation(suggestion);
               setSuggestions([]);
             }
-            if (input == "destination") {
+            if (input === "destination") {
               setDestinationLocation(suggestion);
               setSuggestions([]);
             }
