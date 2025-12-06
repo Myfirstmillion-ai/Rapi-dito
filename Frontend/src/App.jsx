@@ -28,8 +28,8 @@ import { AnimatePresence, motion } from "framer-motion";
 
 function App() {
   return (
-    <div className="w-full h-dvh flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
-      <div className="relative w-full sm:min-w-[400px] sm:max-w-[430px] md:max-w-[400px] h-full sm:h-[95vh] sm:max-h-[900px] bg-white overflow-hidden sm:rounded-3xl sm:shadow-2xl transition-all duration-300 ease-in-out">
+    <div className="w-full min-h-screen-safe flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
+      <div className="relative w-full sm:min-w-[400px] sm:max-w-[430px] md:max-w-[400px] min-h-screen-safe sm:h-[95vh] sm:max-h-[900px] bg-white overflow-hidden sm:rounded-3xl sm:shadow-2xl transition-all duration-300 ease-in-out">
         {/* Botón de reseteo de emergencia */}
         <div className="absolute top-36 -right-11 opacity-20 hover:opacity-100 z-50 flex items-center p-1 PL-0 gap-1 bg-zinc-50 border-2 border-r-0 border-gray-300 hover:-translate-x-11 rounded-l-md transition-all duration-300">
           <ChevronLeft />
