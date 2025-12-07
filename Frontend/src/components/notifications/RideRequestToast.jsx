@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { DollarSign, Navigation } from "lucide-react";
+import { DollarSign, Navigation, Radio } from "lucide-react";
 
-// Z-index layering for proper stacking
-const TOAST_Z_INDEX = 100; // Above everything including driver panel (z-20-50), below modals (z-1000+)
+// Z-index layering for proper stacking - CRITICAL: Must be above driver bottom sheet
+const TOAST_Z_INDEX = 9999; // Supreme layer - above everything including driver panel and bottom sheet
 
 /**
  * Premium iOS-Style Stacked Notification for Ride Requests
@@ -29,10 +29,21 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
 
   return (
     <div className="flex flex-col gap-0 w-full max-w-[380px]">
-      {/* Premium iOS-style notification pill */}
-      <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
+      {/* Premium iOS-style notification pill with urgency glow */}
+      <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden ring-1 ring-emerald-500/20">
         {/* Subtle top glow */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
+        
+        {/* Header Strip - Nueva Solicitud */}
+        <div className="px-4 pt-3 pb-2 border-b border-white/10">
+          <div className="flex items-center justify-center gap-2">
+            <Radio size={14} className="text-emerald-400 animate-pulse" />
+            <span className="text-xs font-bold bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+              Nueva Solicitud
+            </span>
+            <Radio size={14} className="text-emerald-400 animate-pulse" />
+          </div>
+        </div>
         
         {/* Main content - Minimalist design */}
         <div className="p-4">
@@ -114,19 +125,19 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
             </div>
           </div>
 
-          {/* Action buttons - Compact circular icons */}
-          <div className="flex gap-2">
-            <button
-              onClick={onReject}
-              className="flex-1 py-3 px-4 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-2xl font-bold text-white/90 transition-all active:scale-95 border border-white/10 text-sm"
-            >
-              Rechazar
-            </button>
+          {/* Action buttons - Accept prominent, full-width style */}
+          <div className="flex flex-col gap-2">
             <button
               onClick={onAccept}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-black transition-all shadow-lg active:scale-95 text-sm"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-black transition-all duration-300 ease-out shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 active:scale-95 text-base"
             >
-              Aceptar
+              Aceptar Viaje
+            </button>
+            <button
+              onClick={onReject}
+              className="w-full py-2.5 px-4 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-2xl font-semibold text-white/70 hover:text-white/90 transition-all duration-300 ease-out active:scale-95 border border-white/10 text-sm"
+            >
+              Rechazar
             </button>
           </div>
         </div>
@@ -161,14 +172,14 @@ export function showRideRequestToast(ride, onAccept, onReject) {
   const toastId = toast.custom(
     (t) => (
       <div
-        className={`transform transition-all duration-500 ${
+        className={`transform transition-all duration-300 ease-out ${
           t.visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-4 opacity-0 scale-95'
         }`}
         style={{
           animation: t.visible 
             ? 'slideUpSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' 
             : 'slideDown 0.3s ease-in-out',
-          zIndex: TOAST_Z_INDEX, // Ensure it floats above map but below modals
+          zIndex: TOAST_Z_INDEX, // CRITICAL: Supreme z-index to float above everything
         }}
       >
         <RideRequestToast

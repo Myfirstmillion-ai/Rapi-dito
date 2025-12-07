@@ -17,7 +17,7 @@ function ToastProvider() {
       reverseOrder={false}
       gutter={12}
       containerStyle={{
-        bottom: '110px', // Position above minimized driver bar (bar is at bottom-6 = 24px, height ~70px)
+        bottom: '120px', // Position clearly above minimized driver bar with extra spacing for stacked look
       }}
       toastOptions={{
         duration: 4000,
