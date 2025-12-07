@@ -17,7 +17,7 @@ function DriverStatsPill({ captain, vehicle, onExpand }) {
   return (
     <div
       onClick={onExpand}
-      className="fixed bottom-6 left-4 right-4 z-20 cursor-pointer"
+      className="fixed bottom-6 left-4 right-4 z-30 cursor-pointer"
     >
       {/* Premium Floating Capsule Container */}
       <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-t-3xl rounded-b-2xl shadow-2xl border-t-2 border-x border-white/10 px-4 py-4 transition-all duration-300 hover:bg-slate-900/95 hover:border-white/20 hover:shadow-[0_16px_48px_rgba(0,0,0,0.7)] active:scale-[0.98]">

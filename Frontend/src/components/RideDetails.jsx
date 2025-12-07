@@ -43,7 +43,7 @@ function RideDetails({
           showPanel ? "bottom-0" : "-bottom-full"
         } ${
           isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
+        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-20 overflow-hidden`}
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
       >
         {/* Premium Drag Handle */}
@@ -150,32 +150,25 @@ function RideDetails({
           ) : (
             /* Maximized View - Premium Details */
             <>
-          {/* Premium Vehicle & Driver Card */}
-          <div className={`${
-              confirmedRideData ? "bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border-2 border-emerald-400/30" : "bg-white/10 backdrop-blur-xl border border-white/20"
-            } rounded-2xl p-4 mb-4 shadow-lg`}>
-            <div className="flex justify-between items-center">
-              <div>
-                <img
-                  src={
-                    selectedVehicle === "car"
-                      ? "/Uber-PNG-Photos.png"
-                      : `/${selectedVehicle}.webp`
-                  }
-                  className={`${confirmedRideData ? "h-24" : "h-16"} w-auto`}
-                  alt="Vehículo"
-                />
-              </div>
-
-              {confirmedRideData?._id && (
-                <div className="flex items-start gap-3">
-                  {/* Driver Profile Photo */}
+          {/* Premium Driver Details Card - Glassmorphism Design */}
+          {confirmedRideData?._id ? (
+            <div className="relative bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-5 mb-4 shadow-2xl overflow-hidden">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-cyan-500/10 pointer-events-none rounded-3xl" />
+              
+              {/* Top glow accent */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
+              
+              <div className="relative space-y-4">
+                {/* Driver Profile Section - Focal Point */}
+                <div className="flex items-start gap-4">
+                  {/* Driver Photo with Ring */}
                   <div className="flex-shrink-0">
                     {confirmedRideData?.captain?.profileImage ? (
                       <img 
                         src={confirmedRideData.captain.profileImage} 
                         alt={`${confirmedRideData?.captain?.fullname?.firstname} ${confirmedRideData?.captain?.fullname?.lastname}`}
-                        className="w-20 h-20 rounded-full object-cover border-4 border-emerald-400/30 shadow-lg"
+                        className="w-24 h-24 rounded-2xl object-cover border-2 border-white/20 shadow-lg ring-4 ring-emerald-400/30"
                         loading="lazy"
                         onError={(e) => {
                           e.target.onerror = null;
@@ -185,43 +178,109 @@ function RideDetails({
                       />
                     ) : null}
                     <div 
-                      className={`w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg border-4 border-emerald-400/30 ${confirmedRideData?.captain?.profileImage ? 'hidden' : 'flex'}`}
+                      className={`w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg border-2 border-white/20 ring-4 ring-emerald-400/30 ${confirmedRideData?.captain?.profileImage ? 'hidden' : 'flex'}`}
                     >
-                      <span className="text-2xl font-black text-white">
+                      <span className="text-3xl font-black text-white">
                         {confirmedRideData?.captain?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
                         {confirmedRideData?.captain?.fullname?.lastname?.[0]?.toUpperCase() || ''}
                       </span>
                     </div>
                   </div>
                   
-                  {/* Driver Info */}
-                  <div className="text-left space-y-1 flex-1">
-                    <p className="text-xs text-slate-300 font-medium">Tu conductor</p>
-                    <h1 className="text-base font-bold text-white">
+                  {/* Driver Name & Info */}
+                  <div className="flex-1 space-y-1.5">
+                    <p className="text-xs text-white/50 font-semibold uppercase tracking-wider">Tu conductor</p>
+                    <h1 className="text-xl font-black text-white leading-tight">
                       {confirmedRideData?.captain?.fullname?.firstname}{" "}
                       {confirmedRideData?.captain?.fullname?.lastname}
                     </h1>
-                    <h1 className="font-bold text-lg text-white">
-                      {confirmedRideData?.captain?.vehicle?.number}
-                    </h1>
-                    <p className="capitalize text-xs text-slate-300 font-medium">
-                      {confirmedRideData?.captain?.vehicle?.color}{" "}
-                      {confirmedRideData?.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
-                      {(confirmedRideData?.captain?.vehicle?.brand || confirmedRideData?.captain?.vehicle?.model) && (
-                        <span className="block mt-0.5">
-                          {confirmedRideData?.captain?.vehicle?.brand} {confirmedRideData?.captain?.vehicle?.model}
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-yellow-500/30">
+                        <span className="text-yellow-400 text-sm">★</span>
+                        <span className="text-sm font-bold text-yellow-400">
+                          {confirmedRideData?.captain?.rating?.toFixed(1) || "5.0"}
                         </span>
-                      )}
-                    </p>
-                    <div className="mt-2 inline-block bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
-                      OTP: {confirmedRideData?.otp}
+                      </div>
+                      <span className="text-xs text-white/40 font-medium">Conductor verificado</span>
                     </div>
                   </div>
                 </div>
-              )}
+
+                {/* Vehicle Information - Elegant Display */}
+                <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 space-y-3">
+                  {/* Vehicle Icon */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/10 flex items-center justify-center shadow-lg">
+                      <img
+                        src={
+                          selectedVehicle === "car"
+                            ? "/Uber-PNG-Photos.png"
+                            : `/${selectedVehicle}.webp`
+                        }
+                        className="h-10 w-auto"
+                        alt="Vehículo"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-white/50 font-medium mb-1">Vehículo</p>
+                      <p className="text-sm font-bold text-white capitalize leading-tight">
+                        {confirmedRideData?.captain?.vehicle?.color}{" "}
+                        {confirmedRideData?.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
+                      </p>
+                      {(confirmedRideData?.captain?.vehicle?.brand || confirmedRideData?.captain?.vehicle?.model) && (
+                        <p className="text-xs text-white/60 font-medium mt-0.5">
+                          {confirmedRideData?.captain?.vehicle?.brand} {confirmedRideData?.captain?.vehicle?.model}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* License Plate Badge - Standout Design */}
+                  <div className="relative bg-slate-900/80 backdrop-blur-md border-2 border-white/20 rounded-xl px-4 py-2.5 shadow-xl">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-xl" />
+                    <div className="relative flex items-center justify-between">
+                      <span className="text-xs text-white/50 font-bold uppercase tracking-wide">Placa</span>
+                      <span className="text-lg font-black text-white tracking-widest">
+                        {confirmedRideData?.captain?.vehicle?.number}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OTP Code - Critical & Integrated Glass Design */}
+                <div className="relative bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border-2 border-emerald-400/40 rounded-2xl p-4 shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-cyan-400/10 rounded-2xl animate-pulse" />
+                  <div className="relative flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-emerald-300/80 font-bold uppercase tracking-wide mb-1">Código de verificación</p>
+                      <p className="text-xs text-white/60">Muéstralo al conductor</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm px-5 py-3 rounded-xl border border-white/20 shadow-lg">
+                      <span className="text-2xl font-black text-white tracking-wider">
+                        {confirmedRideData?.otp}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          {/* Premium Contact Actions */}
+          ) : (
+            /* Vehicle Selection View - Before Driver Assigned */
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 mb-4 shadow-lg">
+              <div className="flex justify-center">
+                <img
+                  src={
+                    selectedVehicle === "car"
+                      ? "/Uber-PNG-Photos.png"
+                      : `/${selectedVehicle}.webp`
+                  }
+                  className="h-16 w-auto"
+                  alt="Vehículo"
+                />
+              </div>
+            </div>
+          )}
+          {/* Premium Contact Actions - Glass Theme */}
           {confirmedRideData?._id && (
             <div className="flex gap-3 mb-4">
               <div className="relative flex-1">
@@ -230,7 +289,7 @@ function RideDetails({
                   path={`/user/chat/${confirmedRideData?._id}`}
                   title={"Enviar mensaje"}
                   icon={<SendHorizontal strokeWidth={2} size={18} />}
-                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-sm border border-white/20"}
+                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-lg border border-white/20 transition-all hover:border-white/30"}
                 />
                 {unreadMessages > 0 && (
                   <MessageBadge count={unreadMessages} className="-top-1 -right-1" />
@@ -238,9 +297,9 @@ function RideDetails({
               </div>
               <a
                 href={"tel:" + confirmedRideData?.captain?.phone}
-                className="flex items-center justify-center w-14 h-full rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all shadow-sm"
+                className="flex items-center justify-center px-5 h-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/20"
               >
-                <PhoneCall size={20} strokeWidth={2} className="text-white" />
+                <PhoneCall size={20} strokeWidth={2.5} className="text-white" />
               </a>
             </div>
           )}
