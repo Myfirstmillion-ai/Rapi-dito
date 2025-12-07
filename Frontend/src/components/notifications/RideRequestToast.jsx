@@ -73,7 +73,7 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
                 </span>
               </div>
               {ride.distance && (
-                <p className="text-xs text-white/60 mt-1.5 font-medium whitespace-nowrap" style={{ textWrap: 'balance' }}>
+                <p className="text-xs text-white/60 mt-1.5 font-medium" style={{ textWrap: 'balance' }}>
                   {(ride.distance / 1000).toFixed(1)} km de distancia
                 </p>
               )}
@@ -98,14 +98,14 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
           <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 mb-3 border border-white/10">
             <div className="flex items-center gap-2 text-xs">
               <Navigation size={12} className="text-blue-400 flex-shrink-0" />
-              <p className="text-white/80 font-medium truncate" style={{ textWrap: 'balance' }}>
+              <p className="text-white/80 font-medium flex-1" style={{ textWrap: 'balance' }}>
                 {ride.pickup}
               </p>
             </div>
             <div className="h-px bg-white/10 my-2"></div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></div>
-              <p className="text-white/80 font-medium truncate" style={{ textWrap: 'balance' }}>
+              <p className="text-white/80 font-medium flex-1" style={{ textWrap: 'balance' }}>
                 {ride.destination}
               </p>
             </div>

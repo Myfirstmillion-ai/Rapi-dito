@@ -6,15 +6,21 @@ import { Star, Car, ChevronUp } from "lucide-react";
  * Optimized for iPhone 8 viewport with proper data binding
  */
 function DriverStatsPill({ captain, vehicle, onExpand }) {
+  // Helper function for vehicle display text
+  const getVehicleDisplay = () => {
+    if (vehicle?.make && vehicle?.model) {
+      return `${vehicle.make} ${vehicle.model}`;
+    }
+    return vehicle?.make || vehicle?.model || "Vehículo";
+  };
+
   return (
     <div
       onClick={onExpand}
       className="fixed bottom-6 left-4 right-4 z-20 cursor-pointer"
     >
       {/* Premium Floating Capsule Container */}
-      <div
-        className="relative bg-slate-900/90 backdrop-blur-xl rounded-t-3xl rounded-b-2xl shadow-2xl border-t-2 border-x border-white/10 px-4 py-4 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-slate-900/95 hover:border-white/20 hover:shadow-[0_16px_48px_rgba(0,0,0,0.7)] active:scale-[0.98]"
-      >
+      <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-t-3xl rounded-b-2xl shadow-2xl border-t-2 border-x border-white/10 px-4 py-4 transition-all duration-300 hover:bg-slate-900/95 hover:border-white/20 hover:shadow-[0_16px_48px_rgba(0,0,0,0.7)] active:scale-[0.98]">
         {/* Drag Handle - Premium gray pill */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/30 rounded-full shadow-sm"></div>
 
@@ -60,9 +66,7 @@ function DriverStatsPill({ captain, vehicle, onExpand }) {
             <div className="flex items-center gap-1.5 mt-1">
               <Car size={12} className="text-emerald-400 flex-shrink-0" />
               <p className="text-sm text-gray-300 truncate leading-tight">
-                {vehicle?.make && vehicle?.model 
-                  ? `${vehicle.make} ${vehicle.model}`
-                  : vehicle?.make || vehicle?.model || "Vehículo"}
+                {getVehicleDisplay()}
               </p>
             </div>
             {/* Rating badge */}
