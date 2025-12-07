@@ -341,6 +341,14 @@ html {
   }
 }
 
+/* Safe Area Inset Utility */
+.safe-area-inset {
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
 /* ===== iOS SPECIFIC FIXES ===== */
 
 @supports (-webkit-touch-callout: none) {

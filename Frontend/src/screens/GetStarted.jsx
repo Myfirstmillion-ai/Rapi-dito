@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Shield, DollarSign, Star, Heart, Coffee } from "lucide-react";
+import { MapPin, Heart, Coffee, Facebook, Instagram } from "lucide-react";
+
+// Iconos SVG minimalistas para redes sociales
+const TikTokIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
 function GetStarted() {
   const navigate = useNavigate();
@@ -18,196 +25,97 @@ function GetStarted() {
       }
     }
 
-    // Preload background image
+    // Preload cathedral background image
     const img = new Image();
-    img.src = 'https://images.unsplash.com/photo-1600408921219-89351fe7ff7e?w=1920&q=90';
+    img.src = 'https://i.imgur.com/0S3llax.jpeg';
     img.onload = () => setImageLoaded(true);
   }, [navigate]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-x-hidden">
-      {/* Premium Header with Glassmorphism */}
-      <motion.header 
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/5 border-b border-white/10"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <motion.div 
-              initial={{ rotate: -180, scale: 0 }}
-              animate={{ rotate: 0, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/50"
-            >
-              <MapPin className="w-6 h-6 text-white" />
-            </motion.div>
-            <div className="text-3xl font-black tracking-tight bg-gradient-to-r from-white via-emerald-100 to-emerald-400 bg-clip-text text-transparent">
-              RAPIDITO
-            </div>
-          </div>
-          
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30"
-          >
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-emerald-400">San Antonio del Táchira</span>
-          </motion.div>
-        </div>
-      </motion.header>
-
-      {/* Hero Section with Premium Background */}
-      <div className="relative w-full min-h-screen flex items-center justify-center pt-20 pb-32 px-6">
-        {/* Animated Background Image */}
+    <div className="w-full min-h-screen flex flex-col bg-black overflow-x-hidden">
+      {/* Hero Section - Cathedral Background with Premium Gradient Overlay */}
+      <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-20 safe-area-inset">
+        {/* Cathedral Background Image */}
         <motion.div 
           initial={{ scale: 1.1, opacity: 0 }}
           animate={{ scale: imageLoaded ? 1 : 1.1, opacity: imageLoaded ? 1 : 0 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1600408921219-89351fe7ff7e?w=1920&q=90')`,
+            backgroundImage: `url('https://i.imgur.com/0S3llax.jpeg')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
           }}
         >
-          {/* Premium Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/70 to-slate-950/90"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/40 via-transparent to-slate-950/60"></div>
+          {/* Premium Dark Gradient Overlay - Total black bottom to semi-transparent top */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40"></div>
         </motion.div>
 
-        {/* Animated Grid Pattern */}
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgb(16 185 129) 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
-        }}></div>
-
-        {/* Content Container */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Column - Hero Text */}
-          <motion.div 
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-center lg:text-left space-y-8"
+        {/* Content Container - Centered Vertically */}
+        <div className="relative z-10 w-full max-w-2xl mx-auto text-center space-y-8">
+          {/* Logo "Rapidito" with Emerald Neon Pin Icon */}
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-col items-center gap-4 mb-8"
           >
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-400/30 backdrop-blur-sm"
-            >
-              <span className="text-sm font-semibold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                🚀 Transporte Premium en San Antonio
-              </span>
-            </motion.div>
-
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight">
-              <motion.span
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="block"
-              >
-                Viaja con
-              </motion.span>
-              <motion.span
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="block bg-gradient-to-r from-emerald-400 via-emerald-500 to-cyan-400 bg-clip-text text-transparent"
-              >
-                Estilo Premium
-              </motion.span>
-            </h1>
+            {/* Abstract Location Pin Isotipo */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-400 blur-2xl opacity-60 rounded-full"></div>
+              <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/50 transform rotate-45">
+                <MapPin className="w-10 h-10 text-white -rotate-45" strokeWidth={2.5} />
+              </div>
+            </div>
             
-            <motion.p 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="text-xl md:text-2xl text-gray-300 leading-relaxed max-w-2xl"
-            >
-              Experiencia de transporte de <span className="text-emerald-400 font-semibold">clase mundial</span> en tu ciudad. Seguro, rápido y confiable.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-4"
-            >
-              <button
-                onClick={() => navigate("/login")}
-                className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-lg font-bold rounded-2xl overflow-hidden shadow-2xl shadow-emerald-500/50 hover:shadow-emerald-500/70 transition-all duration-300 hover:scale-105"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative flex items-center justify-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  <span>Solicitar viaje</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </button>
-
-              <button
-                onClick={() => navigate("/captain/login")}
-                className="group px-8 py-4 bg-white/10 backdrop-blur-md border-2 border-white/20 text-white text-lg font-bold rounded-2xl hover:bg-white/20 hover:border-emerald-400/50 transition-all duration-300 hover:scale-105"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Shield className="w-5 h-5 text-emerald-400" />
-                  <span>Conducir con RAPIDITO</span>
-                </div>
-              </button>
-            </motion.div>
+            {/* Logo Text - Modern Sans-Serif Bold */}
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white">
+              Rapidito
+            </h1>
           </motion.div>
 
-          {/* Right Column - Stats Cards */}
-          <motion.div 
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="hidden lg:grid grid-cols-2 gap-6"
+          {/* Hero Copywriting */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="space-y-4"
           >
-            {[
-              { icon: MapPin, title: "Cobertura Total", desc: "San Antonio", color: "from-blue-500 to-cyan-500" },
-              { icon: Shield, title: "100% Seguro", desc: "Viajes Verificados", color: "from-emerald-500 to-green-500" },
-              { icon: DollarSign, title: "Tarifas Justas", desc: "Sin Sorpresas", color: "from-amber-500 to-orange-500" },
-              { icon: Star, title: "Conductores", desc: "5 Estrellas", color: "from-purple-500 to-pink-500" },
-            ].map((card, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 1 + idx * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="relative group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br opacity-20 group-hover:opacity-30 transition-opacity rounded-2xl blur-xl" 
-                     style={{ background: `linear-gradient(to bottom right, ${card.color})` }}></div>
-                <div className="relative p-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl hover:border-white/20 transition-all">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${card.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
-                    <card.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-white font-bold text-lg mb-1">{card.title}</h3>
-                  <p className="text-gray-400 text-sm">{card.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+            {/* H1 - Main Message */}
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight px-4">
+              Una nueva forma de viajar llega a San Antonio.
+            </h2>
+            
+            {/* Subtitle - Pearl Gray */}
+            <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed px-4">
+              Seguridad, confort y estilo premium a tu alcance.
+            </p>
+          </motion.div>
+
+          {/* Premium CTA Buttons */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4 pt-8"
+          >
+            {/* "Solicitar Viaje" - Solid Green Button */}
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-lg font-bold rounded-full shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300"
+            >
+              Solicitar Viaje
+            </button>
+
+            {/* "Conducir" - Outline with Frosted Glass Effect */}
+            <button
+              onClick={() => navigate("/captain/login")}
+              className="w-full sm:w-auto px-8 py-4 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white text-lg font-bold rounded-full hover:bg-white/20 hover:border-white/50 hover:scale-105 transition-all duration-300"
+            >
+              Conducir
+            </button>
           </motion.div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, repeat: Infinity, repeatType: "reverse", duration: 1.5 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
-            <div className="w-1.5 h-3 bg-emerald-400 rounded-full"></div>
-          </div>
-        </motion.div>
       </div>
 
       {/* Premium Footer */}
@@ -216,83 +124,88 @@ function GetStarted() {
         whileInView={{ y: 0, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="relative border-t border-white/10 bg-gradient-to-b from-slate-900/50 to-slate-950/80 backdrop-blur-xl"
+        className="relative bg-gradient-to-t from-black via-black/95 to-black/80 border-t border-white/10 px-6 py-12 safe-area-inset"
       >
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* Brand Column */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-2xl font-black text-white">RAPIDITO</div>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Transporte premium en San Antonio del Táchira, Venezuela
-              </p>
+        <div className="max-w-6xl mx-auto">
+          {/* Footer Content - Two Balanced Columns */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8">
+            {/* Left Column - Legal Links */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link 
+                to="/about" 
+                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
+              >
+                Sobre Nosotros
+              </Link>
+              <span className="text-gray-600 hidden sm:inline">•</span>
+              <Link 
+                to="/terms" 
+                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
+              >
+                Términos
+              </Link>
+              <span className="text-gray-600 hidden sm:inline">•</span>
+              <Link 
+                to="/privacy" 
+                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
+              >
+                Privacidad
+              </Link>
+              <span className="text-gray-600 hidden sm:inline">•</span>
+              <Link 
+                to="/help" 
+                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
+              >
+                Ayuda
+              </Link>
             </div>
 
-            {/* Links Column */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-white font-semibold mb-3">Empresa</h4>
-                <div className="space-y-2">
-                  <Link to="/about" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Sobre Nosotros</Link>
-                  <Link to="/blog" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Blog</Link>
-                  <Link to="/careers" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Carreras</Link>
-                </div>
-              </div>
-              <div>
-                <h4 className="text-white font-semibold mb-3">Legal</h4>
-                <div className="space-y-2">
-                  <Link to="/terms" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Términos</Link>
-                  <Link to="/privacy" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Privacidad</Link>
-                  <Link to="/help" className="block text-gray-400 hover:text-emerald-400 transition-colors text-sm">Ayuda</Link>
-                </div>
-              </div>
-            </div>
+            {/* Right Column - Social Media Icons */}
+            <div className="flex items-center gap-4">
+              <span className="text-gray-500 text-sm font-medium mr-2">Síguenos:</span>
+              
+              {/* Facebook */}
+              <a 
+                href="https://facebook.com" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors" />
+              </a>
 
-            {/* Social Column */}
-            <div>
-              <h4 className="text-white font-semibold mb-3">Síguenos</h4>
-              <div className="flex gap-3">
-                {['Facebook', 'Twitter', 'Instagram'].map((social) => (
-                  <a 
-                    key={social}
-                    href="#" 
-                    className="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-xl flex items-center justify-center transition-all hover:scale-110"
-                    aria-label={social}
-                  >
-                    <span className="text-gray-400 hover:text-emerald-400 text-xs font-bold">{social[0]}</span>
-                  </a>
-                ))}
-              </div>
+              {/* Instagram */}
+              <a 
+                href="https://instagram.com" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors" />
+              </a>
+
+              {/* TikTok */}
+              <a 
+                href="https://tiktok.com" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                aria-label="TikTok"
+              >
+                <div className="text-gray-400 group-hover:text-emerald-400 transition-colors">
+                  <TikTokIcon />
+                </div>
+              </a>
             </div>
           </div>
 
-          {/* Custom Footer - Camilo González Attribution */}
-          <div className="pt-8 border-t border-white/10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-gray-500 text-sm">
-                © 2025 RAPIDITO - Todos los derechos reservados
-              </p>
-              
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-400/20 rounded-full"
-              >
-                <span className="text-gray-400 text-sm">Rapidito 2025 - creado por</span>
-                <span className="text-emerald-400 font-bold text-sm">Camilo González</span>
-                <span className="text-gray-400 text-sm">con</span>
-                <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
-                <span className="text-gray-400 text-sm">y mucho</span>
-                <Coffee className="w-4 h-4 text-amber-500" />
-              </motion.div>
-            </div>
+          {/* Bottom Row - Author Signature */}
+          <div className="pt-6 border-t border-white/10">
+            <p className="text-center text-xs text-gray-500 leading-relaxed" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+              Hecho con <Heart className="inline w-3 h-3 text-red-500 fill-red-500 mx-0.5" /> y <Coffee className="inline w-3 h-3 text-amber-500 mx-0.5" /> por Camilo González
+            </p>
           </div>
         </div>
       </motion.footer>
