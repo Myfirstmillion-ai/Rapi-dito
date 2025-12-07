@@ -21,8 +21,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Prevent horizontal overflow */
-  max-width: 100%;
 }
 
 /* Body and HTML - Full Height with No Overflow */
@@ -36,8 +34,8 @@ html, body {
   position: relative;
   /* CRITICAL: Prevent horizontal scroll */
   overflow-x: hidden;
-  /* Enable vertical scroll */
-  overflow-y: auto;
+  /* Enable vertical scroll - MUST be auto for immediate scrolling */
+  overflow-y: auto !important;
 }
 
 /* Prevent iOS bounce/overscroll on body only */

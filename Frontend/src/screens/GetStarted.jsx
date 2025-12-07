@@ -15,6 +15,10 @@ function GetStarted() {
   const [imageLoaded, setImageLoaded] = useState(false);
   
   useEffect(() => {
+    // Ensure scroll is never blocked - Fix for scroll freeze on load
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+    
     const userData = localStorage.getItem("userData");
     if (userData) {
       const parsedData = JSON.parse(userData);
@@ -29,12 +33,18 @@ function GetStarted() {
     const img = new Image();
     img.src = 'https://i.imgur.com/0S3llax.jpeg';
     img.onload = () => setImageLoaded(true);
+    
+    // Cleanup: Ensure scroll remains enabled
+    return () => {
+      document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+    };
   }, [navigate]);
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-black overflow-x-hidden">
+    <div className="w-full min-h-screen flex flex-col bg-black overflow-x-hidden overflow-y-auto">
       {/* Hero Section - Cathedral Background with Premium Gradient Overlay */}
-      <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-20 safe-area-inset">
+      <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-20 safe-area-inset overflow-visible">
         {/* Cathedral Background Image */}
         <motion.div 
           initial={{ scale: 1.1, opacity: 0 }}
@@ -58,18 +68,18 @@ function GetStarted() {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col items-center gap-4 mb-8"
+            className="flex flex-col items-center gap-4 mb-8 w-full"
           >
             {/* Abstract Location Pin Isotipo */}
-            <div className="relative">
+            <div className="relative w-20 h-20 flex items-center justify-center">
               <div className="absolute inset-0 bg-emerald-400 blur-2xl opacity-60 rounded-full"></div>
               <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/50 transform rotate-45">
                 <MapPin className="w-10 h-10 text-white -rotate-45" strokeWidth={2.5} />
               </div>
             </div>
             
-            {/* Logo Text - Modern Sans-Serif Bold */}
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white">
+            {/* Logo Text - Modern Sans-Serif Bold - Fixed to prevent cutoff */}
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white w-auto max-w-full px-4" style={{ overflow: 'visible' }}>
               Rapidito
             </h1>
           </motion.div>
