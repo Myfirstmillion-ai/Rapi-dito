@@ -473,18 +473,21 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
                  ride.driver?.fullname?.firstname || 
                  ride.driver?.firstname ||
                  ride.captain?.name ||
-                 ride.driver?.name ||
-                 "Sin información"}
+                 ride.driver?.name}
               </p>
               {/* Vehicle Info if available */}
-              {(ride.captain?.vehicle || ride.driver?.vehicle) && (
-                <p className="text-xs text-slate-400 mt-1 truncate">
-                  {ride.captain?.vehicle?.make || ride.driver?.vehicle?.make || ""}{" "}
-                  {ride.captain?.vehicle?.model || ride.driver?.vehicle?.model || ""}
-                  {(ride.captain?.vehicle?.color || ride.driver?.vehicle?.color) && 
-                    ` - ${ride.captain?.vehicle?.color || ride.driver?.vehicle?.color}`}
-                </p>
-              )}
+              {(() => {
+                const vehicle = ride.captain?.vehicle || ride.driver?.vehicle;
+                if (vehicle && (vehicle.make || vehicle.model || vehicle.color)) {
+                  return (
+                    <p className="text-xs text-slate-400 mt-1 truncate">
+                      {vehicle.make || ""} {vehicle.model || ""} 
+                      {vehicle.color && ` - ${vehicle.color}`}
+                    </p>
+                  );
+                }
+                return null;
+              })()}
             </div>
           )}
         </div>
