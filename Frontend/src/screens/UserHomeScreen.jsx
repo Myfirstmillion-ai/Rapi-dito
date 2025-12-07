@@ -344,14 +344,14 @@ function UserHomeScreen() {
 
   // Eventos de Socket
   useEffect(() => {
-    if (user._id) {
-      socket.emit("join", {
-        userId: user._id,
-        userType: "user",
-      });
-    }
+    if (!user._id || !socket) return;
 
-    socket.on("ride-confirmed", (data) => {
+    socket.emit("join", {
+      userId: user._id,
+      userType: "user",
+    });
+
+    const handleRideConfirmed = (data) => {
       Console.log("Limpiando Timeout", rideTimeout);
       clearTimeout(rideTimeout.current);
       Console.log("Timeout limpiado");
@@ -387,18 +387,17 @@ function UserHomeScreen() {
         });
       }
       setConfirmedRideData(data);
-    });
+    };
 
-    socket.on("ride-started", () => {
+    const handleRideStarted = () => {
       Console.log("Viaje iniciado");
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
       setCurrentRideStatus("ongoing"); // Ride in progress
       // Map will show route from pickup to destination via EliteTrackingMap
-    });
+    };
 
-    // Listen for driver location updates
-    socket.on("driver:locationUpdated", (data) => {
+    const handleDriverLocationUpdated = (data) => {
       Console.log("Ubicación del conductor actualizada:", data);
       if (data.location) {
         setDriverLocation({
@@ -406,9 +405,9 @@ function UserHomeScreen() {
           lat: data.location.lat
         });
       }
-    });
+    };
 
-    socket.on("ride-ended", () => {
+    const handleRideEnded = () => {
       Console.log("Viaje Finalizado");
       playSound(NOTIFICATION_SOUNDS.rideEnded);
       vibrate([500]);
@@ -438,15 +437,20 @@ function UserHomeScreen() {
           }
         );
       }
-    });
+    };
+
+    socket.on("ride-confirmed", handleRideConfirmed);
+    socket.on("ride-started", handleRideStarted);
+    socket.on("driver:locationUpdated", handleDriverLocationUpdated);
+    socket.on("ride-ended", handleRideEnded);
 
     return () => {
-      socket.off("ride-confirmed");
-      socket.off("ride-started");
-      socket.off("ride-ended");
-      socket.off("driver:locationUpdated");
+      socket.off("ride-confirmed", handleRideConfirmed);
+      socket.off("ride-started", handleRideStarted);
+      socket.off("ride-ended", handleRideEnded);
+      socket.off("driver:locationUpdated", handleDriverLocationUpdated);
     };
-  }, [user, pickupLocation]);
+  }, [user._id, socket]); // Removed pickupLocation from dependencies
 
   // Obtener detalles del viaje
   useEffect(() => {

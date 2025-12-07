@@ -12,13 +12,28 @@ const authUserOrCaptain = async (req, res, next) => {
     return res.status(401).json({ message: "No autorizado - Token requerido" });
   }
 
+  // Create a wrapper to capture auth errors without breaking the flow
+  const tryAuth = (authFunction) => {
+    return new Promise((resolve, reject) => {
+      authFunction(req, res, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  };
+
   // Try user auth first
   try {
-    return authMiddleware.authUser(req, res, next);
+    await tryAuth(authMiddleware.authUser);
+    return next();
   } catch (userError) {
     // User auth failed, try captain auth
     try {
-      return authMiddleware.authCaptain(req, res, next);
+      await tryAuth(authMiddleware.authCaptain);
+      return next();
     } catch (captainError) {
       return res.status(401).json({ 
         message: "No autorizado - Token inválido",

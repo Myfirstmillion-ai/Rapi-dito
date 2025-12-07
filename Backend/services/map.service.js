@@ -38,119 +38,198 @@ const SERVICE_AREA = {
   ]
 };
 
-module.exports.getAddressCoordinate = async (address) => {
-  const apiKey = process.env.GOOGLE_MAPS_API;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address
-  )}&key=${apiKey}&components=country:CO|country:VE&bounds=${SERVICE_AREA.bounds.south},${SERVICE_AREA.bounds.west}|${SERVICE_AREA.bounds.north},${SERVICE_AREA.bounds.east}`;
+// MAPBOX API CONFIGURATION
+const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN || process.env.VITE_MAPBOX_TOKEN;
+const MAPBOX_API_BASE = 'https://api.mapbox.com';
 
+if (!MAPBOX_TOKEN) {
+  console.warn("⚠️ MAPBOX_TOKEN not found in environment variables. Map services will not work.");
+}
+
+// Bounding box for service area in Mapbox format: [minLng, minLat, maxLng, maxLat]
+const SERVICE_AREA_BBOX = `${SERVICE_AREA.bounds.west},${SERVICE_AREA.bounds.south},${SERVICE_AREA.bounds.east},${SERVICE_AREA.bounds.north}`;
+
+/**
+ * Get coordinates from address using Mapbox Geocoding API
+ * @param {string} address - Address to geocode
+ * @returns {Promise<{lat: number, lng: number}>} Coordinates
+ */
+module.exports.getAddressCoordinate = async (address) => {
+  if (!MAPBOX_TOKEN) {
+    throw new Error("MAPBOX_TOKEN no configurado");
+  }
+
+  const url = `${MAPBOX_API_BASE}/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json`;
+  
   try {
-    const response = await axios.get(url);
-    if (response.data.status === "OK") {
-      const location = response.data.results[0].geometry.location;
+    const response = await axios.get(url, {
+      params: {
+        access_token: MAPBOX_TOKEN,
+        country: 'co,ve', // Colombia y Venezuela
+        bbox: SERVICE_AREA_BBOX,
+        limit: 1,
+        language: 'es'
+      }
+    });
+
+    if (response.data.features && response.data.features.length > 0) {
+      const [lng, lat] = response.data.features[0].center; // Mapbox returns [lng, lat]
       return {
-        lat: location.lat,
-        lng: location.lng,
+        lat: lat,
+        lng: lng,
       };
     } else {
       throw new Error("No se pudieron obtener las coordenadas");
     }
   } catch (error) {
-    console.error(error);
+    console.error("Mapbox geocoding error:", error.response?.data || error.message);
     throw error;
   }
 };
 
-// Nueva función para obtener dirección desde coordenadas (geocodificación inversa)
+/**
+ * Get address from coordinates using Mapbox Reverse Geocoding
+ * @param {number} lat - Latitude
+ * @param {number} lng - Longitude
+ * @returns {Promise<string>} Formatted address
+ */
 module.exports.getAddressFromCoordinates = async (lat, lng) => {
-  const apiKey = process.env.GOOGLE_MAPS_API;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=es`;
+  if (!MAPBOX_TOKEN) {
+    throw new Error("MAPBOX_TOKEN no configurado");
+  }
+
+  const url = `${MAPBOX_API_BASE}/geocoding/v5/mapbox.places/${lng},${lat}.json`;
 
   try {
-    const response = await axios.get(url);
-    if (response.data.status === "OK" && response.data.results.length > 0) {
-      // Devolver la dirección formateada
-      return response.data.results[0].formatted_address;
+    const response = await axios.get(url, {
+      params: {
+        access_token: MAPBOX_TOKEN,
+        language: 'es'
+      }
+    });
+
+    if (response.data.features && response.data.features.length > 0) {
+      return response.data.features[0].place_name;
     } else {
       throw new Error("No se pudo obtener la dirección");
     }
   } catch (error) {
-    console.error(error);
+    console.error("Mapbox reverse geocoding error:", error.response?.data || error.message);
     throw error;
   }
 };
 
+/**
+ * Get distance and time between two locations using Mapbox Directions API
+ * @param {string} origin - Origin address
+ * @param {string} destination - Destination address
+ * @returns {Promise<{distance: {value: number, text: string}, duration: {value: number, text: string}}>}
+ */
 module.exports.getDistanceTime = async (origin, destination) => {
   if (!origin || !destination) {
     throw new Error("Origen y destino son requeridos");
   }
-  const apiKey = process.env.GOOGLE_MAPS_API;
-
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-    origin
-  )}&destinations=${encodeURIComponent(destination)}&key=${apiKey}&language=es`;
+  
+  if (!MAPBOX_TOKEN) {
+    throw new Error("MAPBOX_TOKEN no configurado");
+  }
 
   try {
-    const response = await axios.get(url);
-    if (response.data.status === "OK") {
-      if (response.data.rows[0].elements[0].status === "ZERO_RESULTS") {
-        throw new Error("No se encontraron rutas");
-      }
+    // First, geocode both addresses to get coordinates
+    const originCoords = await module.exports.getAddressCoordinate(origin);
+    const destCoords = await module.exports.getAddressCoordinate(destination);
 
-      return response.data.rows[0].elements[0];
+    // Use Mapbox Directions API for driving route
+    const coordinates = `${originCoords.lng},${originCoords.lat};${destCoords.lng},${destCoords.lat}`;
+    const url = `${MAPBOX_API_BASE}/directions/v5/mapbox/driving/${coordinates}`;
+
+    const response = await axios.get(url, {
+      params: {
+        access_token: MAPBOX_TOKEN,
+        geometries: 'geojson',
+        overview: 'full'
+      }
+    });
+
+    if (response.data.routes && response.data.routes.length > 0) {
+      const route = response.data.routes[0];
+      
+      // Convert to Google Maps-compatible format for backward compatibility
+      return {
+        distance: {
+          value: route.distance, // meters
+          text: `${(route.distance / 1000).toFixed(1)} km`
+        },
+        duration: {
+          value: route.duration, // seconds
+          text: `${Math.ceil(route.duration / 60)} min`
+        }
+      };
     } else {
-      throw new Error("No se pudo obtener la distancia y tiempo");
+      throw new Error("No se encontraron rutas");
     }
   } catch (err) {
-    console.error(err);
+    console.error("Mapbox directions error:", err.response?.data || err.message);
     throw err;
   }
 };
 
+/**
+ * Get autocomplete suggestions using Mapbox Geocoding API
+ * @param {string} input - Search query
+ * @returns {Promise<string[]>} Array of place suggestions
+ */
 module.exports.getAutoCompleteSuggestions = async (input) => {
   if (!input) {
     throw new Error("La consulta es requerida");
   }
 
-  const apiKey = process.env.GOOGLE_MAPS_API;
-  
-  // Centrar las sugerencias en la zona de servicio
-  const centerLat = (SERVICE_AREA.bounds.north + SERVICE_AREA.bounds.south) / 2;
-  const centerLng = (SERVICE_AREA.bounds.east + SERVICE_AREA.bounds.west) / 2;
-  
-  // Radio de búsqueda en metros (aproximadamente 50km para cubrir toda el área)
-  const radius = 50000;
-  
-  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-    input
-  )}&key=${apiKey}&location=${centerLat},${centerLng}&radius=${radius}&strictbounds=true&components=country:co|country:ve&language=es`;
+  if (!MAPBOX_TOKEN) {
+    throw new Error("MAPBOX_TOKEN no configurado");
+  }
+
+  const url = `${MAPBOX_API_BASE}/geocoding/v5/mapbox.places/${encodeURIComponent(input)}.json`;
 
   try {
-    const response = await axios.get(url);
-    if (response.data.status === "OK") {
-      // Filtrar solo resultados dentro del área de servicio
-      const filteredPredictions = response.data.predictions.filter(prediction => {
-        const description = prediction.description.toLowerCase();
-        // Verificar si la predicción contiene alguna de las ciudades del área de servicio
+    const response = await axios.get(url, {
+      params: {
+        access_token: MAPBOX_TOKEN,
+        country: 'co,ve',
+        bbox: SERVICE_AREA_BBOX,
+        types: 'place,address,poi',
+        limit: 5,
+        language: 'es',
+        autocomplete: true
+      }
+    });
+
+    if (response.data.features && response.data.features.length > 0) {
+      // Filter results to only include locations within service area cities
+      const filteredResults = response.data.features.filter(feature => {
+        const placeName = feature.place_name.toLowerCase();
         return SERVICE_AREA.cities.some(city => 
-          description.includes(city.toLowerCase())
+          placeName.includes(city.toLowerCase())
         );
       });
 
-      return filteredPredictions
-        .map((prediction) => prediction.description)
-        .filter((value) => value);
-    } else if (response.data.status === "ZERO_RESULTS") {
-      return [];
+      return filteredResults.map(feature => feature.place_name);
     } else {
-      throw new Error("No se pudieron obtener sugerencias");
+      return [];
     }
   } catch (err) {
-    console.log(err.message);
+    console.log("Mapbox autocomplete error:", err.response?.data || err.message);
     throw err;
   }
 };
 
+/**
+ * Get captains within radius using MongoDB geospatial query
+ * @param {number} lat - Latitude
+ * @param {number} lng - Longitude
+ * @param {number} radius - Radius in kilometers
+ * @param {string} vehicleType - Vehicle type filter
+ * @returns {Promise<Array>} Array of captain documents
+ */
 module.exports.getCaptainsInTheRadius = async (lat, lng, radius, vehicleType) => {
   // radius en km
   
