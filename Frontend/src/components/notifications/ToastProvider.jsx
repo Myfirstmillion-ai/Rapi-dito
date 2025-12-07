@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
  * - Duration by type: success 3s, error 4s, custom 30s
  * - Dark glassmorphism styling
  * - Smooth spring animations for stacking effect
+ * - Positioned to float above minimized driver bar (~110px from bottom)
  */
 function ToastProvider() {
   return (
@@ -16,7 +17,7 @@ function ToastProvider() {
       reverseOrder={false}
       gutter={12}
       containerStyle={{
-        bottom: '100px', // Position above minimized driver bar
+        bottom: '110px', // Position above minimized driver bar (bar is at bottom-6 = 24px, height ~70px)
       }}
       toastOptions={{
         duration: 4000,

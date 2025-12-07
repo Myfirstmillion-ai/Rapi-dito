@@ -164,7 +164,8 @@ export function showRideRequestToast(ride, onAccept, onReject) {
         style={{
           animation: t.visible 
             ? 'slideUpSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' 
-            : 'slideDown 0.3s ease-in-out'
+            : 'slideDown 0.3s ease-in-out',
+          zIndex: 50, // Ensure it floats above map but below modals
         }}
       >
         <RideRequestToast
@@ -185,8 +186,8 @@ export function showRideRequestToast(ride, onAccept, onReject) {
       duration: 30000, // 30 seconds to respond
       position: 'bottom-center',
       style: {
-        maxWidth: '400px',
-        marginBottom: '100px', // Position above the minimized driver bar (80-100px from bottom)
+        maxWidth: '380px',
+        // marginBottom handled by containerStyle in ToastProvider
       },
     }
   );

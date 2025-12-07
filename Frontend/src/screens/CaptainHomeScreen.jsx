@@ -113,7 +113,7 @@ function CaptainHomeScreen() {
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
-  const [isPanelExpanded, setIsPanelExpanded] = useState(true);
+  const [isPanelExpanded, setIsPanelExpanded] = useState(false); // Changed to false by default for better UX
   const [showNewRidePanel, setShowNewRidePanel] = useState(
     JSON.parse(localStorage.getItem("showPanel")) || false
   );
@@ -403,6 +403,11 @@ function CaptainHomeScreen() {
         vibrate([500, 200, 500, 200, 500]);
         playSound(NOTIFICATION_SOUNDS.newRide);
         
+        // AUTO-MINIMIZE LOGIC: If driver panel is expanded, minimize it to show map and notification
+        if (isPanelExpanded) {
+          setIsPanelExpanded(false);
+        }
+        
         setShowBtn("accept");
         setNewRide(data);
         setShowNewRidePanel(true);
@@ -427,7 +432,7 @@ function CaptainHomeScreen() {
         socket.off("ride-cancelled", handleRideCancelled);
       };
     }
-  }, [captain?._id, socket, showBtn, newRide._id]);
+  }, [captain?._id, socket, showBtn, newRide._id, isPanelExpanded]);
 
   // Guardar mensajes en localStorage
   useEffect(() => {
