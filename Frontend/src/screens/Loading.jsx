@@ -18,7 +18,7 @@ function Loading() {
             
             {/* Radar Pulse Spinner */}
             <div className="relative z-10">
-                <Spinner variant="radar" scale={3} size="xl" />
+                <Spinner variant="radar" size="xl" />
             </div>
             
             {/* Loading Text */}

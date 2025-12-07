@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
+import { getVehicleColor } from "../utils/vehicleColors";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -738,7 +739,10 @@ function CaptainHomeScreen() {
                   )}
                   <div className="flex items-center gap-3 text-sm text-gray-300">
                     <span className="flex items-center gap-1 whitespace-nowrap">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: captainData?.vehicle?.color?.toLowerCase() === 'rojo' ? '#EF4444' : captainData?.vehicle?.color?.toLowerCase() === 'azul' ? '#3B82F6' : captainData?.vehicle?.color?.toLowerCase() === 'negro' ? '#1F2937' : captainData?.vehicle?.color?.toLowerCase() === 'blanco' ? '#F3F4F6' : '#9CA3AF' }}></div>
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: getVehicleColor(captainData?.vehicle?.color) }}
+                      ></div>
                       {captainData?.vehicle?.color || "Gris"}
                     </span>
                     <span className="flex items-center gap-1 whitespace-nowrap">

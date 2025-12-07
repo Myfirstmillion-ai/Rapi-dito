@@ -88,7 +88,7 @@ function DriverStatsPill({ captain, vehicle, onExpand }) {
 
         {/* Tap to expand indicator - Enhanced */}
         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 opacity-60">
-          <ChevronUp size={14} className="text-white/70 animate-bounce" style={{ animationDuration: '2s' }} />
+          <ChevronUp size={14} className="text-white/70 animate-bounce [animation-duration:2s]" />
         </div>
       </div>
     </div>
