@@ -31,7 +31,7 @@ function GetStarted() {
 
     // Preload cathedral background image
     const img = new Image();
-    img.src = 'https://i.imgur.com/Gk7zBI7.jpeg';
+    img.src = '/IMG_3639.jpeg';
     img.onload = () => setImageLoaded(true);
     
     // Cleanup: Ensure scroll remains enabled
@@ -52,7 +52,7 @@ function GetStarted() {
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('https://i.imgur.com/Gk7zBI7.jpeg')`,
+            backgroundImage: `url('/IMG_3639.jpeg')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
