@@ -155,7 +155,7 @@ input:focus {
   outline-offset: -2px;
 }
 
-/* Button ripple effect */
+/* Button ripple effect - Premium smooth */
 button {
   position: relative;
   overflow: hidden;
@@ -169,14 +169,19 @@ button::after {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
   transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  opacity: 1;
 }
 
 button:active::after {
-  width: 200%;
-  height: 200%;
+  width: 250%;
+  height: 250%;
+  opacity: 0;
 }
 
 /* Touch device improvements */
@@ -295,6 +300,29 @@ p, h1, h2, h3, h4, h5, h6, span, div {
   word-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
+}
+
+/* ===== PREMIUM TYPOGRAPHY - Prevent orphans ===== */
+
+/* Balance text for headings - prevents orphaned words */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/* Utility class for balanced text */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Pretty text wrap for paragraphs - prevents orphans on last line */
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Apply to modal/card titles */
+.modal-title,
+.card-title {
+  text-wrap: balance;
 }
 
 /* ===== SCROLL FIXES ===== */

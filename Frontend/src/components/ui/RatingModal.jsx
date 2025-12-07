@@ -118,31 +118,45 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
     }
   };
 
-  if (!rideData) return null;
+  // Defensive check for malformed data - prevents crash on missing nested properties
+  if (!rideData || !rideData.ratee || !rideData.ratee.name) {
+    console.warn("RatingModal: Missing required rideData or ratee information");
+    return null;
+  }
+
+  // Safe getter for initials with fallback
+  const getInitials = (name) => {
+    if (!name || typeof name !== 'string') return '?';
+    return name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase() || '?';
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay */}
+          {/* Overlay - Premium fade with cubic-bezier */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1] // Premium cubic-bezier (ease-out-quart)
+            }}
             className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
           />
 
-          {/* Modal with Glassmorphism */}
+          {/* Modal with Glassmorphism - Premium spring animation */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{
                 type: "spring",
-                damping: 25,
-                stiffness: 300,
+                damping: 28,
+                stiffness: 350,
+                mass: 0.8
               }}
               className="relative w-full max-w-[400px] md:max-w-[480px] p-8 rounded-3xl shadow-uber-xl overflow-hidden"
               style={{
@@ -186,7 +200,7 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                     className={`w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-gray-100 ${rideData.ratee.profileImage ? 'hidden' : 'flex'}`}
                   >
                     <span className="text-3xl font-black text-white">
-                      {rideData.ratee.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      {getInitials(rideData.ratee.name)}
                     </span>
                   </div>
                 </div>
@@ -203,22 +217,23 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                 )}
               </div>
 
-              {/* Star Rating System */}
-              <div className="flex justify-center gap-2 mb-6">
+              {/* Star Rating System - Premium tactile feedback */}
+              <div className="flex justify-center gap-3 mb-6">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     onClick={() => handleStarClick(star)}
                     onMouseEnter={() => setHoveredStar(star)}
                     onMouseLeave={() => setHoveredStar(0)}
-                    className="transition-transform duration-200 hover:scale-110 active:scale-95 focus:outline-none"
+                    className="transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.15] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 rounded-lg p-1"
+                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
                   >
                     <Star
-                      size={40}
+                      size={42}
                       className={cn(
-                        "transition-colors duration-200",
+                        "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] drop-shadow-sm",
                         star <= (hoveredStar || selectedStars)
-                          ? "text-yellow-500 fill-yellow-500"
+                          ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_2px_4px_rgba(250,204,21,0.4)]"
                           : "text-uber-gray-200 fill-uber-gray-200"
                       )}
                     />
@@ -246,16 +261,18 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                 </div>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit Button - Premium tactile feel */}
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting || selectedStars === 0}
                 className={cn(
-                  "w-full py-4 rounded-uber-md font-bold text-white transition-all duration-200",
-                  "min-h-[48px] active:scale-[0.98]",
+                  "w-full py-4 rounded-xl font-bold text-white",
+                  "min-h-[52px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                  "active:scale-[0.97] active:brightness-95",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-uber-black",
                   selectedStars === 0
-                    ? "bg-uber-gray-300 cursor-not-allowed"
-                    : "bg-uber-black hover:bg-uber-gray-700 shadow-uber-md hover:shadow-uber-lg"
+                    ? "bg-gradient-to-b from-gray-300 to-gray-350 text-gray-500 cursor-not-allowed shadow-sm"
+                    : "bg-gradient-to-b from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.35)] hover:-translate-y-0.5"
                 )}
               >
                 {isSubmitting ? (

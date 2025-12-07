@@ -58,11 +58,25 @@ export default {
         'uber-lg': '16px',
         'uber-xl': '24px',
       },
+      // Premium transition timing functions
+      transitionTimingFunction: {
+        'premium': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'decelerate': 'cubic-bezier(0, 0, 0.2, 1)',
+        'accelerate': 'cubic-bezier(0.4, 0, 1, 1)',
+      },
+      // Extended transition durations
+      transitionDuration: {
+        '250': '250ms',
+        '350': '350ms',
+        '400': '400ms',
+      },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'slide-up': 'slideUp 0.4s ease-out',
-        'scale-in': 'scaleIn 0.3s ease-out',
+        'fade-in': 'fadeIn 0.4s cubic-bezier(0, 0, 0.2, 1)',
+        'slide-up': 'slideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'scale-in': 'scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
         'pulse-soft': 'pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'press': 'press 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
       },
       keyframes: {
         fadeIn: {
@@ -80,6 +94,11 @@ export default {
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
+        },
+        press: {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.97)' },
+          '100%': { transform: 'scale(1)' },
         },
       },
       minHeight: {
@@ -135,6 +154,11 @@ export default {
     'h-full',
     'min-h-screen',
     'max-w-full',
+    // Premium motion classes
+    'ease-premium',
+    'ease-spring',
+    'duration-300',
+    'duration-350',
   ],
 };
 
