@@ -20,14 +20,14 @@ function ToastProvider() {
       position="bottom-center"
       reverseOrder={false}
       gutter={12}
-      containerClassName={`z-[${TOAST_Z_INDEX}]`}
+      containerClassName="z-[9999]"
       containerStyle={{
         bottom: '120px', // Position clearly above minimized driver bar with extra spacing for stacked look
         zIndex: TOAST_Z_INDEX, // Supreme layer - above all panels including captain details
       }}
       toastOptions={{
         duration: 4000,
-        className: `z-[${TOAST_Z_INDEX}]`,
+        className: "z-[9999]",
         style: {
           background: 'rgba(15, 23, 42, 0.95)',
           color: '#ffffff',
