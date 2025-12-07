@@ -15,6 +15,12 @@ import {
 import Button from "./Button";
 import MessageBadge from "./ui/MessageBadge";
 
+// UI Constants
+const BUTTON_CLASSES = {
+  message: "bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-lg border border-white/20 transition-all hover:border-white/30",
+  call: "flex items-center justify-center px-5 h-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/20"
+};
+
 function RideDetails({
   pickupLocation,
   destinationLocation,
@@ -249,7 +255,7 @@ function RideDetails({
 
                 {/* OTP Code - Critical & Integrated Glass Design */}
                 <div className="relative bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border-2 border-emerald-400/40 rounded-2xl p-4 shadow-lg">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-cyan-400/10 rounded-2xl animate-pulse" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/5 to-cyan-400/5 rounded-2xl" />
                   <div className="relative flex items-center justify-between">
                     <div>
                       <p className="text-xs text-emerald-300/80 font-bold uppercase tracking-wide mb-1">Código de verificación</p>
@@ -289,7 +295,7 @@ function RideDetails({
                   path={`/user/chat/${confirmedRideData?._id}`}
                   title={"Enviar mensaje"}
                   icon={<SendHorizontal strokeWidth={2} size={18} />}
-                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-lg border border-white/20 transition-all hover:border-white/30"}
+                  classes={BUTTON_CLASSES.message}
                 />
                 {unreadMessages > 0 && (
                   <MessageBadge count={unreadMessages} className="-top-1 -right-1" />
@@ -297,7 +303,7 @@ function RideDetails({
               </div>
               <a
                 href={"tel:" + confirmedRideData?.captain?.phone}
-                className="flex items-center justify-center px-5 h-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/20"
+                className={BUTTON_CLASSES.call}
               >
                 <PhoneCall size={20} strokeWidth={2.5} className="text-white" />
               </a>
