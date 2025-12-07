@@ -70,7 +70,7 @@ module.exports.createRide = async (req, res) => {
         console.log("Pickup Coordinates", pickupCoordinates);
 
         const captainsInRadius = await mapService.getCaptainsInTheRadius(
-          pickupCoordinates.ltd,
+          pickupCoordinates.lat,
           pickupCoordinates.lng,
           4,
           vehicleType
@@ -124,11 +124,11 @@ module.exports.getFare = async (req, res) => {
       fare, 
       distanceTime,
       pickupCoordinates: {
-        lat: pickupCoordinates.ltd,
+        lat: pickupCoordinates.lat,
         lng: pickupCoordinates.lng
       },
       destinationCoordinates: {
-        lat: destinationCoordinates.ltd,
+        lat: destinationCoordinates.lat,
         lng: destinationCoordinates.lng
       }
     });
@@ -160,11 +160,11 @@ module.exports.confirmRide = async (req, res) => {
     const rideWithCoordinates = {
       ...ride.toObject(),
       pickupCoordinates: {
-        lat: pickupCoordinates.ltd,
+        lat: pickupCoordinates.lat,
         lng: pickupCoordinates.lng
       },
       destinationCoordinates: {
-        lat: destinationCoordinates.ltd,
+        lat: destinationCoordinates.lat,
         lng: destinationCoordinates.lng
       }
     };
@@ -180,7 +180,7 @@ module.exports.confirmRide = async (req, res) => {
     Promise.resolve().then(async () => {
       try {
         const captainsInRadius = await mapService.getCaptainsInTheRadius(
-          pickupCoordinates.ltd,
+          pickupCoordinates.lat,
           pickupCoordinates.lng,
           4,
           ride.vehicle
@@ -305,20 +305,28 @@ module.exports.cancelRide = async (req, res) => {
       { new: true }
     );
 
-    const pickupCoordinates = await mapService.getAddressCoordinate(ride.pickup);
-    const captainsInRadius = await mapService.getCaptainsInTheRadius(
-      pickupCoordinates.ltd,
-      pickupCoordinates.lng,
-      4,
-      ride.vehicle
-    );
+    // Notify captains asynchronously - don't block the response
+    Promise.resolve().then(async () => {
+      try {
+        const pickupCoordinates = await mapService.getAddressCoordinate(ride.pickup);
+        const captainsInRadius = await mapService.getCaptainsInTheRadius(
+          pickupCoordinates.lat,
+          pickupCoordinates.lng,
+          4,
+          ride.vehicle
+        );
 
-    captainsInRadius.map((captain) => {
-      sendMessageToSocketId(captain.socketId, {
-        event: "ride-cancelled",
-        data: ride,
-      });
+        captainsInRadius.map((captain) => {
+          sendMessageToSocketId(captain.socketId, {
+            event: "ride-cancelled",
+            data: ride,
+          });
+        });
+      } catch (error) {
+        console.error("Failed to notify captains about ride cancellation:", error.message);
+      }
     });
+    
     return res.status(200).json(ride);
   } catch (err) {
     return res.status(500).json({ message: err.message });

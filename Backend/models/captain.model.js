@@ -144,4 +144,17 @@ captainSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
+// Indexes for performance optimization
+// Geospatial index for location-based queries (CRITICAL for getCaptainsInTheRadius)
+captainSchema.index({ location: '2dsphere' });
+
+// Compound index for vehicle type and location queries
+captainSchema.index({ 'vehicle.type': 1, location: '2dsphere' });
+
+// Index for socket-based lookups
+captainSchema.index({ socketId: 1 });
+
+// Index for status queries
+captainSchema.index({ status: 1 });
+
 module.exports = mongoose.model("Captain", captainSchema);

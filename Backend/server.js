@@ -32,7 +32,17 @@ if (process.env.ENVIRONMENT == "production") {
 } else {
   app.use(morgan("dev"));
 }
-app.use(cors());
+
+// Configure CORS based on environment
+const corsOptions = {
+  origin: process.env.ENVIRONMENT === "production"
+    ? process.env.CLIENT_URL // Only allow specific origin in production
+    : "*", // Allow all origins in development
+  credentials: true, // Allow credentials (cookies, authorization headers)
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

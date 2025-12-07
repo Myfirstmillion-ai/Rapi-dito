@@ -100,4 +100,17 @@ const rideSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for performance optimization
+// Compound index for user ride queries
+rideSchema.index({ user: 1, status: 1 });
+
+// Compound index for captain ride queries
+rideSchema.index({ captain: 1, status: 1 });
+
+// Index for status-based queries (finding pending rides, etc.)
+rideSchema.index({ status: 1, createdAt: -1 });
+
+// Index for efficient ride lookups
+rideSchema.index({ _id: 1, status: 1 });
+
 module.exports = mongoose.model("Ride", rideSchema);

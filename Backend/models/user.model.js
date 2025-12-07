@@ -66,6 +66,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for performance optimization
+// Index for socket-based user lookups
+userSchema.index({ socketId: 1 });
+
+// Email is already unique, but explicit index helps
+userSchema.index({ email: 1 });
+
 userSchema.statics.hashPassword = async function (password) {
   return await bcrypt.hash(password, 10);
 };

@@ -10,10 +10,16 @@ let io;
 const connectedDrivers = new Map();
 
 function initializeSocket(server) {
+  // Configure CORS based on environment
+  const allowedOrigins = process.env.ENVIRONMENT === "production"
+    ? [process.env.CLIENT_URL] // Only allow the specific client URL in production
+    : "*"; // Allow all in development for easier testing
+
   io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
+      credentials: true, // Allow credentials (cookies, authorization headers)
     },
     // Enable reconnection
     reconnection: true,

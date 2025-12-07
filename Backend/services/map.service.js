@@ -49,7 +49,7 @@ module.exports.getAddressCoordinate = async (address) => {
     if (response.data.status === "OK") {
       const location = response.data.results[0].geometry.location;
       return {
-        ltd: location.lat,
+        lat: location.lat,
         lng: location.lng,
       };
     } else {
@@ -151,14 +151,14 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
   }
 };
 
-module.exports.getCaptainsInTheRadius = async (ltd, lng, radius, vehicleType) => {
+module.exports.getCaptainsInTheRadius = async (lat, lng, radius, vehicleType) => {
   // radius en km
   
   try {
     const captains = await captainModel.find({
       location: {
         $geoWithin: {
-          $centerSphere: [[lng, ltd], radius / 6371],
+          $centerSphere: [[lng, lat], radius / 6371],
         },
       },
       "vehicle.type": vehicleType,
