@@ -138,10 +138,10 @@ function LocationSearchInput({
           placeholder={placeholder}
           autoFocus={autoFocus}
           className={cn(
-            "w-full bg-white/10 backdrop-blur-xl px-12 py-3 rounded-xl border-2 border-white/20",
+            "w-full bg-slate-900/80 backdrop-blur-xl px-12 py-3 rounded-xl border-2 border-white/20",
             "outline-none text-sm transition-all duration-200 text-white placeholder:text-slate-400",
-            "focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 focus:bg-white/15",
-            "hover:bg-white/15 hover:border-white/30",
+            "focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 focus:bg-slate-900/90",
+            "hover:bg-slate-900/85 hover:border-white/30",
             query && "pr-20"
           )}
         />
@@ -166,15 +166,15 @@ function LocationSearchInput({
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-50 w-full mt-2 bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 overflow-hidden"
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute z-50 w-full mt-2 bg-slate-900/90 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 overflow-hidden"
           >
             {suggestions.map((suggestion, index) => (
               <motion.button
                 key={suggestion.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.03 }}
+                transition={{ duration: 0.2, delay: index * 0.02 }}
                 onClick={() => handleSelectLocation(suggestion)}
                 className="w-full px-4 py-3 text-left hover:bg-white/10 active:bg-white/15 transition-all border-b border-white/5 last:border-b-0 group"
               >
@@ -187,10 +187,10 @@ function LocationSearchInput({
                     <MapPin size={16} className="text-emerald-400" />
                   </motion.div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate group-hover:text-emerald-400 transition-colors">
+                    <p className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors whitespace-normal break-words">
                       {suggestion.text}
                     </p>
-                    <p className="text-xs text-slate-400 truncate mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5 whitespace-normal break-words">
                       {suggestion.place_name}
                     </p>
                   </div>

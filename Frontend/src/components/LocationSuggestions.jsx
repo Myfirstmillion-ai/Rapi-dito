@@ -32,7 +32,7 @@ function LocationSuggestions({
           exit={{ opacity: 0, x: 20 }}
           transition={{ 
             duration: 0.2, 
-            delay: index * 0.03,
+            delay: index * 0.02,
             ease: "easeOut"
           }}
           whileHover={{ scale: 1.01, x: 4 }}
@@ -57,8 +57,8 @@ function LocationSuggestions({
           >
             <MapPin size={18} className="text-emerald-400" />
           </motion.div>
-          <div className="flex-1">
-            <h2 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors whitespace-normal break-words">
               {suggestion}
             </h2>
           </div>

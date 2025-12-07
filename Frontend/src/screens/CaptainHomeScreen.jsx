@@ -605,11 +605,11 @@ function CaptainHomeScreen() {
         />
       )}
 
-      {/* Captain Premium Dashboard - Expanded View - Hidden when sidebar is open */}
+      {/* Captain Premium Dashboard - Expanded View - Bento Grid Layout */}
       {showCaptainDetailsPanel && !isSidebarOpen && isPanelExpanded && (
-        <div className={`fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl transition-all duration-500 ease-in-out ${
+        <div className={`fixed bottom-0 left-0 right-0 z-10 bg-slate-900/95 backdrop-blur-xl shadow-2xl transition-all duration-500 ease-in-out ${
           isPanelExpanded ? 'max-h-[75vh]' : 'max-h-[100px]'
-        } rounded-t-3xl overflow-hidden`}>
+        } rounded-t-3xl overflow-hidden border-t-2 border-white/10`}>
           {/* Glassmorphism overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
           
@@ -619,7 +619,7 @@ function CaptainHomeScreen() {
               onClick={() => setIsPanelExpanded(!isPanelExpanded)}
               className="w-full py-3 flex flex-col items-center gap-1 hover:bg-white/5 transition-colors active:scale-95"
             >
-              <div className="w-12 h-1.5 bg-white/30 rounded-full"></div>
+              <div className="w-12 h-1.5 bg-white/30 rounded-full shadow-sm"></div>
               {isPanelExpanded ? (
                 <ChevronDown className="w-5 h-5 text-white/60 mt-1" />
               ) : (
@@ -628,17 +628,17 @@ function CaptainHomeScreen() {
             </button>
           </div>
 
-          <div className="relative px-5 pb-safe overflow-y-auto" style={{ maxHeight: isPanelExpanded ? 'calc(75vh - 60px)' : '0' }}>
-            {/* Header - Driver Profile */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
-              <div className="flex items-center gap-4">
-                {/* Profile Photo with Ring */}
+          <div className="relative px-4 pb-safe overflow-y-auto" style={{ maxHeight: isPanelExpanded ? 'calc(75vh - 60px)' : '0' }}>
+            {/* Compact Header - Driver Profile */}
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                {/* Profile Photo */}
                 <div className="relative">
                   {captain?.profileImage ? (
                     <img
                       src={captain.profileImage}
                       alt="Profile"
-                      className="w-16 h-16 rounded-full object-cover ring-4 ring-emerald-500/50 shadow-xl"
+                      className="w-14 h-14 rounded-full object-cover ring-2 ring-emerald-500/60 shadow-xl"
                       loading="lazy"
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -647,122 +647,101 @@ function CaptainHomeScreen() {
                     />
                   ) : null}
                   <div
-                    className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center ring-4 ring-emerald-500/50 shadow-xl"
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center ring-2 ring-emerald-500/60 shadow-xl"
                     style={{ display: captain?.profileImage ? 'none' : 'flex' }}
                   >
-                    <span className="text-2xl font-black text-white">
+                    <span className="text-xl font-black text-white">
                       {captainData?.fullname?.firstname?.[0] || "C"}
                       {captainData?.fullname?.lastname?.[0] || ""}
                     </span>
                   </div>
                   {/* Online indicator */}
-                  <div className="absolute bottom-0 right-0 w-5 h-5 bg-emerald-400 rounded-full border-4 border-slate-900 shadow-lg"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-lg"></div>
                 </div>
 
-                {/* Driver Info */}
+                {/* Driver Info - Compact */}
                 <div>
-                  <h1 className="text-xl font-bold text-white leading-tight">
+                  <h1 className="text-base font-bold text-white leading-tight whitespace-nowrap">
                     {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
                   </h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Phone size={14} className="text-emerald-400" />
-                    <p className="text-sm text-gray-300">{captainData?.phone || "---"}</p>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Award size={14} className="text-yellow-400" />
-                    <span className="text-xs text-yellow-400 font-semibold">Conductor Pro</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <Award size={12} className="text-yellow-400" />
+                    <span className="text-xs text-yellow-400 font-semibold whitespace-nowrap">Conductor Pro</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Today's Earnings Highlight */}
-              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 px-4 py-3 rounded-2xl shadow-xl">
-                <p className="text-xs text-emerald-100 font-medium">Hoy</p>
-                <div className="flex items-baseline gap-1">
-                  <DollarSign size={18} className="text-white" />
-                  <h1 className="text-2xl font-black text-white">{(earnings.today / 1000).toFixed(1)}K</h1>
-                </div>
-                <p className="text-[10px] text-emerald-100">COP</p>
               </div>
             </div>
 
-            {/* Stats Grid - Premium Cards */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              {/* Total Earnings */}
-              <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur-sm border border-blue-400/30 rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-blue-500/30 rounded-lg flex items-center justify-center">
-                    <TrendingUp size={16} className="text-blue-400" />
-                  </div>
-                  <p className="text-xs text-blue-200 font-medium">Total</p>
+            {/* Bento Grid - Stats Dashboard */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {/* Today's Earnings - Featured */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Ganancias Hoy</p>
+                <div className="flex items-baseline gap-1">
+                  <DollarSign size={20} className="text-emerald-400" />
+                  <h1 className="text-3xl font-black text-white whitespace-nowrap">{(earnings.today / 1000).toFixed(1)}K</h1>
                 </div>
-                <h3 className="text-2xl font-black text-white">${(earnings.total / 1000).toFixed(1)}K</h3>
-                <p className="text-[10px] text-blue-200 mt-1">Ganancias acumuladas</p>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">COP</p>
+              </div>
+
+              {/* Total Earnings */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Total</p>
+                <h3 className="text-3xl font-black text-white whitespace-nowrap">${(earnings.total / 1000).toFixed(1)}K</h3>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Acumulado</p>
+              </div>
+
+              {/* Completed Rides */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Viajes</p>
+                <h3 className="text-4xl font-black text-emerald-400">{rides?.accepted || 0}</h3>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Completados</p>
               </div>
 
               {/* Distance */}
-              <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 backdrop-blur-sm border border-purple-400/30 rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-purple-500/30 rounded-lg flex items-center justify-center">
-                    <MapPin size={16} className="text-purple-400" />
-                  </div>
-                  <p className="text-xs text-purple-200 font-medium">Distancia</p>
-                </div>
-                <h3 className="text-2xl font-black text-white">{rides?.distanceTravelled}</h3>
-                <p className="text-[10px] text-purple-200 mt-1">Kilómetros recorridos</p>
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Distancia</p>
+                <h3 className="text-4xl font-black text-purple-400">{rides?.distanceTravelled || 0}</h3>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Kilómetros</p>
+              </div>
+
+              {/* Acceptance Rate */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Aceptación</p>
+                <h3 className="text-4xl font-black text-yellow-400">
+                  {rides?.accepted > 0 ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) : 0}%
+                </h3>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Tasa</p>
+              </div>
+
+              {/* Cancelled Rides */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Cancelados</p>
+                <h3 className="text-4xl font-black text-red-400">{rides?.cancelled || 0}</h3>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Viajes</p>
               </div>
             </div>
 
-            {/* Performance Stats */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 mb-5 shadow-lg">
-              <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                <Award size={16} className="text-yellow-400" />
-                Rendimiento
-              </h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-emerald-500/20 flex items-center justify-center border-2 border-emerald-500/50">
-                    <span className="text-xl font-black text-emerald-400">{rides?.accepted}</span>
-                  </div>
-                  <p className="text-[10px] text-gray-400 leading-tight">Viajes<br />Completados</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-yellow-500/20 flex items-center justify-center border-2 border-yellow-500/50">
-                    <span className="text-xl font-black text-yellow-400">
-                      {rides?.accepted > 0 ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) : 0}%
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-gray-400 leading-tight">Tasa de<br />Aceptación</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-red-500/20 flex items-center justify-center border-2 border-red-500/50">
-                    <span className="text-xl font-black text-red-400">{rides?.cancelled}</span>
-                  </div>
-                  <p className="text-[10px] text-gray-400 leading-tight">Viajes<br />Cancelados</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Vehicle Info Card */}
-            <div className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
+            {/* Vehicle Info Card - Compact */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs text-gray-400 mb-1">Vehículo</p>
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-1">
+                  <p className="text-xs text-white/50 mb-1 whitespace-nowrap">Vehículo</p>
+                  <h3 className="text-lg font-bold text-white tracking-tight mb-1 whitespace-nowrap">
                     {captainData?.vehicle?.number || "---"}
                   </h3>
                   {/* Vehicle Make and Model */}
                   {(captainData?.vehicle?.make || captainData?.vehicle?.model) && (
-                    <p className="text-sm font-medium text-emerald-400 mb-2">
+                    <p className="text-sm font-medium text-emerald-400 mb-2 whitespace-nowrap">
                       {[captainData?.vehicle?.make, captainData?.vehicle?.model].filter(Boolean).join(' ')}
                     </p>
                   )}
                   <div className="flex items-center gap-3 text-sm text-gray-300">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: captainData?.vehicle?.color?.toLowerCase() === 'rojo' ? '#EF4444' : captainData?.vehicle?.color?.toLowerCase() === 'azul' ? '#3B82F6' : captainData?.vehicle?.color?.toLowerCase() === 'negro' ? '#1F2937' : captainData?.vehicle?.color?.toLowerCase() === 'blanco' ? '#F3F4F6' : '#9CA3AF' }}></div>
                       {captainData?.vehicle?.color || "Gris"}
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 whitespace-nowrap">
                       <User size={14} />
                       {captainData?.vehicle?.capacity || 4}
                     </span>
