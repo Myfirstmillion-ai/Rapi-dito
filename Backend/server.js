@@ -36,7 +36,10 @@ if (process.env.ENVIRONMENT == "production") {
 // Configure CORS based on environment
 const corsOptions = {
   origin: process.env.ENVIRONMENT === "production"
-    ? process.env.CLIENT_URL // Only allow specific origin in production
+    ? (process.env.CLIENT_URL || (() => {
+        console.error("CRITICAL: CLIENT_URL not set in production. Refusing to start.");
+        process.exit(1);
+      })()) // Only allow specific origin in production
     : "*", // Allow all origins in development
   credentials: true, // Allow credentials (cookies, authorization headers)
   optionsSuccessStatus: 200

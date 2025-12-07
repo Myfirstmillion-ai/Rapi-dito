@@ -12,7 +12,10 @@ const connectedDrivers = new Map();
 function initializeSocket(server) {
   // Configure CORS based on environment
   const allowedOrigins = process.env.ENVIRONMENT === "production"
-    ? [process.env.CLIENT_URL] // Only allow the specific client URL in production
+    ? (process.env.CLIENT_URL || (() => {
+        console.error("CRITICAL: CLIENT_URL not set in production. Refusing to start.");
+        process.exit(1);
+      })()) // Only allow the specific client URL in production
     : "*"; // Allow all in development for easier testing
 
   io = new Server(server, {
