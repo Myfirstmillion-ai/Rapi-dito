@@ -154,6 +154,21 @@
   }
 }
 
+/* iOS-style slide up from bottom with spring */
+@keyframes slideUpSpring {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.95);
+  }
+  60% {
+    transform: translateY(-8px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes slideOut {
   from {
     opacity: 1;
@@ -162,6 +177,18 @@
   to {
     opacity: 0;
     transform: translateY(-50px) scale(0.95);
+  }
+}
+
+/* Slide down for bottom positioned toasts */
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
   }
 }
 
@@ -258,4 +285,3 @@
 .hover-lift:hover {
   transform: translateY(-2px);
 }
-

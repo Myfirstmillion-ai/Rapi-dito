@@ -1,63 +1,71 @@
 import { Toaster } from "react-hot-toast";
 
 /**
- * ToastProvider with UBER styling
+ * ToastProvider with Premium iOS-Style Stacked Notifications
  * 
  * Configuration:
- * - Position: top-center
+ * - Position: bottom-center (above minimized driver bar)
  * - Duration by type: success 3s, error 4s, custom 30s
- * - UBER colors and styling
- * - Smooth animations
+ * - Dark glassmorphism styling
+ * - Smooth spring animations for stacking effect
  */
 function ToastProvider() {
   return (
     <Toaster
-      position="top-center"
+      position="bottom-center"
       reverseOrder={false}
-      gutter={8}
+      gutter={12}
+      containerStyle={{
+        bottom: '100px', // Position above minimized driver bar
+      }}
       toastOptions={{
         duration: 4000,
         style: {
-          background: '#fff',
-          color: '#000000',
-          boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
-          borderRadius: '12px',
+          background: 'rgba(15, 23, 42, 0.95)',
+          color: '#ffffff',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
+          borderRadius: '24px',
           padding: '16px',
           fontFamily: 'Inter, system-ui, sans-serif',
           fontSize: '14px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
         },
         success: {
           duration: 3000,
           style: {
-            background: '#fff',
-            color: '#000000',
-            border: '2px solid #05A357',
+            background: 'rgba(15, 23, 42, 0.95)',
+            color: '#ffffff',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            backdropFilter: 'blur(20px)',
           },
           iconTheme: {
-            primary: '#05A357', // UBER green
+            primary: '#10b981', // Emerald green
             secondary: '#fff',
           },
         },
         error: {
           duration: 4000,
           style: {
-            background: '#fff',
-            color: '#000000',
-            border: '2px solid #CD0A29',
+            background: 'rgba(15, 23, 42, 0.95)',
+            color: '#ffffff',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            backdropFilter: 'blur(20px)',
           },
           iconTheme: {
-            primary: '#CD0A29', // UBER red
+            primary: '#ef4444', // Red
             secondary: '#fff',
           },
         },
         loading: {
           style: {
-            background: '#fff',
-            color: '#000000',
-            border: '2px solid #276EF1',
+            background: 'rgba(15, 23, 42, 0.95)',
+            color: '#ffffff',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            backdropFilter: 'blur(20px)',
           },
           iconTheme: {
-            primary: '#276EF1', // UBER blue
+            primary: '#3b82f6', // Blue
             secondary: '#fff',
           },
         },
