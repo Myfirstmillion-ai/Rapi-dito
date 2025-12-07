@@ -4,6 +4,7 @@ import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User, ChevronDown, ChevronUp, TrendingUp, MapPin, DollarSign, Award } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
+import DriverStatsPill from "../components/DriverStatsPill";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
@@ -595,8 +596,17 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      {/* Captain Premium Dashboard - Hidden when sidebar is open */}
-      {showCaptainDetailsPanel && !isSidebarOpen && (
+      {/* Captain Dashboard - Compact Pill or Full Panel */}
+      {showCaptainDetailsPanel && !isSidebarOpen && !isPanelExpanded && (
+        <DriverStatsPill
+          captain={captainData}
+          vehicle={captainData?.vehicle}
+          onExpand={() => setIsPanelExpanded(true)}
+        />
+      )}
+
+      {/* Captain Premium Dashboard - Expanded View - Hidden when sidebar is open */}
+      {showCaptainDetailsPanel && !isSidebarOpen && isPanelExpanded && (
         <div className={`fixed bottom-0 left-0 right-0 z-10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl transition-all duration-500 ease-in-out ${
           isPanelExpanded ? 'max-h-[75vh]' : 'max-h-[100px]'
         } rounded-t-3xl overflow-hidden`}>

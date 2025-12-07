@@ -9,6 +9,7 @@ import {
 } from "../components";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
+import MapInteractionWrapper from "../components/MapInteractionWrapper";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -92,10 +93,16 @@ function UserHomeScreen() {
   const [showSelectVehiclePanel, setShowSelectVehiclePanel] = useState(false);
   const [showRideDetailsPanel, setShowRideDetailsPanel] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [panelsVisible, setPanelsVisible] = useState(true); // For map interaction
 
   // Handle sidebar toggle - hide all panels when sidebar opens
   const handleSidebarToggle = (isOpen) => {
     setIsSidebarOpen(isOpen);
+  };
+
+  // Handle panels visibility when interacting with map
+  const handlePanelsVisibilityChange = (visible) => {
+    setPanelsVisible(visible);
   };
 
   // Obtener ubicación actual y convertirla a dirección
@@ -563,36 +570,43 @@ function UserHomeScreen() {
     <div className="relative w-full h-dvh overflow-hidden">
       <Sidebar onToggle={handleSidebarToggle} />
       
-      {/* Map Container - Full Height */}
+      {/* Map Container - Full Height with Interaction Wrapper */}
       <div className="absolute inset-0 z-0">
-        {showEliteMap ? (
-          <EliteTrackingMap
-            driverLocation={driverLocation}
-            pickupLocation={pickupCoordinates}
-            dropoffLocation={currentRideStatus === "ongoing" ? destinationCoordinates : null}
-            rideId={confirmedRideData._id}
-            rideStatus={currentRideStatus}
-            userType="user"
-            vehicleType={selectedVehicle}
-            onETAUpdate={handleETAUpdate}
-            className="w-full h-full"
-          />
-        ) : (
-          <MapboxStaticMap
-            latitude={mapCenter.lat}
-            longitude={mapCenter.lng}
-            zoom={13}
-            interactive={true}
-            showMarker={true}
-            markerColor="#276EF1"
-            className="w-full h-full"
-          />
-        )}
+        <MapInteractionWrapper
+          panelsVisible={panelsVisible}
+          onPanelsVisibilityChange={handlePanelsVisibilityChange}
+        >
+          {showEliteMap ? (
+            <EliteTrackingMap
+              driverLocation={driverLocation}
+              pickupLocation={pickupCoordinates}
+              dropoffLocation={currentRideStatus === "ongoing" ? destinationCoordinates : null}
+              rideId={confirmedRideData._id}
+              rideStatus={currentRideStatus}
+              userType="user"
+              vehicleType={selectedVehicle}
+              onETAUpdate={handleETAUpdate}
+              className="w-full h-full"
+            />
+          ) : (
+            <MapboxStaticMap
+              latitude={mapCenter.lat}
+              longitude={mapCenter.lng}
+              zoom={13}
+              interactive={true}
+              showMarker={true}
+              markerColor="#276EF1"
+              className="w-full h-full"
+            />
+          )}
+        </MapInteractionWrapper>
       </div>
       
-      {/* Componente Buscar viaje - Bottom Sheet Style with Glassmorphism */}
+      {/* Componente Buscar viaje - Bottom Sheet Style with Glassmorphism + Map Interaction */}
       {showFindTripPanel && !isSidebarOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-3xl bg-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out">
+        <div className={`fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-3xl bg-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out ${
+          panelsVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}>
           <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-2"></div>
           <h1 className="text-2xl font-semibold text-white">Buscar viaje</h1>
           <div className="flex items-center relative w-full h-fit">

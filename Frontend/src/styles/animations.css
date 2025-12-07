@@ -125,3 +125,61 @@
 .animate-bounce {
   animation: bounce 1s infinite;
 }
+
+/* Premium iOS/Android style slide in with bounce */
+@keyframes slideInBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.9);
+  }
+  50% {
+    transform: translateY(10px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.95);
+  }
+}
+
+/* Panel slide animations */
+@keyframes panelSlideUp {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes panelSlideDown {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.panel-slide-up {
+  animation: panelSlideUp 0.3s ease-out forwards;
+}
+
+.panel-slide-down {
+  animation: panelSlideDown 0.3s ease-out forwards;
+}
+
