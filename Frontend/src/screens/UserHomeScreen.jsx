@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
 import { useUser } from "../contexts/UserContext";
 import {
   Button,
@@ -146,8 +146,9 @@ function UserHomeScreen() {
     }
   };
 
-  const handleLocationChange = useCallback(
-    debounce(async (inputValue, token) => {
+  // Memoize debounced function properly - create it once and reuse
+  const handleLocationChange = useMemo(
+    () => debounce(async (inputValue, token) => {
       if (inputValue.length >= 3) {
         try {
           const response = await axios.get(
@@ -165,7 +166,7 @@ function UserHomeScreen() {
         }
       }
     }, 700),
-    []
+    [] // Empty dependency - create debounced function only once
   );
 
   const onChangeHandler = (e) => {
@@ -469,7 +470,29 @@ function UserHomeScreen() {
     }
   }, []);
 
-  // Guardar detalles del viaje
+  // Debounced localStorage save to avoid excessive writes
+  const saveRideDetailsDebounced = useMemo(
+    () => debounce((rideData) => {
+      localStorage.setItem("rideDetails", JSON.stringify(rideData));
+    }, 500),
+    []
+  );
+
+  const savePanelDetailsDebounced = useMemo(
+    () => debounce((panelDetails) => {
+      localStorage.setItem("panelDetails", JSON.stringify(panelDetails));
+    }, 500),
+    []
+  );
+
+  const saveMessagesDebounced = useMemo(
+    () => debounce((messages) => {
+      localStorage.setItem("messages", JSON.stringify(messages));
+    }, 1000),
+    []
+  );
+
+  // Guardar detalles del viaje (debounced to reduce writes)
   useEffect(() => {
     const rideData = {
       pickup: pickupLocation,
@@ -478,28 +501,30 @@ function UserHomeScreen() {
       fare: fare,
       confirmedRideData: confirmedRideData,
     };
-    localStorage.setItem("rideDetails", JSON.stringify(rideData));
+    saveRideDetailsDebounced(rideData);
   }, [
     pickupLocation,
     destinationLocation,
     selectedVehicle,
     fare,
     confirmedRideData,
+    saveRideDetailsDebounced,
   ]);
 
-  // Guardar información de paneles
+  // Guardar información de paneles (debounced to reduce writes)
   useEffect(() => {
     const panelDetails = {
       showFindTripPanel,
       showSelectVehiclePanel,
       showRideDetailsPanel,
     };
-    localStorage.setItem("panelDetails", JSON.stringify(panelDetails));
-  }, [showFindTripPanel, showSelectVehiclePanel, showRideDetailsPanel]);
+    savePanelDetailsDebounced(panelDetails);
+  }, [showFindTripPanel, showSelectVehiclePanel, showRideDetailsPanel, savePanelDetailsDebounced]);
 
+  // Guardar mensajes (debounced to reduce writes)
   useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
+    saveMessagesDebounced(messages);
+  }, [messages, saveMessagesDebounced]);
 
   useEffect(() => {
     socket.emit("join-room", confirmedRideData?._id);

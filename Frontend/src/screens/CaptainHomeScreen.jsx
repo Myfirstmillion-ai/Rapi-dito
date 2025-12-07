@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
+import debounce from "lodash.debounce";
 import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User, ChevronDown, ChevronUp, TrendingUp, MapPin, DollarSign, Award } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
@@ -79,7 +80,7 @@ function CaptainHomeScreen() {
   const [lastMessage, setLastMessage] = useState({ sender: "", text: "" });
 
   const [riderLocation, setRiderLocation] = useState({
-    ltd: DEFAULT_LOCATION.lat,
+    lat: DEFAULT_LOCATION.lat,
     lng: DEFAULT_LOCATION.lng,
   });
   const [mapCenter, setMapCenter] = useState({
@@ -171,7 +172,7 @@ function CaptainHomeScreen() {
         
         // Update map center to driver's location
         setMapCenter({
-          lat: riderLocation.ltd,
+          lat: riderLocation.lat,
           lng: riderLocation.lng
         });
         Console.log(response);
@@ -200,7 +201,7 @@ function CaptainHomeScreen() {
         );
         // Update map center to current location
         setMapCenter({
-          lat: riderLocation.ltd,
+          lat: riderLocation.lat,
           lng: riderLocation.lng
         });
         setShowBtn("end-ride");
@@ -248,7 +249,7 @@ function CaptainHomeScreen() {
         
         // Reset map to current location
         setMapCenter({
-          lat: riderLocation.ltd,
+          lat: riderLocation.lat,
           lng: riderLocation.lng
         });
         setShowBtn("accept");
@@ -310,7 +311,7 @@ function CaptainHomeScreen() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const location = {
-            ltd: position.coords.latitude,
+            lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
           
@@ -352,6 +353,29 @@ function CaptainHomeScreen() {
     localStorage.removeItem("rideDetails");
     localStorage.removeItem("showPanel");
   };
+
+  // Debounced localStorage save functions to avoid excessive writes
+  const saveMessagesDebounced = useMemo(
+    () => debounce((messages) => {
+      localStorage.setItem("messages", JSON.stringify(messages));
+    }, 1000),
+    []
+  );
+
+  const saveRideDetailsDebounced = useMemo(
+    () => debounce((rideDetails) => {
+      localStorage.setItem("rideDetails", JSON.stringify(rideDetails));
+    }, 500),
+    []
+  );
+
+  const savePanelStateDebounced = useMemo(
+    () => debounce((showPanel, showBtnState) => {
+      localStorage.setItem("showPanel", JSON.stringify(showPanel));
+      localStorage.setItem("showBtn", JSON.stringify(showBtnState));
+    }, 500),
+    []
+  );
 
   // Socket connection and location updates
   useEffect(() => {
@@ -432,12 +456,12 @@ function CaptainHomeScreen() {
         socket.off("ride-cancelled", handleRideCancelled);
       };
     }
-  }, [captain?._id, socket, showBtn, newRide._id]);
+  }, [captain?._id, socket, showBtn, newRide._id, isPanelExpanded]);
 
-  // Guardar mensajes en localStorage
+  // Guardar mensajes en localStorage (debounced)
   useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
+    saveMessagesDebounced(messages);
+  }, [messages, saveMessagesDebounced]);
 
   // Socket de mensajes - room handling
   useEffect(() => {
@@ -475,16 +499,15 @@ function CaptainHomeScreen() {
     }
   }, [newRide._id, socket]);
 
-  // Guardar detalles del viaje
+  // Guardar detalles del viaje (debounced)
   useEffect(() => {
-    localStorage.setItem("rideDetails", JSON.stringify(newRide));
-  }, [newRide]);
+    saveRideDetailsDebounced(newRide);
+  }, [newRide, saveRideDetailsDebounced]);
 
-  // Guardar estado de paneles
+  // Guardar estado de paneles (debounced)
   useEffect(() => {
-    localStorage.setItem("showPanel", JSON.stringify(showNewRidePanel));
-    localStorage.setItem("showBtn", JSON.stringify(showBtn));
-  }, [showNewRidePanel, showBtn]);
+    savePanelStateDebounced(showNewRidePanel, showBtn);
+  }, [showNewRidePanel, showBtn, savePanelStateDebounced]);
 
   // Calcular ganancias
   useEffect(() => {
