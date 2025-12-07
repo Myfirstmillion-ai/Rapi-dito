@@ -20,6 +20,17 @@ const PREMIUM_ICONS = {
   bikeAlt: "https://img.icons8.com/3d-fluency/512/motorbike.png", // Alternative 3D bike
 };
 
+// 🎯 Configuration constants for maintainability
+const CONFIG = {
+  INITIAL_ROUTE_UPDATE_INTERVAL: 30000, // 30 seconds for first 5 updates
+  STANDARD_ROUTE_UPDATE_INTERVAL: 60000, // 60 seconds thereafter
+  LOCATION_TIMEOUT_THRESHOLD: 30000, // 30 seconds before GPS timeout
+  INTERPOLATION_DURATION: 2000, // 2 seconds for smooth marker movement
+  MAP_FIT_BOUNDS_PADDING: 50, // 50px padding (enterprise requirement)
+  MAP_FIT_BOUNDS_DURATION: 1500, // 1.5 seconds transition
+  ROUTE_RECALC_THRESHOLD: 5, // Number of fast updates before slowing down
+};
+
 /**
  * ⭐ ELITE WORLD-CLASS REAL-TIME TRACKING MAP COMPONENT ⭐
  * 
@@ -346,8 +357,8 @@ function EliteTrackingMap({
       newLocation.lng
     );
 
-    // 🎯 Smooth interpolation animation (60 FPS, 2 second duration)
-    const duration = 2000; // 2 seconds
+    // 🎯 Smooth interpolation animation (60 FPS, configurable duration)
+    const duration = CONFIG.INTERPOLATION_DURATION;
     const startTime = Date.now();
     
     const animate = () => {
@@ -439,16 +450,20 @@ function EliteTrackingMap({
     `;
     el.appendChild(ring);
 
-    const pingStyle = document.createElement('style');
-    pingStyle.textContent = `
-      @keyframes ping-elite {
-        75%, 100% {
-          transform: scale(2);
-          opacity: 0;
+    // Add ping animation styles (with check to prevent duplicates)
+    if (!document.getElementById('elite-ping-styles')) {
+      const pingStyle = document.createElement('style');
+      pingStyle.id = 'elite-ping-styles';
+      pingStyle.textContent = `
+        @keyframes ping-elite {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
         }
-      }
-    `;
-    document.head.appendChild(pingStyle);
+      `;
+      document.head.appendChild(pingStyle);
+    }
 
     pickupMarker.current = new mapboxgl.Marker(el)
       .setLngLat([pickupLocation.lng, pickupLocation.lat])
@@ -527,9 +542,7 @@ function EliteTrackingMap({
 
       // 🔄 PHASE TRANSITION DETECTION: Clear route when phase changes
       if (previousPhaseRef.current && previousPhaseRef.current !== currentPhase) {
-        console.log(`🎯 Phase transition: ${previousPhaseRef.current} → ${currentPhase}`);
-        
-        // ⚡ CRITICAL: Clear previous route immediately on phase change
+        // Phase transition detected - clear old route
         if (map.current.getSource('route')) {
           map.current.getSource('route').setData({
             type: 'Feature',
@@ -552,13 +565,11 @@ function EliteTrackingMap({
       if (isPrePickup && validateCoordinates(pickupLocation)) {
         start = driverLocation;
         end = pickupLocation;
-        console.log('📍 PHASE 1: Rendering route Driver → Pickup');
       } 
       // 🎯 PHASE 2: IN-PROGRESS (Current Location → Final Destination)
       else if (isInProgress && validateCoordinates(dropoffLocation)) {
         start = driverLocation;
         end = dropoffLocation;
-        console.log('🏁 PHASE 2: Rendering route Current → Destination');
       } 
       else {
         return; // No valid phase
@@ -593,9 +604,11 @@ function EliteTrackingMap({
 
     updateRoute();
 
-    // Adaptive route recalculation: 30s initially, then 60s
+    // Adaptive route recalculation using constants
     const getRecalculationInterval = () => {
-      return routeRecalculationCount.current < 5 ? 30000 : 60000;
+      return routeRecalculationCount.current < CONFIG.ROUTE_RECALC_THRESHOLD 
+        ? CONFIG.INITIAL_ROUTE_UPDATE_INTERVAL 
+        : CONFIG.STANDARD_ROUTE_UPDATE_INTERVAL;
     };
 
     updateInterval.current = setInterval(() => {
@@ -660,11 +673,11 @@ function EliteTrackingMap({
       else if (distance < 10000) maxZoom = 14; // Far
       else maxZoom = 13; // Very far
 
-      // Smooth camera transition with 50px padding
+      // Smooth camera transition with configurable padding
       map.current.fitBounds(bounds, {
-        padding: 50, // ⭐ Enterprise requirement: 50px padding
+        padding: CONFIG.MAP_FIT_BOUNDS_PADDING,
         maxZoom: maxZoom,
-        duration: 1500,
+        duration: CONFIG.MAP_FIT_BOUNDS_DURATION,
         essential: true,
       });
     }
@@ -692,11 +705,11 @@ function EliteTrackingMap({
       clearTimeout(locationTimeoutRef.current);
     }
 
-    // Set new timeout (30 seconds)
+    // Set new timeout using configuration constant
     locationTimeoutRef.current = setTimeout(() => {
       setLocationTimeout(true);
       setTrackingError('GPS_TIMEOUT');
-    }, 30000);
+    }, CONFIG.LOCATION_TIMEOUT_THRESHOLD);
 
     return () => {
       if (locationTimeoutRef.current) {
@@ -753,9 +766,13 @@ function EliteTrackingMap({
                   alt={vehicleType === 'bike' ? 'Moto' : 'Carro'}
                   className="w-8 h-8 object-contain"
                   onError={(e) => {
-                    // Fallback to emoji if CDN fails
-                    e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = `<span style="font-size: 24px;">${vehicleType === 'bike' ? '🛵' : '🚗'}</span>`;
+                    // Fallback to emoji if CDN fails (XSS-safe using textContent)
+                    const target = e.target;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('span');
+                    fallback.textContent = vehicleType === 'bike' ? '🛵' : '🚗';
+                    fallback.style.fontSize = '24px';
+                    target.parentElement.appendChild(fallback);
                   }}
                 />
               </div>
