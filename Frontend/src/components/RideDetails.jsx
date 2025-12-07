@@ -76,15 +76,28 @@ function RideDetails({
             </button>
           )}
           
-          {/* Searching Animation - Premium */}
+          {/* Searching Animation - Premium Radar Effect */}
           {rideCreated && !confirmedRideData && !isMinimized && (
-            <div className="mb-4 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-2xl p-4">
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <div className="animate-spin h-5 w-5 border-2 border-emerald-400 border-t-transparent rounded-full"></div>
-                <h1 className="text-base font-bold text-white">Buscando conductores cercanos...</h1>
-              </div>
-              <div className="overflow-hidden rounded-full h-1.5 bg-white/10">
-                <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse"></div>
+            <div className="mb-4 relative bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 backdrop-blur-xl border border-emerald-400/20 rounded-2xl p-5 overflow-hidden">
+              {/* Animated glow pulse */}
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 animate-pulse" />
+
+              <div className="relative flex flex-col items-center gap-3">
+                {/* Radar animation */}
+                <div className="relative w-12 h-12">
+                  <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping" />
+                  <div className="absolute inset-2 rounded-full bg-emerald-400/30 animate-ping" style={{ animationDelay: '0.3s' }} />
+                  <div className="absolute inset-0 m-auto w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 shadow-lg shadow-emerald-500/50" />
+                </div>
+
+                <h1 className="text-sm sm:text-base font-bold text-white text-center" style={{ textWrap: 'balance' }}>
+                  Buscando conductores cercanos...
+                </h1>
+
+                {/* Progress bar with shimmer */}
+                <div className="w-full overflow-hidden rounded-full h-1 bg-white/10">
+                  <div className="h-full w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
+                </div>
               </div>
             </div>
           )}
@@ -231,56 +244,58 @@ function RideDetails({
               </a>
             </div>
           )}
-          {/* Premium Route Display */}
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 mb-4 shadow-lg space-y-3">
+          {/* Premium Route Display - Enhanced glass card */}
+          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl overflow-hidden space-y-3">
             {/* Pickup */}
             <div className="flex items-start gap-3">
-              <div className="mt-1 p-2 bg-emerald-500/20 backdrop-blur-sm rounded-lg border border-emerald-400/30">
-                <MapPinMinus size={18} className="text-emerald-400" />
+              <div className="mt-0.5 p-2 bg-emerald-500/20 backdrop-blur-sm rounded-xl border border-emerald-400/20 shadow-lg shadow-emerald-500/10">
+                <MapPinMinus size={16} className="text-emerald-400" />
               </div>
-              <div className="flex-1">
-                <p className="text-xs text-slate-300 font-medium mb-0.5">Recogida</p>
-                <h1 className="text-base font-bold text-white leading-tight">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Recogida</p>
+                <h1 className="text-sm sm:text-base font-bold text-white leading-tight truncate" style={{ textWrap: 'balance' }}>
                   {pickupLocation.split(", ")[0]}
                 </h1>
-                <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
+                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5 line-clamp-1">
                   {pickupLocation.split(", ").slice(1).join(", ")}
                 </p>
               </div>
             </div>
 
-            {/* Separator */}
-            <div className="flex items-center gap-2 py-1">
-              <div className="flex-1 border-t-2 border-dashed border-white/20"></div>
-              <Navigation size={14} className="text-slate-400" />
-              <div className="flex-1 border-t-2 border-dashed border-white/20"></div>
+            {/* Separator - Animated dots */}
+            <div className="flex items-center gap-2 py-1 pl-5">
+              <div className="flex flex-col gap-1">
+                <div className="w-1 h-1 rounded-full bg-white/30" />
+                <div className="w-1 h-1 rounded-full bg-white/20" />
+                <div className="w-1 h-1 rounded-full bg-white/10" />
+              </div>
             </div>
 
             {/* Destination */}
             <div className="flex items-start gap-3">
-              <div className="mt-1 p-2 bg-red-500/20 backdrop-blur-sm rounded-lg border border-red-400/30">
-                <MapPinPlus size={18} className="text-red-400" />
+              <div className="mt-0.5 p-2 bg-red-500/20 backdrop-blur-sm rounded-xl border border-red-400/20 shadow-lg shadow-red-500/10">
+                <MapPinPlus size={16} className="text-red-400" />
               </div>
-              <div className="flex-1">
-                <p className="text-xs text-slate-300 font-medium mb-0.5">Destino</p>
-                <h1 className="text-base font-bold text-white leading-tight">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Destino</p>
+                <h1 className="text-sm sm:text-base font-bold text-white leading-tight truncate" style={{ textWrap: 'balance' }}>
                   {destinationLocation.split(", ")[0]}
                 </h1>
-                <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
+                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5 line-clamp-1">
                   {destinationLocation.split(", ").slice(1).join(", ")}
                 </p>
               </div>
             </div>
 
-            {/* Fare */}
-            <div className="flex items-center justify-between pt-2 mt-2 border-t border-white/20">
+            {/* Fare - Glass divider */}
+            <div className="flex items-center justify-between pt-3 mt-2 border-t border-white/10">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-white/10 rounded-lg">
-                  <CreditCard size={16} className="text-slate-300" />
+                <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
+                  <CreditCard size={14} className="text-white/60" />
                 </div>
-                <span className="text-sm text-slate-300 font-medium">Efectivo</span>
+                <span className="text-xs sm:text-sm text-white/60 font-medium whitespace-nowrap">Efectivo</span>
               </div>
-              <h1 className="text-xl font-bold text-white">
+              <h1 className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">
                 COP$ {fare[selectedVehicle]?.toLocaleString('es-CO') || 0}
               </h1>
             </div>

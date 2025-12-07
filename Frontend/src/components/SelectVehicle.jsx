@@ -83,11 +83,15 @@ function SelectVehicle({
         ) : (
           /* Maximized View - Premium */
           <>
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-white mb-1">Elige tu viaje</h2>
-              <p className="text-sm text-slate-300">Selecciona el vehículo que prefieras</p>
+            <div className="mb-5">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ textWrap: 'balance' }}>
+                Elige tu viaje
+              </h2>
+              <p className="text-sm text-white/50" style={{ textWrap: 'balance' }}>
+                Selecciona el vehículo que prefieras
+              </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 pb-2">
               {vehicles.map((vehicle) => (
                 <Vehicle
                   key={vehicle.id}
@@ -142,92 +146,87 @@ const Vehicle = ({
       onMouseLeave={onLeave}
       className={`
         cursor-pointer group relative flex items-center rounded-2xl overflow-hidden
-        transition-all duration-300 active:scale-[0.98]
-        ${isSelected 
-          ? "bg-gradient-to-r from-emerald-500 to-cyan-500 border-2 border-emerald-400 shadow-xl shadow-emerald-500/30" 
+        transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+        active:scale-[0.97] active:brightness-95
+        ${isSelected
+          ? "bg-gradient-to-r from-emerald-500/90 to-cyan-500/90 ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900 shadow-[0_0_30px_rgba(52,211,153,0.4)] scale-[1.02]"
           : isHovered
-          ? "bg-gradient-to-r from-white/15 to-white/10 border-2 border-emerald-400/50 backdrop-blur-xl shadow-lg"
-          : "bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:border-white/30 shadow-sm"
+          ? "bg-gradient-to-r from-white/15 to-white/10 border border-emerald-400/50 backdrop-blur-xl shadow-lg shadow-emerald-500/10"
+          : "bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 shadow-lg"
         }
       `}
     >
-      {/* Vehicle Image Section */}
-      <div className="relative p-4 flex items-center justify-center w-32">
+      {/* Vehicle Image Section - Floating effect */}
+      <div className="relative p-3 flex items-center justify-center w-28 sm:w-32">
+        <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-l-2xl ${isSelected ? 'from-white/10' : ''}`} />
         <img
           src={vehicle.image}
-          className={`w-28 h-auto transition-transform duration-300 ${
-            isHovered ? "scale-110" : "scale-100"
+          className={`w-24 sm:w-28 h-auto relative z-10 drop-shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isHovered || isSelected ? "scale-110 -translate-y-1" : "scale-100"
           }`}
           alt={vehicle.name}
         />
         {isSelected && (
-          <div className="absolute inset-0 bg-emerald-500/20 backdrop-blur-sm flex items-center justify-center">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center animate-bounce">
-              <Check size={24} className="text-emerald-600" strokeWidth={3} />
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 animate-scale-in">
+              <Check size={22} className="text-emerald-600" strokeWidth={3} />
             </div>
           </div>
         )}
       </div>
 
-      {/* Vehicle Info Section */}
-      <div className="flex-1 pr-4 py-4">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h1 className="text-lg font-bold text-white transition-colors">
-              {vehicle.name}
-            </h1>
-            <p className={`text-sm transition-colors ${
-              isSelected ? "text-emerald-100" : "text-slate-300"
-            }`}>
-              {vehicle.description}
-            </p>
-          </div>
+      {/* Vehicle Info Section - Fixed text wrapping */}
+      <div className="flex-1 pr-3 py-4 min-w-0">
+        <div className="mb-2">
+          <h1 className="text-base sm:text-lg font-bold text-white transition-colors whitespace-nowrap">
+            {vehicle.name}
+          </h1>
+          <p className={`text-xs sm:text-sm transition-colors leading-tight ${
+            isSelected ? "text-emerald-100" : "text-white/60"
+          }`} style={{ textWrap: 'balance' }}>
+            {vehicle.description}
+          </p>
         </div>
 
-        {/* Vehicle Details */}
-        <div className="flex items-center gap-3 mt-2">
-          <div className={`flex items-center gap-1 text-xs font-medium ${
-            isSelected ? "text-emerald-100" : "text-slate-300"
+        {/* Vehicle Details - Pill badges */}
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
+            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
           }`}>
-            <Clock size={14} />
-            <span>{vehicle.eta}</span>
+            <Clock size={12} />
+            <span className="whitespace-nowrap">{vehicle.eta}</span>
           </div>
-          <div className={`w-1 h-1 rounded-full ${
-            isSelected ? "bg-emerald-200" : "bg-slate-400"
-          }`}></div>
-          <div className={`flex items-center gap-1 text-xs font-medium ${
-            isSelected ? "text-emerald-100" : "text-slate-300"
+          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
+            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
           }`}>
-            <Users size={14} />
-            <span>{vehicle.capacity}</span>
+            <Users size={12} />
+            <span className="whitespace-nowrap">{vehicle.capacity}</span>
           </div>
         </div>
       </div>
 
-      {/* Price Section */}
-      <div className="pr-4 py-4 text-right">
-        <p className={`text-xs font-medium mb-1 ${
-          isSelected ? "text-emerald-100" : "text-slate-400"
+      {/* Price Section - Enhanced hierarchy */}
+      <div className="pr-3 sm:pr-4 py-4 text-right flex-shrink-0">
+        <p className={`text-[10px] sm:text-xs font-medium mb-0.5 ${
+          isSelected ? "text-white/80" : "text-white/40"
         }`}>
           Tarifa
         </p>
-        <h3 className="text-xl font-bold text-white transition-colors">
+        <h3 className={`text-lg sm:text-xl font-bold transition-colors whitespace-nowrap ${
+          isSelected ? "text-white" : "text-emerald-400"
+        }`}>
           ${Math.floor(fare[vehicle.type] / 1000)}K
         </h3>
-        <p className={`text-xs mt-1 ${
-          isSelected ? "text-emerald-100" : "text-slate-400"
+        <p className={`text-[10px] sm:text-xs mt-0.5 whitespace-nowrap ${
+          isSelected ? "text-white/70" : "text-white/40"
         }`}>
           COP$ {fare[vehicle.type]?.toLocaleString('es-CO') || 0}
         </p>
       </div>
 
-      {/* Selection Indicator */}
+      {/* Glow accent line at bottom when selected */}
       {isSelected && (
-        <div className="absolute top-3 right-3">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <Check size={18} className="text-emerald-600" strokeWidth={3} />
-          </div>
-        </div>
+        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400" />
       )}
     </div>
   );
