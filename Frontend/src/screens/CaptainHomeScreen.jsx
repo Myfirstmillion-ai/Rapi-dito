@@ -432,7 +432,7 @@ function CaptainHomeScreen() {
         socket.off("ride-cancelled", handleRideCancelled);
       };
     }
-  }, [captain?._id, socket, showBtn, newRide._id, isPanelExpanded]);
+  }, [captain?._id, socket, showBtn, newRide._id]);
 
   // Guardar mensajes en localStorage
   useEffect(() => {

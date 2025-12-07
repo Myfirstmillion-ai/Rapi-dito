@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { DollarSign, Navigation } from "lucide-react";
 
+// Z-index layering for proper stacking
+const TOAST_Z_INDEX = 50; // Above map (z-10-20), below modals (z-100+)
+
 /**
  * Premium iOS-Style Stacked Notification for Ride Requests
  * Dark Glassmorphism design positioned above the minimized driver bar
@@ -165,7 +168,7 @@ export function showRideRequestToast(ride, onAccept, onReject) {
           animation: t.visible 
             ? 'slideUpSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' 
             : 'slideDown 0.3s ease-in-out',
-          zIndex: 50, // Ensure it floats above map but below modals
+          zIndex: TOAST_Z_INDEX, // Ensure it floats above map but below modals
         }}
       >
         <RideRequestToast
