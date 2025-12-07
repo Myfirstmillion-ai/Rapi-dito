@@ -58,18 +58,18 @@ function Sidebar({ onToggle }) {
   
   return (
     <>
-      {/* Hamburger Menu Button - Positioned to avoid map controls */}
+      {/* Hamburger Menu Button - Premium Dark Glass Style */}
       <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         style={{ zIndex: 9999 }}
-        className="m-3 mt-4 absolute left-0 top-0 cursor-pointer bg-gray-900 backdrop-blur-md p-3 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-200 border-2 border-white/20"
+        className="m-4 mt-5 absolute left-0 top-0 cursor-pointer bg-slate-900/60 backdrop-blur-md p-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 border border-white/10 hover:border-white/20"
         onClick={toggleSidebar}
       >
         {showSidebar ? (
-          <X size={24} className="text-white font-bold" />
+          <X size={24} className="text-white" />
         ) : (
-          <Menu size={24} className="text-white font-bold" />
+          <Menu size={24} className="text-white" />
         )}
       </motion.div>
 

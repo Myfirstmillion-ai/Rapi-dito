@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { DollarSign, Navigation } from "lucide-react";
 
 // Z-index layering for proper stacking
-const TOAST_Z_INDEX = 50; // Above map (z-10-20), below modals (z-100+)
+const TOAST_Z_INDEX = 100; // Above everything including driver panel (z-20-50), below modals (z-1000+)
 
 /**
  * Premium iOS-Style Stacked Notification for Ride Requests

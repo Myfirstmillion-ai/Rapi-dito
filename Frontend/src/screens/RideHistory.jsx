@@ -463,29 +463,30 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
             </div>
           )}
 
-          {/* Additional Info */}
-          <div className="grid grid-cols-1 gap-3">
-            {(ride.captain || ride.driver) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-3">
-                <p className="text-xs text-slate-400 mb-1">Conductor</p>
-                <p className="text-sm font-semibold text-white truncate">
-                  {ride.captain?.fullname?.firstname || 
-                   ride.captain?.firstname || 
-                   ride.driver?.fullname?.firstname || 
-                   ride.driver?.firstname ||
-                   ride.captain?.name ||
-                   ride.driver?.name ||
-                   "Sin información"}
+          {/* Driver Info - Only show for completed rides */}
+          {ride.status === "completed" && (ride.captain || ride.driver) && (
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/5 rounded-lg p-3">
+              <p className="text-xs text-slate-400 mb-1">Conductor</p>
+              <p className="text-sm font-semibold text-white truncate">
+                {ride.captain?.fullname?.firstname || 
+                 ride.captain?.firstname || 
+                 ride.driver?.fullname?.firstname || 
+                 ride.driver?.firstname ||
+                 ride.captain?.name ||
+                 ride.driver?.name ||
+                 "Sin información"}
+              </p>
+              {/* Vehicle Info if available */}
+              {(ride.captain?.vehicle || ride.driver?.vehicle) && (
+                <p className="text-xs text-slate-400 mt-1 truncate">
+                  {ride.captain?.vehicle?.make || ride.driver?.vehicle?.make || ""}{" "}
+                  {ride.captain?.vehicle?.model || ride.driver?.vehicle?.model || ""}
+                  {(ride.captain?.vehicle?.color || ride.driver?.vehicle?.color) && 
+                    ` - ${ride.captain?.vehicle?.color || ride.driver?.vehicle?.color}`}
                 </p>
-              </div>
-            )}
-          </div>
-
-          {/* View Details Button */}
-          <button className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg hover:shadow-lg hover:shadow-emerald-500/50 transition-all font-medium text-sm">
-            Ver detalles completos
-            <ChevronRight size={16} />
-          </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
