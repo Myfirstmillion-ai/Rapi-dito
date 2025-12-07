@@ -344,7 +344,10 @@ function UserHomeScreen() {
 
   // Eventos de Socket
   useEffect(() => {
-    if (!user._id || !socket) return;
+    if (!user._id || !socket) {
+      // Early return if dependencies not ready
+      return;
+    }
 
     socket.emit("join", {
       userId: user._id,

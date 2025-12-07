@@ -74,10 +74,7 @@ module.exports.getAddressCoordinate = async (address) => {
 
     if (response.data.features && response.data.features.length > 0) {
       const [lng, lat] = response.data.features[0].center; // Mapbox returns [lng, lat]
-      return {
-        lat: lat,
-        lng: lng,
-      };
+      return { lat, lng }; // ES6 shorthand
     } else {
       throw new Error("No se pudieron obtener las coordenadas");
     }
