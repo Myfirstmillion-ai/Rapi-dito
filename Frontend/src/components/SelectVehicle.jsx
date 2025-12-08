@@ -146,12 +146,12 @@ const Vehicle = ({
       onMouseLeave={onLeave}
       className={`
         cursor-pointer group relative flex items-center rounded-2xl overflow-hidden
-        transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-        active:scale-[0.97] active:brightness-95
+        transition-all duration-300 ease-out
+        active:scale-[0.97]
         ${isSelected
           ? "bg-gradient-to-r from-emerald-500/90 to-cyan-500/90 ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900 shadow-[0_0_30px_rgba(52,211,153,0.4)] scale-[1.02]"
           : isHovered
-          ? "bg-gradient-to-r from-white/15 to-white/10 border border-emerald-400/50 backdrop-blur-xl shadow-lg shadow-emerald-500/10"
+          ? "bg-gradient-to-r from-white/15 to-white/10 border border-emerald-400/50 backdrop-blur-xl shadow-[0_8px_24px_rgba(52,211,153,0.15)]"
           : "bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 shadow-lg"
         }
       `}

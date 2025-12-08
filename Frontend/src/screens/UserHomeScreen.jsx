@@ -636,70 +636,93 @@ function UserHomeScreen() {
         </MapInteractionWrapper>
       </div>
       
-      {/* Componente Buscar viaje - Bottom Sheet Style with Glassmorphism + Map Interaction */}
+      {/* Componente Buscar viaje - Floating Route Card with Glassmorphism */}
       {showFindTripPanel && !isSidebarOpen && (
-        <div className={`fixed bottom-0 left-0 right-0 z-10 flex flex-col justify-start p-4 pb-safe gap-4 rounded-t-3xl bg-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] max-h-[60vh] md:max-h-[50vh] transition-all duration-300 ease-out ${
+        <div className={`fixed bottom-0 left-0 right-0 z-10 transition-all duration-300 ease-out ${
           panelsVisible ? 'translate-y-0' : 'translate-y-full'
         }`}>
-          <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-2"></div>
-          <h1 className="text-2xl font-semibold text-white">Buscar viaje</h1>
-          <div className="flex items-center relative w-full h-fit">
-            <div className="h-3/5 w-[3px] flex flex-col items-center justify-between bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full absolute mx-5">
-              <div className="w-2 h-2 rounded-full border-[3px] bg-slate-900 border-emerald-400"></div>
-              <div className="w-2 h-2 rounded-sm border-[3px] bg-slate-900 border-cyan-400"></div>
-            </div>
-            <div className="w-full">
-              <div className="relative">
-                <input
-                  id="pickup"
-                  placeholder="Agregar punto de recogida"
-                  className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 pl-10 pr-12 py-3 rounded-xl outline-none text-sm mb-2 truncate transition-all text-white placeholder:text-slate-400"
-                  value={pickupLocation}
-                  onChange={onChangeHandler}
-                  autoComplete="off"
-                />
-                <button
-                  onClick={getCurrentLocation}
-                  disabled={gettingLocation}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 -mt-1 p-2 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 transition-all duration-200 text-white disabled:bg-slate-700 disabled:cursor-not-allowed shadow-lg"
-                  title="Usar ubicación actual"
-                >
-                  <Navigation 
-                    size={16} 
-                    className={gettingLocation ? "animate-pulse" : ""} 
-                  />
-                </button>
-              </div>
-              <input
-                id="destination"
-                placeholder="Agregar destino"
-                className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 pl-10 pr-4 py-3 rounded-xl outline-none text-sm truncate transition-all text-white placeholder:text-slate-400"
-                value={destinationLocation}
-                onChange={onChangeHandler}
-                autoComplete="off"
-              />
-            </div>
-          </div>
-          {pickupLocation.length > 2 && destinationLocation.length > 2 && (
-            <Button
-              title={"Buscar"}
-              loading={loading}
-              fun={() => {
-                getDistanceAndFare(pickupLocation, destinationLocation);
-              }}
-            />
-          )}
+          {/* Premium Floating Route Card */}
+          <div className="mx-4 mb-6 bg-slate-900/95 backdrop-blur-xl rounded-[32px] border border-white/10 shadow-2xl overflow-hidden"
+               style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}>
+            {/* Top accent glow */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent rounded-t-[32px]" />
+            
+            {/* Drag Handle */}
+            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-4"></div>
+            
+            <div className="px-5 pb-4">
+              <h1 className="text-2xl font-black text-white mb-5" style={{ textWrap: 'balance' }}>Buscar viaje</h1>
+              
+              {/* Route Input Container with Visual Connector */}
+              <div className="relative mb-5">
+                {/* Connector Line - Dotted vertical line between inputs */}
+                <div className="absolute left-6 top-0 bottom-0 w-[2px] flex flex-col items-center justify-between z-0">
+                  <div className="w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-900 shadow-lg shadow-emerald-400/50" />
+                  <div className="flex-1 w-[2px] border-l-2 border-dashed border-white/20 my-2" />
+                  <div className="w-3 h-3 rounded-sm bg-cyan-400 border-2 border-slate-900 shadow-lg shadow-cyan-400/50" />
+                </div>
 
-          <div className="w-full h-full overflow-y-scroll">
-            {locationSuggestion.length > 0 && (
-              <LocationSuggestions
-                suggestions={locationSuggestion}
-                setSuggestions={setLocationSuggestion}
-                setPickupLocation={setPickupLocation}
-                setDestinationLocation={setDestinationLocation}
-                input={selectedInput}
-              />
-            )}
+                {/* Pickup Input */}
+                <div className="relative mb-3 pl-12">
+                  <input
+                    id="pickup"
+                    placeholder="Punto de recogida"
+                    className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 px-4 pr-12 py-4 rounded-2xl outline-none text-base transition-all duration-300 ease-out text-white placeholder:text-slate-400"
+                    value={pickupLocation}
+                    onChange={onChangeHandler}
+                    autoComplete="off"
+                  />
+                  <button
+                    onClick={getCurrentLocation}
+                    disabled={gettingLocation}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 transition-all duration-200 text-white disabled:bg-slate-700 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30"
+                    title="Usar ubicación actual"
+                  >
+                    <Navigation 
+                      size={18} 
+                      className={gettingLocation ? "animate-pulse" : ""} 
+                    />
+                  </button>
+                </div>
+
+                {/* Destination Input */}
+                <div className="relative pl-12">
+                  <input
+                    id="destination"
+                    placeholder="Destino"
+                    className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 px-4 py-4 rounded-2xl outline-none text-base transition-all duration-300 ease-out text-white placeholder:text-slate-400"
+                    value={destinationLocation}
+                    onChange={onChangeHandler}
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+
+              {/* Search Button - Enhanced */}
+              {pickupLocation.length > 2 && destinationLocation.length > 2 && (
+                <Button
+                  title={"Buscar"}
+                  loading={loading}
+                  fun={() => {
+                    getDistanceAndFare(pickupLocation, destinationLocation);
+                  }}
+                  classes="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-2xl shadow-lg shadow-emerald-500/30 transition-all duration-300 ease-out"
+                />
+              )}
+
+              {/* Location Suggestions */}
+              <div className="max-h-[30vh] overflow-y-auto mt-3" style={{ WebkitOverflowScrolling: 'touch' }}>
+                {locationSuggestion.length > 0 && (
+                  <LocationSuggestions
+                    suggestions={locationSuggestion}
+                    setSuggestions={setLocationSuggestion}
+                    setPickupLocation={setPickupLocation}
+                    setDestinationLocation={setDestinationLocation}
+                    input={selectedInput}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
