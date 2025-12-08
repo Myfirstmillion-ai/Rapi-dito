@@ -2,21 +2,15 @@ import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { useCaptain } from "../contexts/CaptainContext";
-import { Phone, User, ChevronDown, ChevronUp, TrendingUp, MapPin, DollarSign, Award } from "lucide-react";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
 import DriverStatsPill from "../components/DriverStatsPill";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
-import { DashboardSkeleton } from "../components/ui/FintechSkeleton";
 import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
-import { getVehicleColor } from "../utils/vehicleColors";
-
-// Loading animation timing constant
-const SKELETON_MINIMUM_DISPLAY_TIME = 800; // ms - prevents flash, ensures smooth transition
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -77,7 +71,6 @@ function CaptainHomeScreen() {
   const { socket } = useContext(SocketDataContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [dashboardLoading, setDashboardLoading] = useState(true); // Loading state for dashboard data
   const { alert, showAlert, hideAlert } = useAlert();
   
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -119,7 +112,7 @@ function CaptainHomeScreen() {
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
-  const [isPanelExpanded, setIsPanelExpanded] = useState(false); // Changed to false by default for better UX
+  // Removed isPanelExpanded - Driver panel is now always compact (no expand functionality)
   const [showNewRidePanel, setShowNewRidePanel] = useState(
     JSON.parse(localStorage.getItem("showPanel")) || false
   );
@@ -432,10 +425,7 @@ function CaptainHomeScreen() {
         vibrate([500, 200, 500, 200, 500]);
         playSound(NOTIFICATION_SOUNDS.newRide);
         
-        // AUTO-MINIMIZE LOGIC: If driver panel is expanded, minimize it to show map and notification
-        if (isPanelExpanded) {
-          setIsPanelExpanded(false);
-        }
+        // No need for auto-minimize logic - panel is always compact now
         
         setShowBtn("accept");
         setNewRide(data);
@@ -461,7 +451,7 @@ function CaptainHomeScreen() {
         socket.off("ride-cancelled", handleRideCancelled);
       };
     }
-  }, [captain?._id, socket, showBtn, newRide._id, isPanelExpanded]);
+  }, [captain?._id, socket, showBtn, newRide._id]); // Removed isPanelExpanded from dependencies
 
   // Guardar mensajes en localStorage (debounced)
   useEffect(() => {
@@ -517,8 +507,6 @@ function CaptainHomeScreen() {
   // Calcular ganancias
   useEffect(() => {
     if (captain?.rides && Array.isArray(captain.rides)) {
-      setDashboardLoading(true); // Start loading
-      
       let Totalearnings = 0;
       let Todaysearning = 0;
       let acceptedRides = 0;
@@ -558,12 +546,6 @@ function CaptainHomeScreen() {
         cancelled: cancelledRides,
         distanceTravelled: Math.round(distanceTravelled / 1000),
       });
-      
-      // Simulate minimum loading time for smooth UX
-      setTimeout(() => setDashboardLoading(false), SKELETON_MINIMUM_DISPLAY_TIME);
-    } else {
-      // No captain data yet
-      setDashboardLoading(true);
     }
   }, [captain?.rides]);
 
@@ -638,239 +620,14 @@ function CaptainHomeScreen() {
         </div>
       )}
 
-      {/* Captain Dashboard - Compact Pill or Full Panel */}
-      {showCaptainDetailsPanel && !isSidebarOpen && !isPanelExpanded && (
+      {/* Captain Dashboard - Compact Floating Glass Dock (Always Visible, No Expand) */}
+      {showCaptainDetailsPanel && !isSidebarOpen && (
         <DriverStatsPill
           captain={captainData}
           vehicle={captainData?.vehicle}
-          onExpand={() => setIsPanelExpanded(true)}
+          earnings={earnings}
+          rides={rides}
         />
-      )}
-
-      {/* Captain Premium Dashboard - Expanded View - Bento Grid Layout */}
-      {showCaptainDetailsPanel && !isSidebarOpen && isPanelExpanded && (
-        <div className={`fixed bottom-0 left-0 right-0 z-10 bg-slate-900/95 backdrop-blur-xl shadow-2xl transition-all duration-500 ease-in-out ${
-          isPanelExpanded ? 'max-h-[75vh]' : 'max-h-[100px]'
-        } rounded-t-3xl overflow-hidden border-t-2 border-white/10`}>
-          {/* Glassmorphism overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-          
-          {/* Handle bar and toggle */}
-          <div className="relative">
-            <button
-              onClick={() => setIsPanelExpanded(!isPanelExpanded)}
-              className="w-full py-3 flex flex-col items-center gap-1 hover:bg-white/5 transition-colors active:scale-95"
-            >
-              <div className="w-12 h-1.5 bg-white/30 rounded-full shadow-sm"></div>
-              {isPanelExpanded ? (
-                <ChevronDown className="w-5 h-5 text-white/60 mt-1" />
-              ) : (
-                <ChevronUp className="w-5 h-5 text-white/60 mt-1" />
-              )}
-            </button>
-          </div>
-
-          <div className="relative px-4 pb-safe overflow-y-auto" style={{ maxHeight: isPanelExpanded ? 'calc(75vh - 60px)' : '0' }}>
-            {dashboardLoading ? (
-              /* Show skeleton while loading */
-              <DashboardSkeleton />
-            ) : (
-              <>
-                {/* Profile Header - Ultra-Premium with Whitespace */}
-                <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
-                  <div className="flex items-center gap-4">
-                    {/* Profile Photo - Larger with Shadow */}
-                    <div className="relative">
-                      {captain?.profileImage ? (
-                        <img
-                          src={captain.profileImage}
-                          alt="Profile"
-                          className="w-20 h-20 rounded-[28px] object-cover ring-2 ring-emerald-400/40 shadow-2xl"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextElementSibling.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center ring-2 ring-emerald-400/40 shadow-2xl"
-                        style={{ display: captain?.profileImage ? 'none' : 'flex' }}
-                      >
-                        <span className="text-3xl font-black text-white">
-                          {captainData?.fullname?.firstname?.[0] || "C"}
-                          {captainData?.fullname?.lastname?.[0] || ""}
-                        </span>
-                      </div>
-                      {/* Online indicator - Larger */}
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 rounded-full border-3 border-slate-900 shadow-xl animate-pulse"></div>
-                    </div>
-
-                    {/* Driver Info - Bold Typography */}
-                    <div>
-                      <h1 className="text-xl font-black text-white leading-tight mb-1">
-                        {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
-                      </h1>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 bg-yellow-500/20 px-3 py-1.5 rounded-full border border-yellow-400/30">
-                          <Award size={14} className="text-yellow-400" />
-                          <span className="text-xs text-yellow-400 font-black uppercase tracking-wide">Pro</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-            {/* ULTRA-PREMIUM BENTO GRID - Apple/Fintech Aesthetic */}
-            <div className="space-y-4 mb-6">
-              
-              {/* Hero Card - Today's Earnings - MASSIVE & BOLD */}
-              <div className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-cyan-500/20 backdrop-blur-sm border-2 border-emerald-400/40 rounded-[32px] p-8 shadow-2xl hover:shadow-emerald-500/30 transition-all duration-300 active:scale-[0.99]">
-                {/* Label - Small & Subtle */}
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs text-emerald-200/80 font-bold uppercase tracking-[0.15em] whitespace-nowrap">
-                    💰 Hoy Ganaste
-                  </p>
-                  <div className="flex items-center gap-1.5 bg-emerald-400/20 px-3 py-1.5 rounded-full border border-emerald-400/30">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] text-emerald-200 font-black uppercase">ACTIVO</span>
-                  </div>
-                </div>
-                
-                {/* MASSIVE Number - Hero Treatment with Fallback */}
-                <div className="mb-3">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-base text-white/60 font-medium">COP$</span>
-                    <h1 className="text-6xl md:text-7xl font-black leading-none tracking-tight text-white [text-shadow:_0_0_40px_rgb(255_255_255_/_20%)]" style={{
-                      backgroundImage: 'linear-gradient(to bottom right, rgb(255 255 255), rgb(236 253 245), rgb(209 250 229))',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      {earnings.today.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
-                    </h1>
-                  </div>
-                </div>
-                
-                {/* Secondary Info */}
-                <div className="flex items-center gap-4 pt-3 border-t border-emerald-400/20">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp size={16} className="text-emerald-300" />
-                    <span className="text-sm text-emerald-100/90 font-semibold">
-                      {rides.accepted > 0 ? `${rides.accepted} ${rides.accepted === 1 ? 'viaje' : 'viajes'}` : 'Sin viajes'}
-                    </span>
-                  </div>
-                  {rides.accepted > 0 && (
-                    <span className="text-sm text-white/50">
-                      • ${Math.round(earnings.today / rides.accepted).toLocaleString('es-CO')} c/u
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Bento Grid - Asymmetric Puzzle Layout */}
-              <div className="grid grid-cols-3 gap-4">
-                
-                {/* Total Earnings - Large Tile (2 cols) */}
-                <div className="col-span-2 bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 rounded-[28px] p-6 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.99]">
-                  <p className="text-xs text-white/40 font-bold uppercase tracking-[0.12em] mb-4">Total Acumulado</p>
-                  <div className="flex items-baseline gap-2">
-                    <DollarSign size={28} className="text-purple-400 mb-1" />
-                    <h2 className="text-5xl font-black text-white leading-none">
-                      {earnings.total >= 1000 
-                        ? `${(earnings.total / 1000).toFixed(1)}K` 
-                        : earnings.total.toLocaleString('es-CO')}
-                    </h2>
-                  </div>
-                  <p className="text-xs text-white/30 mt-3">COP$ {earnings.total.toLocaleString('es-CO', { maximumFractionDigits: 0 })}</p>
-                </div>
-
-                {/* Trips - Small Tile (1 col) */}
-                <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 backdrop-blur-md border border-emerald-400/20 hover:border-emerald-400/40 rounded-[28px] p-6 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.99] flex flex-col justify-between">
-                  <MapPin size={20} className="text-emerald-400 mb-3" />
-                  <div>
-                    <h3 className="text-4xl font-black text-emerald-400 leading-none mb-1">
-                      {rides?.accepted || 0}
-                    </h3>
-                    <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide">Viajes</p>
-                  </div>
-                </div>
-
-                {/* Distance - Small Tile (1 col) */}
-                <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 backdrop-blur-md border border-purple-400/20 hover:border-purple-400/40 rounded-[28px] p-6 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.99] flex flex-col justify-between">
-                  <TrendingUp size={20} className="text-purple-400 mb-3" />
-                  <div>
-                    <h3 className="text-4xl font-black text-purple-400 leading-none mb-1">
-                      {rides?.distanceTravelled || 0}
-                    </h3>
-                    <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wide">KM</p>
-                  </div>
-                </div>
-
-                {/* Acceptance Rate - Large Tile (2 cols) */}
-                <div className="col-span-2 bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 backdrop-blur-md border border-yellow-400/20 hover:border-yellow-400/40 rounded-[28px] p-6 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.99]">
-                  <p className="text-xs text-white/40 font-bold uppercase tracking-[0.12em] mb-4">Tasa de Aceptación</p>
-                  <div className="flex items-baseline gap-3">
-                    <Award size={24} className="text-yellow-400 mb-1" />
-                    <h2 className="text-5xl font-black text-yellow-400 leading-none">
-                      {(rides?.accepted + rides?.cancelled) > 0 
-                        ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) 
-                        : <span className="text-white/20 text-3xl">N/A</span>}
-                      {(rides?.accepted + rides?.cancelled) > 0 && '%'}
-                    </h2>
-                  </div>
-                  <p className="text-xs text-white/30 mt-3">
-                    {rides?.accepted || 0} aceptados • {rides?.cancelled || 0} cancelados
-                  </p>
-                </div>
-              </div>
-            </div>
-
-                {/* Vehicle Info Card - Super-Rounded Pill Shape */}
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[32px] p-7 shadow-lg hover:border-white/20 hover:shadow-xl transition-all duration-300 active:scale-[0.99]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="text-xs text-white/40 font-bold uppercase tracking-[0.12em] mb-3">Tu Vehículo</p>
-                      <h3 className="text-2xl font-black text-white tracking-tight mb-2 leading-none">
-                        {captainData?.vehicle?.number || "---"}
-                      </h3>
-                      {/* Vehicle Make and Model */}
-                      {(captainData?.vehicle?.make || captainData?.vehicle?.model) && (
-                        <p className="text-base font-bold text-emerald-400 mb-3">
-                          {[captainData?.vehicle?.make, captainData?.vehicle?.model].filter(Boolean).join(' ')}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-gray-300">
-                        <span className="flex items-center gap-2">
-                          <div 
-                            className="w-4 h-4 rounded-full shadow-md" 
-                            style={{ backgroundColor: getVehicleColor(captainData?.vehicle?.color) }}
-                          ></div>
-                          <span className="font-medium">{captainData?.vehicle?.color || "Gris"}</span>
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <User size={16} className="text-emerald-400" />
-                          <span className="font-medium">{captainData?.vehicle?.capacity || 4}</span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="bg-white/10 rounded-[24px] p-4">
-                      <img
-                        className="h-16 scale-x-[-1] filter drop-shadow-2xl"
-                        src={
-                          captainData?.vehicle?.type === "car"
-                            ? "/car.png"
-                            : `/${captainData?.vehicle?.type || "car"}.webp`
-                        }
-                        alt="Vehículo"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
       )}
 
       {/* New ride panel - Hidden when sidebar is open */}
