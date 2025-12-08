@@ -486,7 +486,7 @@ function CaptainSignup() {
           </button>
         ) : (
           <button
-            type="submit"
+            type="button"
             onClick={handleSubmit(signupCaptain)}
             disabled={loading}
             className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-2xl transition-all hover:shadow-emerald-500/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 flex items-center justify-center gap-2"

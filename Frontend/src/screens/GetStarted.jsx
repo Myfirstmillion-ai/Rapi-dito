@@ -68,12 +68,12 @@ function GetStarted() {
       <motion.img
         src="/IMG_3639.jpeg"
         alt=""
-        initial={prefersReducedMotion ? {} : { scale: 1.1, opacity: 0 }}
-        animate={{ 
-          scale: imageLoaded ? 1 : 1.1, 
-          opacity: imageLoaded ? 1 : 0 
-        }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+        initial={prefersReducedMotion ? { opacity: 0 } : { scale: 1.1, opacity: 0 }}
+        animate={prefersReducedMotion 
+          ? { opacity: imageLoaded ? 1 : 0 }
+          : { scale: imageLoaded ? 1 : 1.1, opacity: imageLoaded ? 1 : 0 }
+        }
+        transition={{ duration: prefersReducedMotion ? 0.3 : 1.5, ease: "easeOut" }}
         className="absolute inset-0 w-full h-full object-cover"
         loading="eager"
         decoding="async"
