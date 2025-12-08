@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, ChevronRight, Car, UserCircle, Sparkles, Zap } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ChevronRight, Car, UserCircle, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import Console from "../utils/console";
