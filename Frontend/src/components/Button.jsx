@@ -2,14 +2,14 @@ import { Link } from "react-router-dom";
 import Spinner from "./Spinner";
 
 /**
- * Premium Button Component - Fintech/Super-App Standard
+ * Ultra-Premium Button Component - Apple/Fintech Standard
  * 
  * Features:
- * - Tactile Feedback: active:scale-95 with smooth transitions
- * - Depressing Shadow: Shadow reduces on press to simulate depth
- * - Minimum 44px touch target (Fintech accessibility standard)
- * - Smooth cubic-bezier easing for natural feel
- * - Focus states for keyboard navigation
+ * - PILL SHAPE: Fully rounded capsule design (rounded-full)
+ * - FULL-WIDTH: Takes up available space for easy thumb access
+ * - MASSIVE PADDING: 16px+ for "expensive" feel
+ * - Tactile Feedback: Depresses on press with shadow depth
+ * - Minimum 56px touch target (Apple HIG standard)
  * 
  * @param {string} path - Link destination (for type="link")
  * @param {string} title - Button text
@@ -22,17 +22,21 @@ import Spinner from "./Spinner";
  * @param {boolean} disabled - Disabled state
  */
 
-// Premium Tactile Feedback - Fintech Standard
+// Ultra-Premium Tactile Feedback - Apple Standard
 const TACTILE_FEEDBACK = [
-  "transition-all duration-200 ease-out", // Faster, more responsive
-  "active:scale-95", // Button depresses on press
-  "active:shadow-inner", // Inset shadow on press for depth
-  "hover:scale-[1.02]", // Subtle lift on hover
-  "hover:shadow-lg", // Elevated shadow on hover
+  "transition-all duration-200 ease-out",
+  "active:scale-[0.97]", // Slightly more press
+  "active:shadow-inner",
+  "hover:scale-[1.01]", // Subtle lift
+  "hover:shadow-xl",
+  "hover:brightness-105",
 ].join(" ");
 
-// Default Premium Styling
-const DEFAULT_BG = "bg-gradient-to-b from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 shadow-md";
+// Premium Pill Shape - Full Rounded
+const PILL_SHAPE = "rounded-full"; // Capsule shape
+
+// Default Premium Styling - Full Width & Tall
+const DEFAULT_BG = "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 shadow-lg";
 const TEXT_COLOR = "text-white";
 
 function Button({ path, title, icon, type, classes, fun, loading, loadingMessage, disabled }) {
@@ -42,11 +46,12 @@ function Button({ path, title, icon, type, classes, fun, loading, loadingMessage
   const baseClasses = !hasCustomStyling ? DEFAULT_BG : '';
   const textClasses = !hasCustomStyling ? TEXT_COLOR : '';
 
-  // Common classes for both link and button
+  // Common classes - PILL SHAPE with generous padding
   const commonClasses = `
-    flex justify-center items-center gap-2 
-    py-3 px-6 font-semibold w-full rounded-xl 
-    min-h-[44px]
+    flex justify-center items-center gap-3
+    py-5 px-8 font-bold text-base w-full
+    ${PILL_SHAPE}
+    min-h-[56px]
     ${TACTILE_FEEDBACK} 
     ${baseClasses} 
     ${textClasses} 
@@ -61,7 +66,8 @@ function Button({ path, title, icon, type, classes, fun, loading, loadingMessage
           className={commonClasses}
           aria-label={title}
         >
-          {title} {icon}
+          {icon && <span aria-hidden="true">{icon}</span>}
+          {title}
         </Link>
       ) : (
         <button
@@ -73,13 +79,14 @@ function Button({ path, title, icon, type, classes, fun, loading, loadingMessage
             disabled:cursor-not-allowed 
             disabled:active:scale-100
             disabled:hover:scale-100
-            disabled:shadow-none
+            disabled:shadow-md
+            disabled:brightness-100
             focus:outline-none 
-            focus-visible:ring-2 
-            focus-visible:ring-emerald-500 
+            focus-visible:ring-4
+            focus-visible:ring-emerald-400/50
             focus-visible:ring-offset-2 
             focus-visible:ring-offset-slate-900
-            ${loading ? "cursor-wait opacity-80 pointer-events-none" : ""}
+            ${loading ? "cursor-wait opacity-90" : ""}
           `.trim()}
           onClick={fun}
           disabled={loading || disabled}
@@ -87,14 +94,14 @@ function Button({ path, title, icon, type, classes, fun, loading, loadingMessage
           aria-label={title}
         >
           {loading ? (
-            <span className="flex gap-2 items-center">
+            <span className="flex gap-3 items-center">
               <Spinner size="sm" />
-              {loadingMessage || "Cargando..."}
+              <span className="font-bold">{loadingMessage || "Cargando..."}</span>
             </span>
           ) : (
             <>
-              {title}
               {icon && <span aria-hidden="true">{icon}</span>}
+              <span className="font-bold tracking-wide">{title}</span>
             </>
           )}
         </button>

@@ -116,19 +116,19 @@ function NewRide({
           ) : (
             /* Maximized View - Premium Details */
             <>
-          {/* Premium User Card - Dark Glass with glow accent */}
-          <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl overflow-hidden">
+          {/* Premium User Card - Super-Rounded Ultra-Premium */}
+          <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 mb-5 shadow-2xl overflow-hidden">
             {/* Top accent glow */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
 
-            <div className="flex justify-between items-start gap-3">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
                 <div className="relative flex-shrink-0">
                   {rideData?.user?.profileImage ? (
                     <img
                       src={rideData.user.profileImage}
                       alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
-                      className="w-14 h-14 rounded-full object-cover shadow-lg ring-2 ring-emerald-400/40"
+                      className="w-16 h-16 rounded-[24px] object-cover shadow-xl ring-2 ring-emerald-400/40"
                       loading="lazy"
                       onError={(e) => {
                         e.target.onerror = null;
@@ -138,18 +138,18 @@ function NewRide({
                     />
                   ) : null}
                   <div
-                    className={`w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg ring-2 ring-emerald-400/40 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                    className={`w-16 h-16 rounded-[24px] bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-xl ring-2 ring-emerald-400/40 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
                   >
-                    <span className="text-xl font-bold text-white">
+                    <span className="text-2xl font-black text-white">
                       {rideData?.user?.fullname?.firstname[0]}
                       {rideData?.user?.fullname?.lastname[0]}
                     </span>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-lg shadow-emerald-400/50 animate-pulse" />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-lg shadow-emerald-400/60 animate-pulse" />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-base sm:text-lg font-bold text-white leading-tight truncate whitespace-nowrap">
+                  <h1 className="text-lg font-black text-white leading-tight mb-1">
                     {rideData?.user?.fullname?.firstname}{" "}
                     {rideData?.user?.fullname?.lastname}
                   </h1>
@@ -160,28 +160,28 @@ function NewRide({
               </div>
 
               <div className="text-right flex-shrink-0">
-                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Tarifa</p>
-                <h1 className="font-bold text-xl sm:text-2xl text-emerald-400 leading-tight whitespace-nowrap">
+                <p className="text-xs text-white/40 font-bold uppercase tracking-wide mb-1">Tarifa</p>
+                <h1 className="font-black text-3xl text-emerald-400 leading-tight whitespace-nowrap">
                   ${Math.floor(rideData?.fare / 1000)}K
                 </h1>
-                <p className="text-[10px] sm:text-xs text-white/40 font-medium mt-0.5 flex items-center gap-1 justify-end whitespace-nowrap">
-                  <Navigation size={12} />
+                <p className="text-xs text-white/40 font-medium mt-1 flex items-center gap-1 justify-end whitespace-nowrap">
+                  <Navigation size={14} />
                   {(Number(rideData?.distance?.toFixed(2)) / 1000)?.toFixed(1)} km
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Premium Actions */}
+          {/* Premium Actions - Pill Buttons */}
           {showBtn !== "accept" && (
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3 mb-5">
               <div className="relative flex-1">
                 <Button
                   type={"link"}
                   path={`/captain/chat/${rideData?._id}`}
-                  title={"Enviar mensaje"}
-                  icon={<SendHorizontal strokeWidth={2} size={18} />}
-                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-sm border border-white/20"}
+                  title={"Mensaje"}
+                  icon={<SendHorizontal strokeWidth={2.5} size={20} />}
+                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-bold text-base text-white shadow-lg border border-white/20"}
                 />
                 {unreadMessages > 0 && (
                   <MessageBadge count={unreadMessages} className="-top-1 -right-1" />
@@ -189,65 +189,65 @@ function NewRide({
               </div>
               <a 
                 href={"tel:" + rideData?.user?.phone}
-                className="flex items-center justify-center w-14 h-full rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all shadow-sm"
+                className="flex items-center justify-center w-16 h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 transition-all shadow-lg hover:shadow-xl"
               >
-                <PhoneCall size={20} strokeWidth={2} className="text-white" />
+                <PhoneCall size={22} strokeWidth={2.5} className="text-white" />
               </a>
             </div>
           )}
 
-          {/* Premium Route Display - Enhanced glass card */}
-          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl overflow-hidden space-y-3">
+          {/* Premium Route Display - Super-Rounded with Extra Padding */}
+          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 mb-5 shadow-2xl overflow-hidden space-y-4">
             {/* Pickup */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 p-2 bg-emerald-500/20 backdrop-blur-sm rounded-xl border border-emerald-400/20 shadow-lg shadow-emerald-500/10">
-                <MapPinMinus size={16} className="text-emerald-400" />
+            <div className="flex items-start gap-4">
+              <div className="mt-1 p-3 bg-emerald-500/20 backdrop-blur-sm rounded-[20px] border border-emerald-400/30 shadow-lg shadow-emerald-500/20">
+                <MapPinMinus size={20} className="text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Recogida</p>
-                <h1 className="text-sm sm:text-base font-bold text-white leading-tight truncate" style={{ textWrap: 'balance' }}>
+                <p className="text-xs text-white/40 font-bold uppercase tracking-wide mb-2">Recogida</p>
+                <h1 className="text-base font-black text-white leading-tight mb-1" style={{ textWrap: 'balance' }}>
                   {rideData.pickup.split(", ")[0]}
                 </h1>
-                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5 line-clamp-1">
+                <p className="text-xs text-white/40 line-clamp-2">
                   {rideData.pickup.split(", ").slice(1).join(", ")}
                 </p>
               </div>
             </div>
 
-            {/* Separator - Animated dots */}
-            <div className="flex items-center gap-2 py-1 pl-5">
-              <div className="flex flex-col gap-1">
-                <div className="w-1 h-1 rounded-full bg-white/30" />
-                <div className="w-1 h-1 rounded-full bg-white/20" />
-                <div className="w-1 h-1 rounded-full bg-white/10" />
+            {/* Separator - Larger dots */}
+            <div className="flex items-center gap-2 py-2 pl-7">
+              <div className="flex flex-col gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
               </div>
             </div>
 
             {/* Destination */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 p-2 bg-red-500/20 backdrop-blur-sm rounded-xl border border-red-400/20 shadow-lg shadow-red-500/10">
-                <MapPinPlus size={16} className="text-red-400" />
+            <div className="flex items-start gap-4">
+              <div className="mt-1 p-3 bg-red-500/20 backdrop-blur-sm rounded-[20px] border border-red-400/30 shadow-lg shadow-red-500/20">
+                <MapPinPlus size={20} className="text-red-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Destino</p>
-                <h1 className="text-sm sm:text-base font-bold text-white leading-tight truncate" style={{ textWrap: 'balance' }}>
+                <p className="text-xs text-white/40 font-bold uppercase tracking-wide mb-2">Destino</p>
+                <h1 className="text-base font-black text-white leading-tight mb-1" style={{ textWrap: 'balance' }}>
                   {rideData.destination.split(", ")[0]}
                 </h1>
-                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5 line-clamp-1">
+                <p className="text-xs text-white/40 line-clamp-2">
                   {rideData.destination.split(", ").slice(1).join(", ")}
                 </p>
               </div>
             </div>
 
-            {/* Fare - Glass divider */}
-            <div className="flex items-center justify-between pt-3 mt-2 border-t border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
-                  <CreditCard size={14} className="text-white/60" />
+            {/* Fare - Pill divider */}
+            <div className="flex items-center justify-between pt-4 mt-3 border-t border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/5 rounded-[16px] border border-white/10">
+                  <CreditCard size={18} className="text-white/60" />
                 </div>
-                <span className="text-xs sm:text-sm text-white/60 font-medium whitespace-nowrap">Efectivo</span>
+                <span className="text-sm text-white/60 font-bold whitespace-nowrap">Efectivo</span>
               </div>
-              <h1 className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">
+              <h1 className="text-2xl font-black text-white whitespace-nowrap">
                 COP$ {rideData.fare?.toLocaleString('es-CO') || 0}
               </h1>
             </div>
