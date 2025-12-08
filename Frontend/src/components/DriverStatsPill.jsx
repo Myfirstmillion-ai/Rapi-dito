@@ -1,3 +1,4 @@
+import React from 'react';
 import { TrendingUp } from "lucide-react";
 
 /**
@@ -6,9 +7,9 @@ import { TrendingUp } from "lucide-react";
  * Shows: Profile (left) | Today's Earnings (center, HUGE) | Go Offline Toggle (right)
  */
 function DriverStatsPill({ captain, vehicle, earnings, rides }) {
-  // Calculate today's earnings from captain data
+  // Calculate today's earnings from captain data as fallback
   const getTodaysEarnings = () => {
-    if (!captain?.rides || !Array.isArray(captain.rides)) return 0;
+    if (!captain?.rides || !Array.isArray(captain.rides)) return { total: 0, trips: 0 };
     
     let todaysTotal = 0;
     let todaysTrips = 0;
@@ -39,9 +40,10 @@ function DriverStatsPill({ captain, vehicle, earnings, rides }) {
     return { total: todaysTotal, trips: todaysTrips };
   };
 
-  const { total: todaysEarnings, trips: todaysTrips } = earnings && rides 
-    ? { total: earnings.today || 0, trips: rides.accepted || 0 }
-    : getTodaysEarnings();
+  // Use passed props if available, otherwise calculate from captain data
+  const fallbackData = getTodaysEarnings();
+  const todaysEarnings = earnings?.today ?? fallbackData.total;
+  const todaysTrips = rides?.accepted ?? fallbackData.trips;
 
   const [isOnline, setIsOnline] = React.useState(true);
 
@@ -156,8 +158,5 @@ function DriverStatsPill({ captain, vehicle, earnings, rides }) {
     </div>
   );
 }
-
-// Add React import for useState
-import React from 'react';
 
 export default DriverStatsPill;
