@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Users,
@@ -14,14 +14,18 @@ import {
   Shield,
   Loader2,
   AlertCircle,
+  X,
 } from "lucide-react";
 import axios from "axios";
 
-// Configuration constants
-const MEMBERSHIP_CONFIG = {
-  defaultPlan: "Monthly",
-  defaultDurationDays: 30,
-};
+// Plan configuration with durations
+const MEMBERSHIP_PLANS = [
+  { id: "Weekly", label: "Semanal", days: 7 },
+  { id: "Bi-Weekly", label: "Quincenal", days: 15 },
+  { id: "Monthly", label: "Mensual", days: 30 },
+  { id: "2-Months", label: "2 Meses", days: 60 },
+  { id: "3-Months", label: "3 Meses", days: 90 },
+];
 
 function AdminDashboard() {
   const [captains, setCaptains] = useState([]);
@@ -31,6 +35,12 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
   const [updateError, setUpdateError] = useState("");
+  
+  // Plan selection modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState("Monthly");
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,21 +87,30 @@ function AdminDashboard() {
   };
 
   const toggleCaptainStatus = async (captainId, currentStatus) => {
+    // If activating (currently inactive), open the plan selection modal
+    if (!currentStatus) {
+      const captain = captains.find(c => c._id === captainId);
+      setSelectedDriver(captain);
+      setIsModalOpen(true);
+      return;
+    }
+    
+    // If deactivating, proceed directly
+    await updateCaptainMembership(captainId, false, null, null);
+  };
+
+  const updateCaptainMembership = async (captainId, isActive, planType, expiryDate) => {
     try {
       setUpdatingId(captainId);
       setUpdateError(""); // Clear any previous errors
       const token = localStorage.getItem("token");
-      
-      // Calculate expiry date using configuration
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + MEMBERSHIP_CONFIG.defaultDurationDays);
 
       const response = await axios.patch(
         `${import.meta.env.VITE_SERVER_URL}/admin/captain/${captainId}/status`,
         {
-          isMembershipActive: !currentStatus,
-          membershipPlan: !currentStatus ? MEMBERSHIP_CONFIG.defaultPlan : null,
-          membershipExpiresAt: !currentStatus ? expiryDate.toISOString() : null,
+          isMembershipActive: isActive,
+          membershipPlan: planType,
+          membershipExpiresAt: expiryDate,
         },
         {
           headers: {
@@ -123,6 +142,32 @@ function AdminDashboard() {
     }
   };
 
+  const handleConfirmPlan = async () => {
+    if (!selectedDriver || !selectedPlan) return;
+
+    const plan = MEMBERSHIP_PLANS.find(p => p.id === selectedPlan);
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + plan.days);
+
+    await updateCaptainMembership(
+      selectedDriver._id,
+      true,
+      selectedPlan,
+      expiryDate.toISOString()
+    );
+
+    // Close modal and reset
+    setIsModalOpen(false);
+    setSelectedDriver(null);
+    setSelectedPlan("Monthly");
+  };
+
+  const handleCancelModal = () => {
+    setIsModalOpen(false);
+    setSelectedDriver(null);
+    setSelectedPlan("Monthly");
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("es-ES", {
@@ -144,7 +189,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-4 sm:p-6">
       {/* Animated Grid Background */}
       <div className="fixed inset-0 opacity-20 pointer-events-none">
         <div
@@ -158,33 +203,37 @@ function AdminDashboard() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        {/* Header - Mobile First */}
+        <div className="flex flex-col gap-4 mb-6 sm:mb-8">
+          {/* Top Row: Back Button + Title */}
+          <div className="flex items-start gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm border border-white/10"
+              className="flex-shrink-0 p-2 sm:p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm border border-white/10"
             >
-              <ArrowLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </button>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500">
-                  <Shield className="w-6 h-6 text-white" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                <div className="flex-shrink-0 p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500">
+                  <Shield className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <h1 className="text-3xl font-black bg-gradient-to-r from-white via-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-white via-emerald-200 to-cyan-200 bg-clip-text text-transparent break-words">
                   Panel de Administración
                 </h1>
               </div>
-              <p className="text-white/60 ml-14">Gestión de Conductores</p>
+              <p className="text-xs sm:text-sm text-white/60 pl-8 sm:pl-14">Gestión de Conductores</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 backdrop-blur-sm bg-white/10 rounded-xl px-4 py-3 border border-white/20">
-            <Users className="w-5 h-5 text-emerald-400" />
-            <div>
-              <p className="text-sm text-white/60">Total Conductores</p>
-              <p className="text-xl font-bold text-white">{captains.length}</p>
+          {/* Stats Card - Full Width on Mobile */}
+          <div className="backdrop-blur-sm bg-white/10 rounded-xl px-4 py-3 border border-white/20 self-start sm:self-auto">
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div>
+                <p className="text-xs sm:text-sm text-white/60">Total Conductores</p>
+                <p className="text-lg sm:text-xl font-bold text-white">{captains.length}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -233,22 +282,22 @@ function AdminDashboard() {
               key={captain._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 border border-white/20 hover:border-white/30 transition-all"
+              className="backdrop-blur-xl bg-white/10 rounded-2xl p-4 sm:p-6 border border-white/20 hover:border-white/30 transition-all"
             >
               {/* Header with Toggle */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white mb-1">
+              <div className="flex items-start justify-between mb-4 gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-1 break-words">
                     {captain.fullname.firstname} {captain.fullname.lastname || ""}
                   </h3>
                   {captain.isMembershipActive ? (
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-xs text-emerald-300 font-medium">
-                      <CheckCircle2 className="w-3 h-3" />
+                      <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
                       Activo
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-500/20 border border-red-500/30 rounded-lg text-xs text-red-300 font-medium">
-                      <XCircle className="w-3 h-3" />
+                      <XCircle className="w-3 h-3 flex-shrink-0" />
                       Inactivo
                     </span>
                   )}
@@ -260,7 +309,7 @@ function AdminDashboard() {
                     toggleCaptainStatus(captain._id, captain.isMembershipActive)
                   }
                   disabled={updatingId === captain._id}
-                  className={`relative w-14 h-7 rounded-full transition-colors ${
+                  className={`flex-shrink-0 relative w-14 h-7 rounded-full transition-colors ${
                     captain.isMembershipActive
                       ? "bg-emerald-500"
                       : "bg-white/20"
@@ -281,27 +330,27 @@ function AdminDashboard() {
 
               {/* Details */}
               <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-white/70">
-                  <Mail className="w-4 h-4 text-emerald-400" />
+                <div className="flex items-center gap-2 text-white/70 min-w-0">
+                  <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                   <span className="truncate">{captain.email}</span>
                 </div>
                 {captain.phone && (
                   <div className="flex items-center gap-2 text-white/70">
-                    <Phone className="w-4 h-4 text-cyan-400" />
-                    <span>{captain.phone}</span>
+                    <Phone className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                    <span className="break-words">{captain.phone}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-white/70">
-                  <Car className="w-4 h-4 text-purple-400" />
-                  <span>
+                <div className="flex items-center gap-2 text-white/70 min-w-0">
+                  <Car className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                  <span className="truncate">
                     {captain.vehicle?.brand || "N/A"} {captain.vehicle?.model || ""} -{" "}
                     {captain.vehicle?.number || "N/A"}
                   </span>
                 </div>
                 {captain.membershipPlan && (
                   <div className="flex items-center gap-2 text-white/70">
-                    <Calendar className="w-4 h-4 text-orange-400" />
-                    <span>
+                    <Calendar className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm break-words">
                       {captain.membershipPlan} - Expira:{" "}
                       {formatDate(captain.membershipExpiresAt)}
                     </span>
@@ -322,6 +371,133 @@ function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Plan Selection Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]"
+              onClick={handleCancelModal}
+            />
+
+            {/* Modal */}
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                className="relative w-full max-w-md"
+              >
+                {/* Glassmorphism Card */}
+                <div className="relative backdrop-blur-2xl bg-gradient-to-br from-white/20 via-white/10 to-white/5 rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl overflow-hidden">
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-emerald-500/10 pointer-events-none"></div>
+
+                  {/* Close Button */}
+                  <button
+                    onClick={handleCancelModal}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm z-10"
+                    aria-label="Cerrar"
+                  >
+                    <X className="w-5 h-5 text-white" />
+                  </button>
+
+                  {/* Content */}
+                  <div className="relative z-10">
+                    {/* Icon */}
+                    <div className="flex justify-center mb-4">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur-xl opacity-50"></div>
+                        <div className="relative bg-gradient-to-r from-emerald-500 to-cyan-500 p-3 rounded-full">
+                          <Calendar className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-xl sm:text-2xl font-black text-center mb-2 bg-gradient-to-r from-white via-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+                      Seleccionar Plan
+                    </h2>
+
+                    {/* Driver Name */}
+                    {selectedDriver && (
+                      <p className="text-center text-white/80 text-sm mb-6">
+                        Activando membresía para:{" "}
+                        <span className="font-semibold">
+                          {selectedDriver.fullname.firstname} {selectedDriver.fullname.lastname || ""}
+                        </span>
+                      </p>
+                    )}
+
+                    {/* Plan Selection */}
+                    <div className="space-y-3 mb-6">
+                      {MEMBERSHIP_PLANS.map((plan) => (
+                        <button
+                          key={plan.id}
+                          onClick={() => setSelectedPlan(plan.id)}
+                          className={`w-full p-4 rounded-xl border-2 transition-all ${
+                            selectedPlan === plan.id
+                              ? "border-emerald-500 bg-emerald-500/20"
+                              : "border-white/20 bg-white/5 hover:bg-white/10"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="text-left">
+                              <p className="text-white font-semibold">{plan.label}</p>
+                              <p className="text-white/60 text-sm">{plan.days} días</p>
+                            </div>
+                            <div
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                selectedPlan === plan.id
+                                  ? "border-emerald-500 bg-emerald-500"
+                                  : "border-white/40"
+                              }`}
+                            >
+                              {selectedPlan === plan.id && (
+                                <CheckCircle2 className="w-4 h-4 text-white" />
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleCancelModal}
+                        className="flex-1 h-12 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleConfirmPlan}
+                        disabled={updatingId !== null}
+                        className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {updatingId !== null ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Activando...</span>
+                          </>
+                        ) : (
+                          "Confirmar"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
