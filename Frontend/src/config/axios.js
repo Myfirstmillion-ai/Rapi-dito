@@ -1,6 +1,12 @@
 /**
  * Axios Instance Configuration
  * Pre-configured axios instance with proper CORS and authentication settings
+ * 
+ * NOTE: This instance is available for future use. Current implementation uses
+ * individual axios calls with withCredentials: true for backward compatibility.
+ * To use this instance, import it instead of axios:
+ *   import axiosInstance from '../config/axios';
+ *   const response = await axiosInstance.post('/user/login', data);
  */
 import axios from 'axios';
 import { API_BASE_URL } from './api';

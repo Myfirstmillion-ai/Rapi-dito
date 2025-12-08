@@ -157,6 +157,7 @@ If you encounter issues:
 
 ## Notes
 
-- The app uses `withCredentials: true` for all API requests to support authentication cookies
+- The app uses `withCredentials: true` for all API requests to support CORS authentication
+- Authentication uses JWT tokens stored in localStorage and passed via headers
 - Socket.io is configured with automatic reconnection
 - The backend uses environment-specific CORS configuration
