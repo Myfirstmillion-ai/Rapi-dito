@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, User } from "lucide-react";
 import { cn } from "../../utils/cn";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import toast from "react-hot-toast";
 
 /**
@@ -77,12 +78,13 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
       console.log('Rating payload:', payload);
 
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/ratings/submit`,
+        `${API_BASE_URL}/ratings/submit`,
         payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          withCredentials: true,
         }
       );
 

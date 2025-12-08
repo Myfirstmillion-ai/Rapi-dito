@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 import { useCaptain } from "../contexts/CaptainContext";
 import VerifyEmail from "../components/VerifyEmail";
 import Loading from "./Loading";
@@ -20,10 +21,11 @@ function CaptainProtectedWrapper({ children }) {
     }
 
     axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/captain/profile`, {
+      .get(`${API_BASE_URL}/captain/profile`, {
         headers: {
           token: token,
         },
+        withCredentials: true,
       })
       .then((response) => {
         if (response.status === 200) {

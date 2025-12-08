@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import Console from '../utils/console';
 import axios from 'axios';
+import { API_BASE_URL } from "../config/api";
 import useCooldownTimer from '../hooks/useCooldownTimer';
 import mailImg from "/mail.png";
 import { ArrowLeft } from 'lucide-react';
@@ -34,8 +35,9 @@ function ForgotPassword() {
             try {
                 setLoading(true);
                 const response = await axios.post(
-                    `${import.meta.env.VITE_SERVER_URL}/mail/${userType}/reset-password`,
-                    data
+                    `${API_BASE_URL}/mail/${userType}/reset-password`,
+                    data,
+                    { withCredentials: true }
                 );
                 Console.log(response);
                 showAlert('¡Correo enviado exitosamente!', 'Por favor revisa tu bandeja de entrada y haz clic en el enlace recibido para restablecer tu contraseña', 'success');

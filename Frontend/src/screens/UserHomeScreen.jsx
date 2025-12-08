@@ -13,6 +13,7 @@ import MapInteractionWrapper from "../components/MapInteractionWrapper";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
@@ -115,7 +116,7 @@ function UserHomeScreen() {
             const { latitude, longitude } = position.coords;
             // Usar API de geocodificación inversa
             const response = await axios.get(
-              `${import.meta.env.VITE_SERVER_URL}/map/get-address?lat=${latitude}&lng=${longitude}`,
+              `${API_BASE_URL}/map/get-address?lat=${latitude}&lng=${longitude}`,
               {
                 headers: { token: token },
               }
@@ -152,7 +153,7 @@ function UserHomeScreen() {
       if (inputValue.length >= 3) {
         try {
           const response = await axios.get(
-            `${import.meta.env.VITE_SERVER_URL}/map/get-suggestions?input=${inputValue}`,
+            `${API_BASE_URL}/map/get-suggestions?input=${inputValue}`,
             {
               headers: {
                 token: token,
@@ -194,7 +195,7 @@ function UserHomeScreen() {
       // Note: Map will stay centered on current location
       // Route will be shown when ride is created
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/ride/get-fare?pickup=${encodeURIComponent(pickupLocation)}&destination=${encodeURIComponent(destinationLocation)}`,
+        `${API_BASE_URL}/ride/get-fare?pickup=${encodeURIComponent(pickupLocation)}&destination=${encodeURIComponent(destinationLocation)}`,
         {
           headers: {
             token: token,
@@ -226,7 +227,7 @@ function UserHomeScreen() {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/ride/create`,
+        `${API_BASE_URL}/ride/create`,
         {
           pickup: pickupLocation,
           destination: destinationLocation,
@@ -274,7 +275,7 @@ function UserHomeScreen() {
       
       setLoading(true);
       await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/ride/cancel?rideId=${rideDetails._id || rideDetails.confirmedRideData?._id}`,
+        `${API_BASE_URL}/ride/cancel?rideId=${rideDetails._id || rideDetails.confirmedRideData?._id}`,
         {
           headers: {
             token: token,

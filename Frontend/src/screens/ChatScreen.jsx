@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { ArrowLeft, Send, CheckCheck } from "lucide-react";
 import { useContext, useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -59,7 +60,7 @@ function ChatScreen() {
   const getUserDetails = useCallback(async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/ride/chat-details/${rideId}`
+        `${API_BASE_URL}/ride/chat-details/${rideId}`
       );
 
       // Validate response data

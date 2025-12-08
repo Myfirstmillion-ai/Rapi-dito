@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button, Heading, Input } from "../components";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { useCaptain } from "../contexts/CaptainContext";
 import { ArrowLeft, Camera, Upload, X } from "lucide-react";
 import Console from "../utils/console";
@@ -68,7 +69,7 @@ function CaptainEditProfile() {
     try {
       setUploadingImage(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/upload/captain/profile-image`,
+        `${API_BASE_URL}/upload/captain/profile-image`,
         formData,
         {
           headers: {
@@ -100,7 +101,7 @@ function CaptainEditProfile() {
     try {
       setUploadingImage(true);
       await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}/upload/profile-image`,
+        `${API_BASE_URL}/upload/profile-image`,
         {
           data: { userType: 'captain' },
           headers: {
@@ -162,7 +163,7 @@ function CaptainEditProfile() {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/captain/update`,
+        `${API_BASE_URL}/captain/update`,
         { captainData },
         {
           headers: {

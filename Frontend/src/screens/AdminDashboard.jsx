@@ -16,6 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 // Configuration constants
 const MEMBERSHIP_CONFIG = {
@@ -56,7 +57,7 @@ function AdminDashboard() {
       setLoading(true);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/admin/captains`,
+        `${API_BASE_URL}/admin/captains`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -87,7 +88,7 @@ function AdminDashboard() {
       expiryDate.setDate(expiryDate.getDate() + MEMBERSHIP_CONFIG.defaultDurationDays);
 
       const response = await axios.patch(
-        `${import.meta.env.VITE_SERVER_URL}/admin/captain/${captainId}/status`,
+        `${API_BASE_URL}/admin/captain/${captainId}/status`,
         {
           isMembershipActive: !currentStatus,
           membershipPlan: !currentStatus ? MEMBERSHIP_CONFIG.defaultPlan : null,

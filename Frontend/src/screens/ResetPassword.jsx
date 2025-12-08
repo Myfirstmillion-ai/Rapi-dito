@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import Console from '../utils/console';
 import axios from 'axios';
+import { API_BASE_URL } from "../config/api";
 import { useAlert } from '../hooks/useAlert';
 import { Alert } from '../components';
 import { Lock, Eye, EyeOff, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
@@ -73,11 +74,12 @@ function ResetPassword() {
         try {
             setLoading(true)
             const response = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/${userType}/reset-password`,
+                `${API_BASE_URL}/${userType}/reset-password`,
                 {
                     token: token,
                     password: data.password
-                }
+                },
+                { withCredentials: true }
             );
             showAlert('¡Contraseña actualizada!', 'Tu contraseña ha sido restablecida exitosamente', 'success');
             Console.log(response);

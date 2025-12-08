@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, CircleUserRound, History, KeyRound, Menu, X, HelpCircle, LogOut } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Link, useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 
@@ -28,11 +29,12 @@ function Sidebar({ onToggle }) {
   const logout = async () => {
     try {
       await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/${newUser.type}/logout`,
+        `${API_BASE_URL}/${newUser.type}/logout`,
         {
           headers: {
             token: token,
           },
+          withCredentials: true,
         }
       );
 

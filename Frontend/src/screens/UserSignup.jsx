@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowLeft, MapPin, UserPlus, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import Console from "../utils/console";
 
 function UserSignup() {
@@ -33,8 +34,9 @@ function UserSignup() {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/user/register`,
-        userData
+        `${API_BASE_URL}/user/register`,
+        userData,
+        { withCredentials: true }
       );
       Console.log(response);
       localStorage.setItem("token", response.data.token);

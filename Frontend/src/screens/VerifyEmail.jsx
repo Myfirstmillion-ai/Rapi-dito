@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import Console from "../utils/console";
 import mailImg from "/mail.png";
 import { Button, Spinner } from "../components";
@@ -18,8 +19,9 @@ const VerifyEmail = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/${userType}/verify-email`,
-        { token: emailVerificationToken }
+        `${API_BASE_URL}/${userType}/verify-email`,
+        { token: emailVerificationToken },
+        { withCredentials: true }
       );
       console.log(response.data)
       if (response.status === 200) {

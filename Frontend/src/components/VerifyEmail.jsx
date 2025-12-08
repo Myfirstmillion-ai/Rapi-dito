@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
@@ -21,11 +22,12 @@ function VerifyEmail({ user, role }) {
         try {
             setLoading(true);
             const response = await axios.get(
-                `${import.meta.env.VITE_SERVER_URL}/mail/verify-${role}-email`,
+                `${API_BASE_URL}/mail/verify-${role}-email`,
                 {
                     headers: {
                         token: token,
                     },
+                    withCredentials: true,
                 }
             );
             if (response.status === 200) {

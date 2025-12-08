@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import debounce from "lodash.debounce";
 import { useCaptain } from "../contexts/CaptainContext";
 import { Phone, User, ChevronDown, ChevronUp, TrendingUp, MapPin, DollarSign, Award } from "lucide-react";
@@ -137,7 +138,7 @@ function CaptainHomeScreen() {
   const refreshCaptainData = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/captain/profile`,
+        `${API_BASE_URL}/captain/profile`,
         {
           headers: { token: token }
         }
@@ -159,7 +160,7 @@ function CaptainHomeScreen() {
       if (newRide._id !== "") {
         setLoading(true);
         const response = await axios.post(
-          `${import.meta.env.VITE_SERVER_URL}/ride/confirm`,
+          `${API_BASE_URL}/ride/confirm`,
           { rideId: newRide._id },
           {
             headers: {
@@ -197,7 +198,7 @@ function CaptainHomeScreen() {
       if (newRide._id !== "" && otp.length === 6) {
         setLoading(true);
         const response = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/ride/start-ride?rideId=${newRide._id}&otp=${otp}`,
+          `${API_BASE_URL}/ride/start-ride?rideId=${newRide._id}&otp=${otp}`,
           {
             headers: {
               token: token,
@@ -226,7 +227,7 @@ function CaptainHomeScreen() {
       if (newRide._id !== "") {
         setLoading(true);
         await axios.post(
-          `${import.meta.env.VITE_SERVER_URL}/ride/end-ride`,
+          `${API_BASE_URL}/ride/end-ride`,
           {
             rideId: newRide._id,
           },
@@ -281,7 +282,7 @@ function CaptainHomeScreen() {
       if (newRide._id !== "") {
         setLoading(true);
         await axios.post(
-          `${import.meta.env.VITE_SERVER_URL}/ride/cancel`,
+          `${API_BASE_URL}/ride/cancel`,
           {
             rideId: newRide._id,
           },

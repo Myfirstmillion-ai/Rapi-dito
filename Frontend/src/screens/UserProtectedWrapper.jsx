@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 import { useUser } from "../contexts/UserContext";
 import VerifyEmail from "../components/VerifyEmail";
 import Loading from "./Loading";
@@ -21,10 +22,11 @@ function UserProtectedWrapper({ children }) {
 
     setLoading(true);
     axios
-      .get(`${import.meta.env.VITE_SERVER_URL}/user/profile`, {
+      .get(`${API_BASE_URL}/user/profile`, {
         headers: {
           token: token,
         },
+        withCredentials: true,
       })
       .then((response) => {
         if (response.status === 200) {
