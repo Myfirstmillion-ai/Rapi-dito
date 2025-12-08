@@ -74,7 +74,7 @@ function DriverStatsPill({ captain, vehicle, onExpand }) {
               <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-0.5 rounded-md backdrop-blur-sm border border-yellow-500/30">
                 <Star size={10} className="text-yellow-400 fill-yellow-400" />
                 <span className="text-xs font-bold text-yellow-400">
-                  {captain?.rating?.toFixed(1) || "5.0"}
+                  {captain?.rating?.average ? captain.rating.average.toFixed(1) : captain?.rating ? captain.rating.toFixed(1) : "5.0"}
                 </span>
               </div>
               <span className="text-[10px] text-white/50 font-medium">Pro</span>

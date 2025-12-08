@@ -8,6 +8,7 @@ import { NewRide, Sidebar } from "../components";
 import DriverStatsPill from "../components/DriverStatsPill";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
+import { DashboardSkeleton } from "../components/ui/FintechSkeleton";
 import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
@@ -73,6 +74,7 @@ function CaptainHomeScreen() {
   const { socket } = useContext(SocketDataContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(true); // Loading state for dashboard data
   const { alert, showAlert, hideAlert } = useAlert();
   
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -512,6 +514,8 @@ function CaptainHomeScreen() {
   // Calcular ganancias
   useEffect(() => {
     if (captain?.rides && Array.isArray(captain.rides)) {
+      setDashboardLoading(true); // Start loading
+      
       let Totalearnings = 0;
       let Todaysearning = 0;
       let acceptedRides = 0;
@@ -551,6 +555,12 @@ function CaptainHomeScreen() {
         cancelled: cancelledRides,
         distanceTravelled: Math.round(distanceTravelled / 1000),
       });
+      
+      // Simulate minimum loading time for smooth UX
+      setTimeout(() => setDashboardLoading(false), 800);
+    } else {
+      // No captain data yet
+      setDashboardLoading(true);
     }
   }, [captain?.rides]);
 
@@ -658,140 +668,174 @@ function CaptainHomeScreen() {
           </div>
 
           <div className="relative px-4 pb-safe overflow-y-auto" style={{ maxHeight: isPanelExpanded ? 'calc(75vh - 60px)' : '0' }}>
-            {/* Compact Header - Driver Profile */}
-            <div className="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
-              <div className="flex items-center gap-3">
-                {/* Profile Photo */}
-                <div className="relative">
-                  {captain?.profileImage ? (
-                    <img
-                      src={captain.profileImage}
-                      alt="Profile"
-                      className="w-14 h-14 rounded-full object-cover ring-2 ring-emerald-500/60 shadow-xl"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div
-                    className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center ring-2 ring-emerald-500/60 shadow-xl"
-                    style={{ display: captain?.profileImage ? 'none' : 'flex' }}
-                  >
-                    <span className="text-xl font-black text-white">
-                      {captainData?.fullname?.firstname?.[0] || "C"}
-                      {captainData?.fullname?.lastname?.[0] || ""}
-                    </span>
+            {dashboardLoading ? (
+              /* Show skeleton while loading */
+              <DashboardSkeleton />
+            ) : (
+              <>
+                {/* Compact Header - Driver Profile */}
+                <div className="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    {/* Profile Photo */}
+                    <div className="relative">
+                      {captain?.profileImage ? (
+                        <img
+                          src={captain.profileImage}
+                          alt="Profile"
+                          className="w-14 h-14 rounded-full object-cover ring-2 ring-emerald-500/60 shadow-xl"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center ring-2 ring-emerald-500/60 shadow-xl"
+                        style={{ display: captain?.profileImage ? 'none' : 'flex' }}
+                      >
+                        <span className="text-xl font-black text-white">
+                          {captainData?.fullname?.firstname?.[0] || "C"}
+                          {captainData?.fullname?.lastname?.[0] || ""}
+                        </span>
+                      </div>
+                      {/* Online indicator */}
+                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-lg"></div>
+                    </div>
+
+                    {/* Driver Info - Compact */}
+                    <div>
+                      <h1 className="text-base font-bold text-white leading-tight whitespace-nowrap">
+                        {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
+                      </h1>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Award size={12} className="text-yellow-400" />
+                        <span className="text-xs text-yellow-400 font-semibold whitespace-nowrap">Conductor Pro</span>
+                      </div>
+                    </div>
                   </div>
-                  {/* Online indicator */}
-                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-lg"></div>
                 </div>
 
-                {/* Driver Info - Compact */}
-                <div>
-                  <h1 className="text-base font-bold text-white leading-tight whitespace-nowrap">
-                    {captainData?.fullname?.firstname} {captainData?.fullname?.lastname}
-                  </h1>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <Award size={12} className="text-yellow-400" />
-                    <span className="text-xs text-yellow-400 font-semibold whitespace-nowrap">Conductor Pro</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bento Grid - Stats Dashboard */}
+            {/* Bento Grid - Stats Dashboard - PREMIUM FINTECH STYLE */}
             <div className="grid grid-cols-2 gap-3 mb-4">
-              {/* Today's Earnings - Featured */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
-                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Ganancias Hoy</p>
-                <div className="flex items-baseline gap-1">
-                  <DollarSign size={20} className="text-emerald-400" />
-                  <h1 className="text-3xl font-black text-white whitespace-nowrap">{(earnings.today / 1000).toFixed(1)}K</h1>
+              {/* Today's Earnings - Featured Large Card */}
+              <div className="col-span-2 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 backdrop-blur-sm border-2 border-emerald-500/30 rounded-2xl p-5 shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 active:scale-[0.98]">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wide whitespace-nowrap">
+                    💰 Ganancias Hoy
+                  </p>
+                  <div className="flex items-center gap-1 bg-emerald-500/20 px-2 py-1 rounded-lg">
+                    <TrendingUp size={12} className="text-emerald-400" />
+                    <span className="text-[10px] text-emerald-300 font-bold">HOY</span>
+                  </div>
                 </div>
-                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">COP</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm text-white/70">COP$</span>
+                  <h1 className="text-5xl font-black bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent whitespace-nowrap">
+                    {earnings.today.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+                  </h1>
+                </div>
+                <p className="text-xs text-white/40 mt-1">
+                  {rides.accepted > 0 ? `Promedio: COP$ ${Math.round(earnings.today / rides.accepted).toLocaleString('es-CO')} por viaje` : 'Sin viajes hoy'}
+                </p>
               </div>
 
-              {/* Total Earnings */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
-                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Total</p>
-                <h3 className="text-3xl font-black text-white whitespace-nowrap">${(earnings.total / 1000).toFixed(1)}K</h3>
-                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Acumulado</p>
+              {/* Total Earnings - Compact */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98] group">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap flex items-center gap-1">
+                  <DollarSign size={14} className="text-purple-400 group-hover:scale-110 transition-transform" />
+                  Total Acumulado
+                </p>
+                <h3 className="text-3xl font-black text-white whitespace-nowrap">
+                  {earnings.total >= 1000 
+                    ? `${(earnings.total / 1000).toFixed(1)}K` 
+                    : earnings.total.toLocaleString('es-CO')}
+                </h3>
+                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">
+                  COP$ {earnings.total.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+                </p>
               </div>
 
-              {/* Completed Rides */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
-                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Viajes</p>
-                <h3 className="text-4xl font-black text-emerald-400">{rides?.accepted || 0}</h3>
+              {/* Completed Rides - Compact */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98] group">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap flex items-center gap-1">
+                  <MapPin size={14} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                  Viajes
+                </p>
+                <h3 className="text-4xl font-black text-emerald-400 group-hover:text-emerald-300 transition-colors">
+                  {rides?.accepted || 0}
+                </h3>
                 <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Completados</p>
               </div>
 
-              {/* Distance */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
-                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Distancia</p>
-                <h3 className="text-4xl font-black text-purple-400">{rides?.distanceTravelled || 0}</h3>
+              {/* Distance - Compact */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/30 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98] group">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap flex items-center gap-1">
+                  <TrendingUp size={14} className="text-purple-400 group-hover:scale-110 transition-transform" />
+                  Distancia
+                </p>
+                <h3 className="text-4xl font-black text-purple-400 group-hover:text-purple-300 transition-colors">
+                  {rides?.distanceTravelled || 0}
+                </h3>
                 <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Kilómetros</p>
               </div>
 
-              {/* Acceptance Rate */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
-                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Aceptación</p>
-                <h3 className="text-4xl font-black text-yellow-400">
-                  {rides?.accepted > 0 ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) : 0}%
+              {/* Acceptance Rate - Compact */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 hover:border-yellow-500/30 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-[0.98] group">
+                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap flex items-center gap-1">
+                  <Award size={14} className="text-yellow-400 group-hover:scale-110 transition-transform" />
+                  Aceptación
+                </p>
+                <h3 className="text-4xl font-black text-yellow-400 group-hover:text-yellow-300 transition-colors">
+                  {rides?.accepted > 0 ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) : 100}%
                 </h3>
                 <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Tasa</p>
               </div>
-
-              {/* Cancelled Rides */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg">
-                <p className="text-xs text-white/50 font-medium mb-2 whitespace-nowrap">Cancelados</p>
-                <h3 className="text-4xl font-black text-red-400">{rides?.cancelled || 0}</h3>
-                <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Viajes</p>
-              </div>
             </div>
 
-            {/* Vehicle Info Card - Compact */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg mb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-xs text-white/50 mb-1 whitespace-nowrap">Vehículo</p>
-                  <h3 className="text-lg font-bold text-white tracking-tight mb-1 whitespace-nowrap">
-                    {captainData?.vehicle?.number || "---"}
-                  </h3>
-                  {/* Vehicle Make and Model */}
-                  {(captainData?.vehicle?.make || captainData?.vehicle?.model) && (
-                    <p className="text-sm font-medium text-emerald-400 mb-2 whitespace-nowrap">
-                      {[captainData?.vehicle?.make, captainData?.vehicle?.model].filter(Boolean).join(' ')}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3 text-sm text-gray-300">
-                    <span className="flex items-center gap-1 whitespace-nowrap">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: getVehicleColor(captainData?.vehicle?.color) }}
-                      ></div>
-                      {captainData?.vehicle?.color || "Gris"}
-                    </span>
-                    <span className="flex items-center gap-1 whitespace-nowrap">
-                      <User size={14} />
-                      {captainData?.vehicle?.capacity || 4}
-                    </span>
+                {/* Vehicle Info Card - Compact */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-lg mb-4 hover:border-white/20 transition-all duration-300 active:scale-[0.98]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-xs text-white/50 mb-1 whitespace-nowrap">Vehículo</p>
+                      <h3 className="text-lg font-bold text-white tracking-tight mb-1 whitespace-nowrap">
+                        {captainData?.vehicle?.number || "---"}
+                      </h3>
+                      {/* Vehicle Make and Model */}
+                      {(captainData?.vehicle?.make || captainData?.vehicle?.model) && (
+                        <p className="text-sm font-medium text-emerald-400 mb-2 whitespace-nowrap">
+                          {[captainData?.vehicle?.make, captainData?.vehicle?.model].filter(Boolean).join(' ')}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 text-sm text-gray-300">
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: getVehicleColor(captainData?.vehicle?.color) }}
+                          ></div>
+                          {captainData?.vehicle?.color || "Gris"}
+                        </span>
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <User size={14} />
+                          {captainData?.vehicle?.capacity || 4}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-2">
+                      <img
+                        className="h-14 scale-x-[-1] filter drop-shadow-lg"
+                        src={
+                          captainData?.vehicle?.type === "car"
+                            ? "/car.png"
+                            : `/${captainData?.vehicle?.type || "car"}.webp`
+                        }
+                        alt="Vehículo"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="bg-white/10 rounded-xl p-2">
-                  <img
-                    className="h-14 scale-x-[-1] filter drop-shadow-lg"
-                    src={
-                      captainData?.vehicle?.type === "car"
-                        ? "/car.png"
-                        : `/${captainData?.vehicle?.type || "car"}.webp`
-                    }
-                    alt="Vehículo"
-                  />
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       )}
