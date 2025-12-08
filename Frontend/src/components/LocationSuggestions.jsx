@@ -52,13 +52,11 @@ function LocationSuggestions({
               {/* Icon with Glass Badge */}
               <motion.div 
                 className={`
+                  backdrop-blur-sm p-2.5 rounded-xl border flex-shrink-0 transition-all
                   ${showAsRecent 
-                    ? 'bg-cyan-500/20 border-cyan-400/30' 
-                    : 'bg-emerald-500/20 border-emerald-400/30'
-                  } 
-                  backdrop-blur-sm p-2.5 rounded-xl border
-                  group-hover:${showAsRecent ? 'bg-cyan-500/30 border-cyan-400/50' : 'bg-emerald-500/30 border-emerald-400/50'} 
-                  transition-all flex-shrink-0
+                    ? 'bg-cyan-500/20 border-cyan-400/30 hover:bg-cyan-500/30 hover:border-cyan-400/50' 
+                    : 'bg-emerald-500/20 border-emerald-400/30 hover:bg-emerald-500/30 hover:border-emerald-400/50'
+                  }
                 `}
                 whileHover={{ rotate: showAsRecent ? 0 : 360, scale: 1.1 }}
                 transition={{ duration: 0.3 }}

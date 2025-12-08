@@ -482,7 +482,7 @@ function CaptainHomeScreen() {
         }
         
         // If this was the currently displayed ride, clear it
-        if (newRide._id === data.rideId) {
+        if (newRide?._id === data.rideId) {
           clearRideData();
         }
       };

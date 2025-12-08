@@ -212,17 +212,6 @@ module.exports.confirmRide = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
-    });
-
-    return res.status(200).json(ride);
-  } catch (err) {
-    // Check if this is a race condition error (ride already accepted)
-    if (err.message === "Este viaje ya fue aceptado por otro conductor") {
-      return res.status(409).json({ message: err.message });
-    }
-    return res.status(500).json({ message: err.message });
-  }
-};
 
 module.exports.startRide = async (req, res) => {
   const errors = validationResult(req);
