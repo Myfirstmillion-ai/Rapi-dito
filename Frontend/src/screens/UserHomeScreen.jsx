@@ -10,7 +10,6 @@ import {
   FloatingSearchBar,
   MapControls,
   LocationSearchPanel,
-  VehiclePanel,
   LookingForDriver,
 } from "../components";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
@@ -103,7 +102,6 @@ function UserHomeScreen() {
 
   // Phase 2 - Floating UI Panels
   const [showLocationSearchPanel, setShowLocationSearchPanel] = useState(false);
-  const [showVehiclePanel, setShowVehiclePanel] = useState(false);
   const [mapZoom, setMapZoom] = useState(14);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -665,7 +663,7 @@ function UserHomeScreen() {
       {/* ===== PHASE 2: FLOATING UI COMPONENTS ===== */}
       
       {/* Floating Header - User Pill (top-left) */}
-      {!isSidebarOpen && !showLocationSearchPanel && !showVehiclePanel && (
+      {!isSidebarOpen && !showLocationSearchPanel && !showSelectVehiclePanel && !showRideDetailsPanel && (
         <FloatingHeader
           user={user}
           onMenuClick={() => setIsSidebarOpen(true)}
@@ -674,7 +672,7 @@ function UserHomeScreen() {
       )}
 
       {/* Map Controls - Floating Circles (right side) */}
-      {!isSidebarOpen && !showLocationSearchPanel && !showVehiclePanel && (
+      {!isSidebarOpen && !showLocationSearchPanel && !showSelectVehiclePanel && !showRideDetailsPanel && (
         <MapControls
           onZoomIn={() => setMapZoom(prev => Math.min(prev + 1, 20))}
           onZoomOut={() => setMapZoom(prev => Math.max(prev - 1, 1))}

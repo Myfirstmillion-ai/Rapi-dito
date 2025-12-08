@@ -228,22 +228,26 @@ function LocationSearchPanel({
                     </p>
                     
                     {/* Placeholder items */}
-                    {[
-                      { icon: Clock, label: 'Búsquedas recientes', color: 'blue' },
-                      { icon: Star, label: 'Lugares favoritos', color: 'yellow' }
-                    ].map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800"
-                      >
-                        <div className={`w-12 h-12 rounded-xl bg-${item.color}-100 dark:bg-${item.color}-900/30 flex items-center justify-center`}>
-                          <item.icon className={`w-5 h-5 text-${item.color}-500`} />
-                        </div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {item.label}
-                        </span>
+                    <div
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-blue-500" />
                       </div>
-                    ))}
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        Búsquedas recientes
+                      </span>
+                    </div>
+                    <div
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                        <Star className="w-5 h-5 text-yellow-500" />
+                      </div>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        Lugares favoritos
+                      </span>
+                    </div>
                   </div>
                 )}
               </motion.div>
