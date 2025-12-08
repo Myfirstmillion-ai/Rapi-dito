@@ -140,7 +140,8 @@ function CaptainHomeScreen() {
       const response = await axios.get(
         `${API_BASE_URL}/captain/profile`,
         {
-          headers: { token: token }
+          headers: { token: token },
+          withCredentials: true,
         }
       );
       if (response.data.captain) {
@@ -166,6 +167,7 @@ function CaptainHomeScreen() {
             headers: {
               token: token,
             },
+            withCredentials: true,
           }
         );
         setLoading(false);
@@ -203,6 +205,7 @@ function CaptainHomeScreen() {
             headers: {
               token: token,
             },
+            withCredentials: true,
           }
         );
         // Update map center to current location
@@ -235,6 +238,7 @@ function CaptainHomeScreen() {
             headers: {
               token: token,
             },
+            withCredentials: true,
           }
         );
         
@@ -290,6 +294,7 @@ function CaptainHomeScreen() {
             headers: {
               token: token,
             },
+            withCredentials: true,
           }
         );
         

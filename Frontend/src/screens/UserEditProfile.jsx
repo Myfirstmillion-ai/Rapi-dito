@@ -75,7 +75,8 @@ function UserEditProfile() {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          withCredentials: true,
         }
       );
 
@@ -106,7 +107,8 @@ function UserEditProfile() {
           data: { userType: 'user' },
           headers: {
             'Authorization': `Bearer ${token}`
-          }
+          },
+          withCredentials: true,
         }
       );
 
@@ -153,6 +155,7 @@ function UserEditProfile() {
           headers: {
             token: token,
           },
+          withCredentials: true,
         }
       );
       Console.log(response);

@@ -60,7 +60,8 @@ function ChatScreen() {
   const getUserDetails = useCallback(async () => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/ride/chat-details/${rideId}`
+        `${API_BASE_URL}/ride/chat-details/${rideId}`,
+        { withCredentials: true }
       );
 
       // Validate response data

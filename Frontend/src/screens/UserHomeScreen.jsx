@@ -119,6 +119,7 @@ function UserHomeScreen() {
               `${API_BASE_URL}/map/get-address?lat=${latitude}&lng=${longitude}`,
               {
                 headers: { token: token },
+                withCredentials: true,
               }
             );
             if (response.data && response.data.address) {
@@ -158,6 +159,7 @@ function UserHomeScreen() {
               headers: {
                 token: token,
               },
+              withCredentials: true,
             }
           );
           Console.log(response.data);
@@ -200,6 +202,7 @@ function UserHomeScreen() {
           headers: {
             token: token,
           },
+          withCredentials: true,
         }
       );
       Console.log(response);
@@ -237,6 +240,7 @@ function UserHomeScreen() {
           headers: {
             token: token,
           },
+          withCredentials: true,
         }
       );
       Console.log(response);
@@ -280,6 +284,7 @@ function UserHomeScreen() {
           headers: {
             token: token,
           },
+          withCredentials: true,
         }
       );
       setLoading(false);

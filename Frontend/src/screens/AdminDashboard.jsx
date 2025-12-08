@@ -62,6 +62,7 @@ function AdminDashboard() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          withCredentials: true,
         }
       );
       setCaptains(response.data.captains);
@@ -98,6 +99,7 @@ function AdminDashboard() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          withCredentials: true,
         }
       );
 

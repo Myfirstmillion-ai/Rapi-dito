@@ -75,7 +75,8 @@ function CaptainEditProfile() {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          withCredentials: true,
         }
       );
 
@@ -106,7 +107,8 @@ function CaptainEditProfile() {
           data: { userType: 'captain' },
           headers: {
             'Authorization': `Bearer ${token}`
-          }
+          },
+          withCredentials: true,
         }
       );
 
@@ -169,6 +171,7 @@ function CaptainEditProfile() {
           headers: {
             token: token,
           },
+          withCredentials: true,
         }
       );
       Console.log(response);

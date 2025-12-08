@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, User } from "lucide-react";
 import { cn } from "../../utils/cn";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
+import { API_BASE_URL } from "../../config/api";
 import toast from "react-hot-toast";
 
 /**
