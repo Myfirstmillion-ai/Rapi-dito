@@ -42,7 +42,7 @@ function GetStarted() {
   }, [navigate]);
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-black overflow-x-hidden overflow-y-auto">
+    <div className="w-full min-h-screen flex flex-col bg-white dark:bg-black overflow-x-hidden overflow-y-auto">
       {/* Hero Section - Cathedral Background with Premium Gradient Overlay */}
       <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-20 safe-area-inset overflow-visible">
         {/* Cathedral Background Image */}
@@ -57,8 +57,8 @@ function GetStarted() {
             backgroundPosition: 'center'
           }}
         >
-          {/* Premium Dark Gradient Overlay - Total black bottom to semi-transparent top */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40"></div>
+          {/* Adaptive Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-900 dark:via-slate-900/80 dark:to-transparent"></div>
         </motion.div>
 
         {/* Content Container - Centered Vertically */}
@@ -78,8 +78,8 @@ function GetStarted() {
               </div>
             </div>
             
-            {/* Logo Text - Modern Sans-Serif Bold - Fixed to prevent cutoff */}
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white w-auto max-w-full px-4" style={{ overflow: 'visible' }}>
+            {/* Logo Text - Modern Sans-Serif Bold - Adaptive - Fixed to prevent cutoff */}
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white w-auto max-w-full px-4" style={{ overflow: 'visible' }}>
               Rapidito
             </h1>
           </motion.div>
@@ -91,13 +91,13 @@ function GetStarted() {
             transition={{ delay: 0.5, duration: 0.8 }}
             className="space-y-4"
           >
-            {/* H1 - Main Message */}
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight px-4">
+            {/* H1 - Main Message - Adaptive */}
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight px-4">
               Una nueva forma de viajar llega a San Antonio.
             </h2>
             
-            {/* Subtitle - Pearl Gray */}
-            <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed px-4">
+            {/* Subtitle - Adaptive Gray */}
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 font-light leading-relaxed px-4">
               Seguridad, confort y estilo premium a tu alcance.
             </p>
           </motion.div>
@@ -128,93 +128,88 @@ function GetStarted() {
         </div>
       </div>
 
-      {/* Premium Footer */}
+      {/* Adaptive Premium Footer */}
       <motion.footer 
         initial={{ y: 50, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="relative bg-gradient-to-t from-black via-black/95 to-black/80 border-t border-white/10 px-6 py-12 safe-area-inset"
+        className="relative bg-gradient-to-t from-gray-50 via-gray-100/50 to-white dark:from-black dark:via-black/95 dark:to-black/80 border-t border-gray-200 dark:border-white/10 px-6 py-12 safe-area-inset"
       >
-        <div className="max-w-6xl mx-auto">
-          {/* Footer Content - Two Balanced Columns */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8">
-            {/* Left Column - Legal Links */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link 
-                to="/about" 
-                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
-              >
-                Sobre Nosotros
-              </Link>
-              <span className="text-gray-600 hidden sm:inline">•</span>
-              <Link 
-                to="/terms" 
-                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
-              >
-                Términos
-              </Link>
-              <span className="text-gray-600 hidden sm:inline">•</span>
-              <Link 
-                to="/privacy" 
-                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
-              >
-                Privacidad
-              </Link>
-              <span className="text-gray-600 hidden sm:inline">•</span>
-              <Link 
-                to="/help" 
-                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium"
-              >
-                Ayuda
-              </Link>
-            </div>
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Row 1: Social Icons */}
+          <div className="flex items-center justify-center gap-4">
+            {/* Facebook */}
+            <a 
+              href="https://facebook.com" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group w-12 h-12 bg-gray-100 dark:bg-white/10 hover:bg-emerald-50 dark:hover:bg-white/20 border border-gray-200 dark:border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              aria-label="Facebook"
+            >
+              <Facebook className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors" />
+            </a>
 
-            {/* Right Column - Social Media Icons */}
-            <div className="flex items-center gap-4">
-              <span className="text-gray-500 text-sm font-medium mr-2">Síguenos:</span>
-              
-              {/* Facebook */}
-              <a 
-                href="https://facebook.com" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors" />
-              </a>
+            {/* Instagram */}
+            <a 
+              href="https://instagram.com" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group w-12 h-12 bg-gray-100 dark:bg-white/10 hover:bg-emerald-50 dark:hover:bg-white/20 border border-gray-200 dark:border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              aria-label="Instagram"
+            >
+              <Instagram className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors" />
+            </a>
 
-              {/* Instagram */}
-              <a 
-                href="https://instagram.com" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5 text-gray-400 group-hover:text-emerald-400 transition-colors" />
-              </a>
-
-              {/* TikTok */}
-              <a 
-                href="https://tiktok.com" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                aria-label="TikTok"
-              >
-                <div className="text-gray-400 group-hover:text-emerald-400 transition-colors">
-                  <TikTokIcon />
-                </div>
-              </a>
-            </div>
+            {/* TikTok */}
+            <a 
+              href="https://tiktok.com" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group w-12 h-12 bg-gray-100 dark:bg-white/10 hover:bg-emerald-50 dark:hover:bg-white/20 border border-gray-200 dark:border-white/10 hover:border-emerald-400/50 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              aria-label="TikTok"
+            >
+              <div className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
+                <TikTokIcon />
+              </div>
+            </a>
           </div>
 
-          {/* Bottom Row - Author Signature */}
-          <div className="pt-6 border-t border-white/10">
-            <p className="text-center text-xs text-gray-500 leading-relaxed" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-              Hecho con <Heart className="inline w-3 h-3 text-red-500 fill-red-500 mx-0.5" /> y <Coffee className="inline w-3 h-3 text-amber-500 mx-0.5" /> por Camilo González
+          {/* Row 2: Legal Links */}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link 
+              to="/privacy" 
+              className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
+            >
+              Privacidad
+            </Link>
+            <span className="text-gray-400 dark:text-gray-600">•</span>
+            <Link 
+              to="/terms" 
+              className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
+            >
+              Términos
+            </Link>
+            <span className="text-gray-400 dark:text-gray-600">•</span>
+            <Link 
+              to="/about" 
+              className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
+            >
+              Sobre Nosotros
+            </Link>
+            <span className="text-gray-400 dark:text-gray-600">•</span>
+            <Link 
+              to="/help" 
+              className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
+            >
+              Ayuda
+            </Link>
+          </div>
+
+          {/* Row 3: Author Signature */}
+          <div className="pt-4 border-t border-gray-200 dark:border-white/10">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
+              Hecho con <Heart className="inline w-4 h-4 text-red-500 fill-red-500 mx-0.5" /> y <Coffee className="inline w-4 h-4 text-amber-500 mx-0.5" /> por Camilo González
             </p>
           </div>
         </div>
