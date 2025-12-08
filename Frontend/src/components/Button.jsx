@@ -101,7 +101,7 @@ function Button({ path, title, icon, type, classes, fun, loading, loadingMessage
           ) : (
             <>
               {icon && <span aria-hidden="true">{icon}</span>}
-              <span className="font-bold tracking-wide">{title}</span>
+              <span className="tracking-wide">{title}</span>
             </>
           )}
         </button>

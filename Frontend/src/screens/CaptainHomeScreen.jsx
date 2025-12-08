@@ -737,11 +737,16 @@ function CaptainHomeScreen() {
                   </div>
                 </div>
                 
-                {/* MASSIVE Number - Hero Treatment */}
+                {/* MASSIVE Number - Hero Treatment with Fallback */}
                 <div className="mb-3">
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="text-base text-white/60 font-medium">COP$</span>
-                    <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-br from-white via-emerald-50 to-emerald-100 bg-clip-text text-transparent leading-none tracking-tight">
+                    <h1 className="text-6xl md:text-7xl font-black leading-none tracking-tight text-white [text-shadow:_0_0_40px_rgb(255_255_255_/_20%)]" style={{
+                      backgroundImage: 'linear-gradient(to bottom right, rgb(255 255 255), rgb(236 253 245), rgb(209 250 229))',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}>
                       {earnings.today.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                     </h1>
                   </div>
