@@ -15,6 +15,9 @@ import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
 import { getVehicleColor } from "../utils/vehicleColors";
 
+// Loading animation timing constant
+const SKELETON_MINIMUM_DISPLAY_TIME = 800; // ms - prevents flash, ensures smooth transition
+
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
   lat: 7.8146,
@@ -557,7 +560,7 @@ function CaptainHomeScreen() {
       });
       
       // Simulate minimum loading time for smooth UX
-      setTimeout(() => setDashboardLoading(false), 800);
+      setTimeout(() => setDashboardLoading(false), SKELETON_MINIMUM_DISPLAY_TIME);
     } else {
       // No captain data yet
       setDashboardLoading(true);
@@ -787,7 +790,10 @@ function CaptainHomeScreen() {
                   Aceptación
                 </p>
                 <h3 className="text-4xl font-black text-yellow-400 group-hover:text-yellow-300 transition-colors">
-                  {rides?.accepted > 0 ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) : 100}%
+                  {(rides?.accepted + rides?.cancelled) > 0 
+                    ? Math.round((rides.accepted / (rides.accepted + rides.cancelled)) * 100) 
+                    : <span className="text-white/30 text-2xl">N/A</span>}
+                  {(rides?.accepted + rides?.cancelled) > 0 && '%'}
                 </h3>
                 <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap">Tasa</p>
               </div>

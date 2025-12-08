@@ -1,6 +1,8 @@
 /**
  * Premium Fintech Skeleton Loader
- * Shimmer effect for loading states - Revolut/Uber Pro style
+ * Pulse animation for loading states - Revolut/Uber Pro style
+ * Note: Uses Tailwind's animate-pulse for browser compatibility
+ * For true shimmer effect, would need custom @keyframes
  */
 function FintechSkeleton({ variant = "stat-card" }) {
   const variants = {
@@ -40,7 +42,7 @@ function FintechSkeleton({ variant = "stat-card" }) {
  */
 export function DashboardSkeleton() {
   return (
-    <div className="px-4 pb-safe space-y-5">
+    <div className="px-4 pb-8 space-y-5">
       {/* Profile skeleton */}
       <FintechSkeleton variant="profile" />
       
