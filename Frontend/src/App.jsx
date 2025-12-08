@@ -22,7 +22,8 @@ import {
   Careers,
   Terms,
   Privacy,
-  Help
+  Help,
+  AdminDashboard
 } from "./screens/";
 import { logger } from "./utils/logger";
 import { SocketDataContext } from "./contexts/SocketContext";
@@ -165,6 +166,9 @@ function AnimatedRoutes() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/help" element={<Help />} />
+
+          {/* Admin Dashboard */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
           <Route path="*" element={<Error />} />
         </Routes>

@@ -94,3 +94,55 @@ module.exports.authCaptain = async (req, res, next) => {
     }
   }
 };
+
+// Admin authentication middleware - Super Admin check
+module.exports.authAdmin = async (req, res, next) => {
+  const token = req.cookies.token || req.headers.token || req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized Admin Access" });
+  }
+
+  const isBlacklisted = await blacklistTokenModel.findOne({ token });
+  if (isBlacklisted) {
+    return res.status(401).json({ message: "Unauthorized Admin Access" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Check if user exists (can be either user or captain)
+    let adminUser = await userModel.findOne({ _id: decoded.id });
+    if (!adminUser) {
+      adminUser = await captainModel.findOne({ _id: decoded.id });
+    }
+    
+    if (!adminUser) {
+      return res.status(401).json({ message: "Unauthorized Admin Access" });
+    }
+
+    // Super Admin check - hardcoded email(s) for admin access
+    const SUPER_ADMIN_EMAILS = [
+      process.env.SUPER_ADMIN_EMAIL || "admin@rapidito.com",
+      // Add more admin emails as needed
+    ];
+
+    if (!SUPER_ADMIN_EMAILS.includes(adminUser.email)) {
+      return res.status(403).json({ message: "Access Denied: Admin privileges required" });
+    }
+
+    req.admin = {
+      _id: adminUser._id,
+      email: adminUser.email,
+      fullname: adminUser.fullname,
+    };
+    
+    next();
+  } catch (error) {
+    if (error.message === "jwt expired") {
+      return res.status(401).json({ message: "Token Expired" });
+    } else {
+      return res.status(401).json({ message: "Unauthorized Admin Access", error });
+    }
+  }
+};

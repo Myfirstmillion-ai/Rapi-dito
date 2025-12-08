@@ -108,6 +108,20 @@ const captainSchema = new mongoose.Schema(
         default: 0,
       },
     },
+    // Membership fields
+    isMembershipActive: {
+      type: Boolean,
+      default: false,
+    },
+    membershipPlan: {
+      type: String,
+      enum: ['Weekly', 'Bi-Weekly', 'Monthly', '2-Months', '3-Months', null],
+      default: null,
+    },
+    membershipExpiresAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

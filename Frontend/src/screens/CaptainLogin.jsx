@@ -5,11 +5,13 @@ import { Eye, EyeOff, ArrowLeft, Car, Zap, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Console from "../utils/console";
+import MembershipRequiredModal from "../components/MembershipRequiredModal";
 
 function CaptainLogin() {
   const [responseError, setResponseError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
 
   const {
     handleSubmit,
@@ -35,7 +37,12 @@ function CaptainLogin() {
         }));
         navigation("/captain/home");
       } catch (error) {
-        setResponseError(error.response?.data?.message || "Error al iniciar sesión");
+        // Check for 403 Membership Required error
+        if (error.response?.status === 403 && error.response?.data?.error === "MEMBERSHIP_REQUIRED") {
+          setShowMembershipModal(true);
+        } else {
+          setResponseError(error.response?.data?.message || "Error al iniciar sesión");
+        }
         Console.log(error);
       } finally {
         setLoading(false);
@@ -207,6 +214,12 @@ function CaptainLogin() {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Membership Required Modal */}
+      <MembershipRequiredModal 
+        isOpen={showMembershipModal} 
+        onClose={() => setShowMembershipModal(false)} 
+      />
     </div>
   );
 }

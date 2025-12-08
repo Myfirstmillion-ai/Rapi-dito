@@ -93,6 +93,14 @@ module.exports.loginCaptain = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Invalid email or password" });
   }
 
+  // Membership Gatekeeper - Check if membership is active
+  if (!captain.isMembershipActive) {
+    return res.status(403).json({ 
+      error: "MEMBERSHIP_REQUIRED", 
+      message: "Account inactive." 
+    });
+  }
+
   const token = captain.generateAuthToken();
   res.cookie("token", token);
   res.json({ message: "Logged in successfully", token, captain });

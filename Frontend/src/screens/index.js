@@ -30,6 +30,8 @@ import Terms from "./Terms";
 import Privacy from "./Privacy";
 import Help from "./Help";
 
+import AdminDashboard from "./AdminDashboard";
+
 export {
   GetStarted,
   UserSignup,
@@ -53,5 +55,6 @@ export {
   Careers,
   Terms,
   Privacy,
-  Help
+  Help,
+  AdminDashboard
 };
