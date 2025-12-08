@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { DollarSign, Navigation, Radio } from "lucide-react";
+import ErrorBoundary from "../ErrorBoundary";
 
 // Z-index layering for proper stacking - CRITICAL: Must be above driver bottom sheet
 const TOAST_Z_INDEX = 9999; // Supreme layer - above everything including driver panel and bottom sheet
@@ -8,6 +9,7 @@ const TOAST_Z_INDEX = 9999; // Supreme layer - above everything including driver
 /**
  * Premium iOS-Style Stacked Notification for Ride Requests
  * Dark Glassmorphism design positioned above the minimized driver bar
+ * DEFENSIVE PROGRAMMING: All nested properties use optional chaining to prevent crashes
  */
 function RideRequestToast({ ride, onAccept, onReject, toastId }) {
   const [countdown, setCountdown] = useState(30);
@@ -27,16 +29,25 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
     return () => clearInterval(timer);
   }, [onReject]);
 
-  // Calculate distance to pickup (if available)
-  const distanceToPickup = ride.distanceToPickup 
+  // DEFENSIVE: Safely extract values with fallbacks
+  const passengerFirstName = ride?.user?.fullname?.firstname || 'Usuario';
+  const passengerLastName = ride?.user?.fullname?.lastname || '';
+  const passengerRating = ride?.user?.rating?.average || ride?.user?.rating || null;
+  const passengerProfileImage = ride?.user?.profileImage || null;
+  const pickupAddress = ride?.pickup || 'Dirección no disponible';
+  const destinationAddress = ride?.destination || 'Destino no disponible';
+  const fareAmount = ride?.fare || 0;
+
+  // Calculate distance to pickup (if available) - with defensive checks
+  const distanceToPickup = ride?.distanceToPickup 
     ? `${(ride.distanceToPickup / 1000).toFixed(1)} km` 
-    : ride.distance 
+    : ride?.distance 
       ? `${(ride.distance / 1000).toFixed(1)} km` 
       : null;
 
-  const timeToPickup = ride.durationToPickup 
+  const timeToPickup = ride?.durationToPickup 
     ? `${Math.ceil(ride.durationToPickup / 60)} min` 
-    : ride.duration 
+    : ride?.duration 
       ? `${Math.ceil(ride.duration / 60)} min` 
       : null;
 
@@ -63,10 +74,10 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
           <div className="flex items-center justify-between gap-3 mb-3">
             {/* User Avatar - Left */}
             <div className="relative flex-shrink-0">
-              {ride.user?.profileImage ? (
+              {passengerProfileImage ? (
                 <div className="relative">
                   <img
-                    src={ride.user.profileImage}
+                    src={passengerProfileImage}
                     alt="Usuario"
                     className="w-14 h-14 rounded-full object-cover ring-2 ring-emerald-400/60 shadow-lg"
                     onError={(e) => {
@@ -76,14 +87,14 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
                   />
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center ring-2 ring-emerald-400/60 shadow-lg hidden">
                     <span className="text-xl font-black text-white">
-                      {ride.user?.fullname?.firstname?.[0] || 'U'}
+                      {passengerFirstName[0]}
                     </span>
                   </div>
                 </div>
               ) : (
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center ring-2 ring-emerald-400/60 shadow-lg">
                   <span className="text-xl font-black text-white">
-                    {ride.user?.fullname?.firstname?.[0] || 'U'}
+                    {passengerFirstName[0]}
                   </span>
                 </div>
               )}
@@ -94,13 +105,13 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
             {/* Passenger Name & Rating */}
             <div className="flex-1 min-w-0">
               <h3 className="text-base font-bold text-white truncate leading-tight">
-                {ride.user?.fullname?.firstname} {ride.user?.fullname?.lastname?.[0]}.
+                {passengerFirstName} {passengerLastName ? `${passengerLastName[0]}.` : ''}
               </h3>
-              {ride.user?.rating && (
+              {passengerRating && (
                 <div className="flex items-center gap-1 mt-0.5">
                   <span className="text-yellow-400 text-sm">⭐</span>
                   <span className="text-sm font-semibold text-yellow-400">
-                    {ride.user.rating.toFixed(1)}
+                    {passengerRating.toFixed(1)}
                   </span>
                 </div>
               )}
@@ -125,7 +136,7 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
           <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl px-4 py-3 border border-emerald-400/30 mb-3">
             <DollarSign size={28} className="text-emerald-400" />
             <span className="text-4xl font-black text-emerald-400">
-              {ride.fare?.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+              {fareAmount.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
             </span>
           </div>
 
@@ -156,7 +167,7 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] text-white/50 font-semibold uppercase mb-0.5">Recogida</p>
                   <p className="text-sm text-white font-medium leading-tight" style={{ textWrap: 'balance' }}>
-                    {ride.pickup}
+                    {pickupAddress}
                   </p>
                 </div>
               </div>
@@ -168,7 +179,7 @@ function RideRequestToast({ ride, onAccept, onReject, toastId }) {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] text-white/50 font-semibold uppercase mb-0.5">Destino</p>
                   <p className="text-sm text-white font-medium leading-tight" style={{ textWrap: 'balance' }}>
-                    {ride.destination}
+                    {destinationAddress}
                   </p>
                 </div>
               </div>
@@ -206,6 +217,12 @@ try {
 }
 
 export function showRideRequestToast(ride, onAccept, onReject) {
+  // DEFENSIVE: Validate ride object before proceeding
+  if (!ride || typeof ride !== 'object') {
+    console.error('Invalid ride object passed to showRideRequestToast:', ride);
+    return null;
+  }
+
   // Play notification sound if available
   if (notificationAudio) {
     notificationAudio.currentTime = 0; // Reset to start
@@ -221,36 +238,38 @@ export function showRideRequestToast(ride, onAccept, onReject) {
 
   const toastId = toast.custom(
     (t) => (
-      <div
-        className={`transform transition-all duration-300 ease-out ${
-          t.visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-4 opacity-0 scale-95'
-        }`}
-        style={{
-          animation: t.visible 
-            ? 'slideUpSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' 
-            : 'slideDown 0.3s ease-in-out',
-          zIndex: TOAST_Z_INDEX, // CRITICAL: Supreme z-index to float above everything
-        }}
-      >
-        <RideRequestToast
-          ride={ride}
-          toastId={t.id}
-          onAccept={() => {
-            onAccept();
-            toast.dismiss(t.id);
+      <ErrorBoundary>
+        <div
+          className={`transform transition-all duration-300 ease-out ${
+            t.visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-4 opacity-0 scale-95'
+          }`}
+          style={{
+            animation: t.visible 
+              ? 'slideUpSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+              : 'slideDown 0.3s ease-in-out',
+            zIndex: TOAST_Z_INDEX, // CRITICAL: Supreme z-index to float above everything
           }}
-          onReject={() => {
-            onReject();
-            toast.dismiss(t.id);
-          }}
-        />
-      </div>
+        >
+          <RideRequestToast
+            ride={ride}
+            toastId={t.id}
+            onAccept={() => {
+              onAccept();
+              toast.dismiss(t.id);
+            }}
+            onReject={() => {
+              onReject();
+              toast.dismiss(t.id);
+            }}
+          />
+        </div>
+      </ErrorBoundary>
     ),
     {
       duration: 30000, // 30 seconds to respond
       position: 'bottom-center',
       style: {
-        maxWidth: '380px',
+        maxWidth: '420px',
         // marginBottom handled by containerStyle in ToastProvider
       },
     }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp } from "lucide-react";
+import { SocketDataContext } from "../contexts/SocketContext";
 
 /**
  * Floating Glass Dock - Ultra-Premium Compact Driver Command Center
@@ -7,6 +8,8 @@ import { TrendingUp } from "lucide-react";
  * Shows: Profile (left) | Today's Earnings (center, HUGE) | Go Offline Toggle (right)
  */
 function DriverStatsPill({ captain, vehicle, earnings, rides }) {
+  const { socket } = React.useContext(SocketDataContext);
+  
   // Calculate today's earnings from captain data as fallback
   const getTodaysEarnings = () => {
     if (!captain?.rides || !Array.isArray(captain.rides)) return { total: 0, trips: 0 };
@@ -45,13 +48,36 @@ function DriverStatsPill({ captain, vehicle, earnings, rides }) {
   const todaysEarnings = earnings?.today ?? fallbackData.total;
   const todaysTrips = rides?.accepted ?? fallbackData.trips;
 
-  const [isOnline, setIsOnline] = React.useState(true);
+  // Initialize from captain status
+  const [isOnline, setIsOnline] = React.useState(captain?.status === 'active');
+
+  // Listen for status changes from backend
+  React.useEffect(() => {
+    if (socket) {
+      socket.on("driver:onlineStatusChanged", (data) => {
+        setIsOnline(data.isOnline);
+      });
+
+      return () => {
+        socket.off("driver:onlineStatusChanged");
+      };
+    }
+  }, [socket]);
 
   const toggleOnlineStatus = (e) => {
     e.stopPropagation();
-    setIsOnline(!isOnline);
-    // TODO: Implement backend call to update online status
-    console.log("Toggle online status:", !isOnline);
+    const newStatus = !isOnline;
+    
+    // Optimistic update
+    setIsOnline(newStatus);
+    
+    // Emit socket event to backend
+    if (socket && captain?._id) {
+      socket.emit("driver:toggleOnline", {
+        driverId: captain._id,
+        isOnline: newStatus
+      });
+    }
   };
 
   return (

@@ -689,12 +689,17 @@ function UserHomeScreen() {
                   <button
                     onClick={getCurrentLocation}
                     disabled={gettingLocation}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 transition-all duration-200 text-white disabled:bg-slate-700 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 disabled:bg-slate-700 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30 transition-all duration-300 ease-out active:scale-90 hover:shadow-xl hover:shadow-emerald-500/40"
+                    style={{
+                      willChange: 'transform',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden'
+                    }}
                     title="Usar ubicación actual"
                   >
                     <Navigation 
                       size={18} 
-                      className={gettingLocation ? "animate-pulse" : ""} 
+                      className={`transition-transform ${gettingLocation ? "animate-pulse" : ""}`}
                     />
                   </button>
                 </div>

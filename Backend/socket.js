@@ -9,6 +9,19 @@ let io;
 // Map to track connected drivers for better management
 const connectedDrivers = new Map();
 
+// Helper function to calculate distance between two points (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in km
+}
+
 function initializeSocket(server) {
   // Configure CORS based on environment
   const allowedOrigins = process.env.ENVIRONMENT === "production"
@@ -68,6 +81,70 @@ function initializeSocket(server) {
           timestamp: new Date(),
         });
         console.log(`Driver ${userId} registered and joined room driver-${userId}`);
+      }
+    });
+
+    // Handle driver going online/offline
+    socket.on("driver:toggleOnline", async (data) => {
+      const { driverId, isOnline } = data;
+      
+      try {
+        // Update captain status in database
+        const captain = await captainModel.findByIdAndUpdate(
+          driverId,
+          { status: isOnline ? 'active' : 'inactive' },
+          { new: true }
+        );
+
+        if (!captain) {
+          socket.emit("error", { message: "Conductor no encontrado" });
+          return;
+        }
+
+        console.log(`Driver ${driverId} status changed to: ${isOnline ? 'active' : 'inactive'}`);
+
+        // If driver is going ONLINE, send them pending rides
+        if (isOnline && captain.location && captain.location.coordinates) {
+          const mapService = require("./services/map.service");
+          const [lng, lat] = captain.location.coordinates;
+
+          // Query for pending rides in radius
+          const pendingRides = await rideModel
+            .find({ status: 'pending' })
+            .populate({
+              path: "user",
+              select: "fullname email phone profileImage rating"
+            });
+
+          // Filter rides by proximity and vehicle type
+          for (const ride of pendingRides) {
+            try {
+              const pickupCoordinates = await mapService.getAddressCoordinate(ride.pickup);
+              const distance = calculateDistance(
+                lat, lng,
+                pickupCoordinates.lat, pickupCoordinates.lng
+              );
+
+              // Send ride if within 4km and matching vehicle type
+              if (distance <= 4 && ride.vehicle === captain.vehicle.type) {
+                ride.otp = ""; // Hide OTP
+                socket.emit("new-ride", ride);
+                console.log(`Sent pending ride ${ride._id} to newly online driver ${driverId}`);
+              }
+            } catch (err) {
+              console.error(`Error checking ride ${ride._id}:`, err.message);
+            }
+          }
+        }
+
+        // Confirm status change
+        socket.emit("driver:onlineStatusChanged", {
+          isOnline,
+          timestamp: new Date()
+        });
+      } catch (error) {
+        console.error("Error toggling driver online status:", error);
+        socket.emit("error", { message: "Error al cambiar estado" });
       }
     });
 

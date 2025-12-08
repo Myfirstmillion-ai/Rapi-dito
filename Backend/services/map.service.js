@@ -194,7 +194,7 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
         country: 'co,ve',
         bbox: SERVICE_AREA_BBOX,
         proximity: '-72.443,7.815', // Proximity bias to San Antonio del Táchira/Cúcuta border
-        types: 'place,locality,neighborhood,address,poi',
+        types: 'place,locality,neighborhood,address,poi,poi.landmark', // EXPANDED: Now includes POIs, landmarks, establishments
         limit: 8, // Increased from 5 for better results
         language: 'es',
         autocomplete: true

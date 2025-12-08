@@ -78,20 +78,34 @@ module.exports.createRide = async (req, res) => {
 
         ride.otp = "";
 
+        // CRITICAL: Populate ALL user fields to prevent frontend crashes
         const rideWithUser = await rideModel
           .findOne({ _id: ride._id })
-          .populate("user");
+          .populate({
+            path: "user",
+            select: "fullname email phone profileImage rating" // Ensure all needed fields are selected
+          });
+
+        // DEFENSIVE: Validate payload before emitting
+        if (!rideWithUser || !rideWithUser.user) {
+          console.error("Failed to populate user data for ride:", ride._id);
+          return;
+        }
 
         console.log(
           captainsInRadius.map(
             (captain) => `${captain.fullname.firstname} ${captain.fullname.lastname || ''}`
           ).join(', ')
         );
+        
         captainsInRadius.forEach((captain) => {
-          sendMessageToSocketId(captain.socketId, {
-            event: "new-ride",
-            data: rideWithUser,
-          });
+          // DEFENSIVE: Only send to online drivers with valid socketId
+          if (captain.socketId && captain.status === 'active') {
+            sendMessageToSocketId(captain.socketId, {
+              event: "new-ride",
+              data: rideWithUser,
+            });
+          }
         });
       } catch (e) {
         console.error("Background task failed:", e.message);
