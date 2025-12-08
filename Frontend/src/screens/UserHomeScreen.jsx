@@ -263,8 +263,15 @@ function UserHomeScreen() {
   };
 
   const cancelRide = async () => {
-    const rideDetails = JSON.parse(localStorage.getItem("rideDetails"));
     try {
+      const rideDetails = JSON.parse(localStorage.getItem("rideDetails") || "{}");
+      
+      if (!rideDetails._id && !rideDetails.confirmedRideData?._id) {
+        Console.error("No ride ID found in localStorage");
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/ride/cancel?rideId=${rideDetails._id || rideDetails.confirmedRideData?._id}`,
@@ -286,7 +293,7 @@ function UserHomeScreen() {
       localStorage.removeItem("showPanel");
       localStorage.removeItem("showBtn");
     } catch (error) {
-      Console.log(error);
+      Console.error("Error cancelling ride:", error);
       setLoading(false);
     }
   };
