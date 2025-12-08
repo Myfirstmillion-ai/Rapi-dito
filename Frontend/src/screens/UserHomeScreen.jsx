@@ -267,12 +267,7 @@ function UserHomeScreen() {
     try {
       setLoading(true);
       await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/ride/cancel?rideId=${rideDetails._id || rideDetails.confirmedRideData._id}`,
-        {
-          pickup: pickupLocation,
-          destination: destinationLocation,
-          vehicleType: selectedVehicle,
-        },
+        `${import.meta.env.VITE_SERVER_URL}/ride/cancel?rideId=${rideDetails._id || rideDetails.confirmedRideData?._id}`,
         {
           headers: {
             token: token,

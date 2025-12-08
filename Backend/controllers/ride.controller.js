@@ -84,10 +84,10 @@ module.exports.createRide = async (req, res) => {
 
         console.log(
           captainsInRadius.map(
-            (ride) => `${ride.fullname.firstname} ${ride.fullname.lastname} `
-          )
+            (captain) => `${captain.fullname.firstname} ${captain.fullname.lastname || ''}`
+          ).join(', ')
         );
-        captainsInRadius.map((captain) => {
+        captainsInRadius.forEach((captain) => {
           sendMessageToSocketId(captain.socketId, {
             event: "new-ride",
             data: rideWithUser,
@@ -316,7 +316,7 @@ module.exports.cancelRide = async (req, res) => {
           ride.vehicle
         );
 
-        captainsInRadius.map((captain) => {
+        captainsInRadius.forEach((captain) => {
           sendMessageToSocketId(captain.socketId, {
             event: "ride-cancelled",
             data: ride,

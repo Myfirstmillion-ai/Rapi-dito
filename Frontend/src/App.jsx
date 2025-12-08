@@ -181,6 +181,6 @@ function LoggingWrapper() {
     if (socket) {
       logger(socket);
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, socket]);
   return null;
 }

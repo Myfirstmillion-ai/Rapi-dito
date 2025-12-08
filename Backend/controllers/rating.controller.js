@@ -62,9 +62,11 @@ module.exports.submitRating = async (req, res) => {
 
       // Update captain's average rating
       const captain = await captainModel.findById(ride.captain._id);
-      const newCount = captain.rating.count + 1;
+      const currentCount = captain.rating.count || 0;
+      const currentAverage = captain.rating.average || 0;
+      const newCount = currentCount + 1;
       const newAverage = 
-        (captain.rating.average * captain.rating.count + stars) / newCount;
+        (currentAverage * currentCount + stars) / newCount;
       
       captain.rating.average = Math.round(newAverage * 10) / 10;
       captain.rating.count = newCount;
@@ -108,9 +110,11 @@ module.exports.submitRating = async (req, res) => {
 
       // Update user's average rating
       const user = await userModel.findById(ride.user._id);
-      const newCount = user.rating.count + 1;
+      const currentCount = user.rating.count || 0;
+      const currentAverage = user.rating.average || 0;
+      const newCount = currentCount + 1;
       const newAverage = 
-        (user.rating.average * user.rating.count + stars) / newCount;
+        (currentAverage * currentCount + stars) / newCount;
       
       user.rating.average = Math.round(newAverage * 10) / 10;
       user.rating.count = newCount;
