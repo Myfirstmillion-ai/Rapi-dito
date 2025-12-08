@@ -1,17 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, Car, Zap, Sparkles } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Car } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Console from "../utils/console";
 import MembershipRequiredModal from "../components/MembershipRequiredModal";
 
+/**
+ * CaptainLogin - Swiss Minimalist Studio Layout
+ * Solid backgrounds, massive typography, zero visual noise
+ */
 function CaptainLogin() {
   const [responseError, setResponseError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showMembershipModal, setShowMembershipModal] = useState(false);
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  // Animation variants
+  const staggerContainer = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.2
+      }
+    }
+  };
+
+  const fadeInUp = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, y: 40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+  };
+
+  const slideInLeft = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, x: -60 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, x: 0 },
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
+  };
 
   const {
     handleSubmit,
@@ -51,169 +84,165 @@ function CaptainLogin() {
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      setResponseError("");
-    }, 5000);
+    if (responseError) {
+      const timer = setTimeout(() => {
+        setResponseError("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
   }, [responseError]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 flex flex-col overflow-y-auto relative" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgb(16 185 129 / 0.3) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }}></div>
-      </div>
-
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-transparent"></div>
-
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col overflow-y-auto">
       {/* Back Button */}
-      <button
+      <motion.button
+        initial={prefersReducedMotion ? {} : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
         onClick={() => navigation('/')}
-        className="absolute top-6 left-6 flex items-center gap-2 text-white/70 hover:text-white transition-colors z-20 backdrop-blur-sm bg-white/5 px-3 py-2 rounded-lg border border-white/10"
+        className="absolute top-6 left-6 flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors z-20 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 rounded-lg p-2"
         aria-label="Volver a inicio"
       >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="font-medium text-sm">Volver</span>
-      </button>
+        <ArrowLeft className="w-5 h-5" />
+      </motion.button>
 
-      {/* Content Container */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
+      {/* Content Wrapper */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-20 md:px-12 lg:px-20">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="w-full max-w-md mx-auto"
         >
-          {/* Logo Badge */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="flex justify-center mb-8"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-2xl blur-xl opacity-50"></div>
-              <div className="relative bg-gradient-to-r from-emerald-500 to-cyan-500 p-4 rounded-2xl">
-                <Car className="w-8 h-8 text-white" />
-              </div>
+          {/* Captain Badge */}
+          <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-gray-900 dark:bg-white flex items-center justify-center">
+              <Car className="w-6 h-6 text-white dark:text-gray-900" />
             </div>
+            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Conductor
+            </span>
           </motion.div>
 
-          {/* Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-center mb-8"
+          {/* Hero Heading - Massive Typography */}
+          <motion.h1
+            variants={slideInLeft}
+            className="mb-12 text-balance text-6xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-7xl"
           >
-            <h1 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-r from-white via-emerald-200 to-cyan-200 bg-clip-text text-transparent">
-              Conductor RAPIDITO
-            </h1>
-            <p className="text-white/60 text-base">Comienza a ganar hoy</p>
-          </motion.div>
+            Comienza a{'\n'}
+            ganar.
+          </motion.h1>
 
-          {/* Form Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl"
-          >
-            {/* Error Message */}
-            {responseError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 backdrop-blur-xl bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm"
-              >
-                {responseError}
-              </motion.div>
-            )}
+          {/* Error Message */}
+          {responseError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-300 text-sm"
+              role="alert"
+            >
+              {responseError}
+            </motion.div>
+          )}
 
-            {/* Form */}
-            <form onSubmit={handleSubmit(loginCaptain)} className="space-y-5">
-              {/* Email Input */}
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  {...register("email", { required: true })}
-                  className="w-full h-14 px-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
-                />
-                {errors.email && (
-                  <p className="mt-2 text-sm text-red-300">El email es requerido</p>
-                )}
-              </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit(loginCaptain)} className="space-y-8">
+            {/* Email Input */}
+            <motion.div variants={fadeInUp} className="relative">
+              <input
+                type="email"
+                id="email"
+                placeholder="correo@ejemplo.com"
+                {...register("email", { required: true })}
+                className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
+                aria-describedby={errors.email ? "email-error" : undefined}
+              />
+              {errors.email && (
+                <p id="email-error" className="mt-2 text-sm text-red-500" role="alert">
+                  El email es requerido
+                </p>
+              )}
+            </motion.div>
 
-              {/* Password Input */}
+            {/* Password Input */}
+            <motion.div variants={fadeInUp} className="relative">
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Contraseña"
+                  id="password"
+                  placeholder="••••••••"
                   {...register("password", { required: true })}
-                  className="w-full h-14 px-4 pr-12 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all duration-300"
+                  className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 pr-12 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
+                  aria-describedby={errors.password ? "password-error" : undefined}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded p-1"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
-                {errors.password && (
-                  <p className="mt-2 text-sm text-red-300">La contraseña es requerida</p>
-                )}
               </div>
+              {errors.password && (
+                <p id="password-error" className="mt-2 text-sm text-red-500" role="alert">
+                  La contraseña es requerida
+                </p>
+              )}
+            </motion.div>
+          </form>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-14 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-base font-bold rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 mt-6"
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <Zap className="w-5 h-5" />
-                    <span>Iniciar sesión</span>
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Divider */}
-            <div className="flex items-center my-6">
-              <div className="flex-1 border-t border-white/10"></div>
-              <span className="px-4 text-sm text-white/40">o</span>
-              <div className="flex-1 border-t border-white/10"></div>
-            </div>
-
-            {/* Sign Up Link */}
-            <p className="text-center text-sm text-white/60">
+          {/* Sign Up & User Login Links */}
+          <motion.div variants={fadeInUp} className="mt-12 space-y-4">
+            <p className="text-center text-gray-500 dark:text-gray-400">
               ¿No tienes cuenta?{" "}
               <Link 
                 to="/captain/signup" 
-                className="font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent hover:from-emerald-300 hover:to-cyan-300 transition-all inline-flex items-center gap-1"
+                className="font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
               >
-                <span>Regístrate</span>
-                <Sparkles className="w-4 h-4 text-emerald-400 inline" />
+                Regístrate
               </Link>
             </p>
-
-            {/* Link to User Login */}
-            <p className="text-center text-sm text-white/60 mt-4">
+            <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
               ¿Quieres solicitar un viaje?{" "}
-              <Link to="/login" className="font-bold text-white hover:text-emerald-300 transition-colors">
+              <Link 
+                to="/login" 
+                className="font-medium text-emerald-600 dark:text-emerald-400 hover:underline transition-colors"
+              >
                 Iniciar como pasajero
               </Link>
             </p>
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Floating Action Button - Fixed at bottom */}
+      <motion.div
+        initial={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed bottom-8 left-6 right-6 md:left-auto md:right-8 md:w-full md:max-w-md z-50"
+      >
+        <button
+          type="submit"
+          onClick={handleSubmit(loginCaptain)}
+          disabled={loading}
+          className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-2xl transition-all hover:shadow-emerald-500/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+          aria-busy={loading}
+        >
+          {loading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+              <span>Iniciando...</span>
+            </>
+          ) : (
+            <span>Iniciar Sesión →</span>
+          )}
+        </button>
+      </motion.div>
+
+      {/* Bottom padding to account for fixed button */}
+      <div className="h-28" aria-hidden="true" />
 
       {/* Membership Required Modal */}
       <MembershipRequiredModal 
