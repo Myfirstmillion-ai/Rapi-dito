@@ -13,8 +13,15 @@ import {
   ArrowLeft,
   Shield,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import axios from "axios";
+
+// Configuration constants
+const MEMBERSHIP_CONFIG = {
+  defaultPlan: "Monthly",
+  defaultDurationDays: 30,
+};
 
 function AdminDashboard() {
   const [captains, setCaptains] = useState([]);
@@ -23,6 +30,7 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [updateError, setUpdateError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,17 +79,18 @@ function AdminDashboard() {
   const toggleCaptainStatus = async (captainId, currentStatus) => {
     try {
       setUpdatingId(captainId);
+      setUpdateError(""); // Clear any previous errors
       const token = localStorage.getItem("token");
       
-      // Calculate expiry date (30 days from now for monthly plan)
+      // Calculate expiry date using configuration
       const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 30);
+      expiryDate.setDate(expiryDate.getDate() + MEMBERSHIP_CONFIG.defaultDurationDays);
 
       const response = await axios.patch(
         `${import.meta.env.VITE_SERVER_URL}/admin/captain/${captainId}/status`,
         {
           isMembershipActive: !currentStatus,
-          membershipPlan: !currentStatus ? "Monthly" : null,
+          membershipPlan: !currentStatus ? MEMBERSHIP_CONFIG.defaultPlan : null,
           membershipExpiresAt: !currentStatus ? expiryDate.toISOString() : null,
         },
         {
@@ -106,7 +115,9 @@ function AdminDashboard() {
       );
     } catch (error) {
       console.error("Error updating captain status:", error);
-      alert(error.response?.data?.message || "Error al actualizar estado");
+      setUpdateError(error.response?.data?.message || "Error al actualizar estado");
+      // Clear error after 5 seconds
+      setTimeout(() => setUpdateError(""), 5000);
     } finally {
       setUpdatingId(null);
     }
@@ -183,9 +194,23 @@ function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 backdrop-blur-xl bg-red-500/20 border border-red-500/30 rounded-xl text-red-200"
+            className="mb-6 p-4 backdrop-blur-xl bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 flex items-center gap-3"
           >
-            {error}
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
+          </motion.div>
+        )}
+
+        {/* Update Error Message */}
+        {updateError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 p-4 backdrop-blur-xl bg-orange-500/20 border border-orange-500/30 rounded-xl text-orange-200 flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{updateError}</span>
           </motion.div>
         )}
 

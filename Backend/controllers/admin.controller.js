@@ -37,11 +37,11 @@ module.exports.toggleCaptainStatus = asyncHandler(async (req, res) => {
     captain.isMembershipActive = isMembershipActive;
   }
   
-  if (membershipPlan) {
+  if (membershipPlan !== undefined) {
     captain.membershipPlan = membershipPlan;
   }
   
-  if (membershipExpiresAt) {
+  if (membershipExpiresAt !== undefined) {
     captain.membershipExpiresAt = membershipExpiresAt;
   }
 
