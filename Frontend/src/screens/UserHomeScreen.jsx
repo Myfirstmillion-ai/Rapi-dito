@@ -6,6 +6,12 @@ import {
   SelectVehicle,
   RideDetails,
   Sidebar,
+  FloatingHeader,
+  FloatingSearchBar,
+  MapControls,
+  LocationSearchPanel,
+  VehiclePanel,
+  LookingForDriver,
 } from "../components";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
@@ -88,12 +94,18 @@ function UserHomeScreen() {
   const [rideETA, setRideETA] = useState(null); // Added missing state for ETA tracking
   const rideTimeout = useRef(null);
 
-  // Paneles
+  // Paneles - Legacy (keeping for compatibility)
   const [showFindTripPanel, setShowFindTripPanel] = useState(true);
   const [showSelectVehiclePanel, setShowSelectVehiclePanel] = useState(false);
   const [showRideDetailsPanel, setShowRideDetailsPanel] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [panelsVisible, setPanelsVisible] = useState(true); // For map interaction
+
+  // Phase 2 - Floating UI Panels
+  const [showLocationSearchPanel, setShowLocationSearchPanel] = useState(false);
+  const [showVehiclePanel, setShowVehiclePanel] = useState(false);
+  const [mapZoom, setMapZoom] = useState(14);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Handle sidebar toggle - hide all panels when sidebar opens
   const handleSidebarToggle = (isOpen) => {
@@ -640,21 +652,113 @@ function UserHomeScreen() {
             <MapboxStaticMap
               latitude={mapCenter.lat}
               longitude={mapCenter.lng}
-              zoom={13}
+              zoom={mapZoom}
               interactive={true}
               showMarker={true}
-              markerColor="#276EF1"
+              markerColor="#10B981"
               className="w-full h-full"
             />
           )}
         </MapInteractionWrapper>
       </div>
+
+      {/* ===== PHASE 2: FLOATING UI COMPONENTS ===== */}
+      
+      {/* Floating Header - User Pill (top-left) */}
+      {!isSidebarOpen && !showLocationSearchPanel && !showVehiclePanel && (
+        <FloatingHeader
+          user={user}
+          onMenuClick={() => setIsSidebarOpen(true)}
+          isOnline={true}
+        />
+      )}
+
+      {/* Map Controls - Floating Circles (right side) */}
+      {!isSidebarOpen && !showLocationSearchPanel && !showVehiclePanel && (
+        <MapControls
+          onZoomIn={() => setMapZoom(prev => Math.min(prev + 1, 20))}
+          onZoomOut={() => setMapZoom(prev => Math.max(prev - 1, 1))}
+          onRecenter={() => {
+            setIsLocating(true);
+            updateLocation();
+            setTimeout(() => setIsLocating(false), 1500);
+          }}
+          isLocating={isLocating}
+        />
+      )}
+
+      {/* Floating Search Bar - The Island (bottom-center) */}
+      {showFindTripPanel && !isSidebarOpen && !showSelectVehiclePanel && !showRideDetailsPanel && !rideCreated && (
+        <FloatingSearchBar
+          onClick={() => setShowLocationSearchPanel(true)}
+          onHomeClick={() => {
+            // Could implement saved home location
+            setShowLocationSearchPanel(true);
+          }}
+          onRecentClick={() => {
+            setShowLocationSearchPanel(true);
+          }}
+        />
+      )}
+
+      {/* Location Search Panel - Bottom Sheet */}
+      <LocationSearchPanel
+        isOpen={showLocationSearchPanel}
+        onClose={() => setShowLocationSearchPanel(false)}
+        pickupValue={pickupLocation}
+        destinationValue={destinationLocation}
+        onPickupChange={(value) => {
+          setPickupLocation(value);
+          setSelectedInput("pickup");
+          if (import.meta.env.VITE_ENVIRONMENT === "production" && value.length >= 3) {
+            handleLocationChange(value, token);
+          }
+          if (value.length < 3) setLocationSuggestion([]);
+        }}
+        onDestinationChange={(value) => {
+          setDestinationLocation(value);
+          setSelectedInput("destination");
+          if (import.meta.env.VITE_ENVIRONMENT === "production" && value.length >= 3) {
+            handleLocationChange(value, token);
+          }
+          if (value.length < 3) setLocationSuggestion([]);
+        }}
+        onLocationSelect={(location, inputType) => {
+          if (inputType === "pickup") {
+            setPickupLocation(location);
+          } else {
+            setDestinationLocation(location);
+          }
+          setLocationSuggestion([]);
+          // If both fields have values, proceed to vehicle selection
+          if (inputType === "destination" && pickupLocation.length > 2 && location.length > 2) {
+            setShowLocationSearchPanel(false);
+            getDistanceAndFare(pickupLocation, location);
+          } else if (inputType === "pickup" && location.length > 2 && destinationLocation.length > 2) {
+            setShowLocationSearchPanel(false);
+            getDistanceAndFare(location, destinationLocation);
+          }
+        }}
+        onGetCurrentLocation={getCurrentLocation}
+        suggestions={locationSuggestion}
+        selectedInput={selectedInput}
+        onInputFocus={(inputType) => setSelectedInput(inputType)}
+        isGettingLocation={gettingLocation}
+      />
+
+      {/* Looking For Driver - Pulsing Pin Overlay */}
+      <LookingForDriver
+        isVisible={rideCreated && !confirmedRideData}
+        onCancel={cancelRide}
+      />
+
+      {/* ===== LEGACY UI (keeping for compatibility during transition) ===== */}
       
       {/* Componente Buscar viaje - Floating Route Card with Glassmorphism */}
       {showFindTripPanel && !isSidebarOpen && (
         <div className={`fixed bottom-0 left-0 right-0 z-10 transition-all duration-300 ease-out ${
           panelsVisible ? 'translate-y-0' : 'translate-y-full'
-        }`}>
+        } hidden`}> {/* Hidden - replaced by FloatingSearchBar */}
           {/* Premium Floating Route Card */}
           <div className="mx-4 mb-6 bg-slate-900/95 backdrop-blur-xl rounded-[32px] border border-white/10 shadow-2xl overflow-hidden"
                style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}>

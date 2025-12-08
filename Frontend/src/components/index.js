@@ -11,6 +11,14 @@ import Sidebar from "./Sidebar";
 import VerifyEmail from "./VerifyEmail";
 import ErrorBoundary from "./ErrorBoundary";
 
+// Phase 2 - Native iOS Apple Maps Experience Components
+import FloatingHeader from "./FloatingHeader";
+import FloatingSearchBar from "./FloatingSearchBar";
+import MapControls from "./MapControls";
+import LocationSearchPanel from "./LocationSearchPanel";
+import VehiclePanel from "./VehiclePanel";
+import LookingForDriver from "./LookingForDriver";
+
 export {
   Alert,
   Button,
@@ -24,4 +32,11 @@ export {
   Spinner,
   VerifyEmail,
   ErrorBoundary,
+  // Phase 2 Components
+  FloatingHeader,
+  FloatingSearchBar,
+  MapControls,
+  LocationSearchPanel,
+  VehiclePanel,
+  LookingForDriver,
 };
