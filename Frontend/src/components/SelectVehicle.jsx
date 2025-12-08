@@ -178,10 +178,10 @@ const Vehicle = ({
       {/* Vehicle Info Section - Fixed text wrapping */}
       <div className="flex-1 pr-3 py-4 min-w-0">
         <div className="mb-2">
-          <h1 className="text-base sm:text-lg font-bold text-white transition-colors whitespace-nowrap">
+          <h1 className="text-base sm:text-lg font-bold text-white transition-colors whitespace-nowrap leading-tight">
             {vehicle.name}
           </h1>
-          <p className={`text-xs sm:text-sm transition-colors leading-tight ${
+          <p className={`text-xs sm:text-sm transition-colors leading-relaxed ${
             isSelected ? "text-emerald-100" : "text-white/60"
           }`} style={{ textWrap: 'balance' }}>
             {vehicle.description}

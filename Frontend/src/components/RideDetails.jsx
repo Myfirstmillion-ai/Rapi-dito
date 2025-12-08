@@ -257,14 +257,23 @@ function RideDetails({
                     </div>
                   </div>
                   
-                  {/* License Plate Badge - Standout Design */}
-                  <div className="relative bg-slate-900/80 backdrop-blur-md border-2 border-white/20 rounded-xl px-4 py-2.5 shadow-xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-xl" />
+                  {/* License Plate Badge - ULTRA-PREMIUM High Contrast Design */}
+                  <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 border-3 border-white/30 rounded-2xl px-5 py-4 shadow-2xl shadow-black/50">
+                    {/* Subtle shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-2xl" />
+                    {/* Top accent */}
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                    
                     <div className="relative flex items-center justify-between">
-                      <span className="text-xs text-white/50 font-bold uppercase tracking-wide">Placa</span>
-                      <span className="text-lg font-black text-white tracking-widest">
-                        {confirmedRideData?.captain?.vehicle?.number}
-                      </span>
+                      <div>
+                        <span className="text-xs text-white/60 font-bold uppercase tracking-widest block mb-1">Placa</span>
+                        <span className="text-[9px] text-emerald-400 font-semibold">Verifica antes de abordar</span>
+                      </div>
+                      <div className="bg-white/95 px-4 py-2.5 rounded-xl shadow-lg">
+                        <span className="text-2xl font-black text-slate-900 tracking-[0.2em] font-mono" style={{ letterSpacing: '0.15em' }}>
+                          {confirmedRideData?.captain?.vehicle?.number || "---"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
