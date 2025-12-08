@@ -278,10 +278,11 @@ function UserSignup() {
               ¿Ya tienes cuenta?{" "}
               <Link 
                 to="/login" 
-                className="font-bold text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text hover:from-emerald-300 hover:to-cyan-300 transition-all inline-flex items-center gap-1"
+                className="font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent hover:from-emerald-300 hover:to-cyan-300 transition-all inline-flex items-center gap-1"
+                style={{ WebkitTextFillColor: 'transparent' }}
               >
-                Inicia sesión
-                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Inicia sesión</span>
+                <Sparkles className="w-3 h-3 text-emerald-400" aria-hidden="true" />
               </Link>
             </p>
           </motion.div>
