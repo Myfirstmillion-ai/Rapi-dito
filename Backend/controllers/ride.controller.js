@@ -146,7 +146,7 @@ module.exports.confirmRide = async (req, res) => {
   const { rideId } = req.body;
 
   try {
-    // Attempt to confirm the ride with atomic update
+    // Attempt to confirm the ride with atomic update (race condition safe)
     const ride = await rideService.confirmRide({
       rideId,
       captain: req.captain,
@@ -175,8 +175,8 @@ module.exports.confirmRide = async (req, res) => {
       data: rideWithCoordinates,
     });
 
-    // Broadcast to all other captains that this ride is no longer available
-    // This is done asynchronously to not block the response
+    // CRITICAL: Broadcast to ALL other drivers that this ride is no longer available
+    // This prevents the race condition UI issue where other drivers still see the request
     Promise.resolve().then(async () => {
       try {
         const captainsInRadius = await mapService.getCaptainsInTheRadius(
@@ -186,18 +186,32 @@ module.exports.confirmRide = async (req, res) => {
           ride.vehicle
         );
 
-        // Notify all captains (except the one who accepted) that the ride is unavailable
+        // Emit RIDE_TAKEN event to all captains except the one who accepted
         captainsInRadius.forEach((captain) => {
           if (captain._id.toString() !== req.captain._id.toString()) {
             sendMessageToSocketId(captain.socketId, {
-              event: "ride-unavailable",
-              data: { rideId: ride._id },
+              event: "ride-taken",
+              data: { rideId: ride._id, takenBy: req.captain._id },
             });
           }
         });
       } catch (e) {
         console.error("Failed to notify captains about ride acceptance:", e.message);
       }
+    });
+
+    return res.status(200).json(ride);
+  } catch (err) {
+    console.error("Error confirming ride:", err);
+    
+    // Handle race condition error specifically
+    if (err.message === "Este viaje ya fue aceptado por otro conductor") {
+      return res.status(409).json({ message: err.message });
+    }
+    
+    return res.status(500).json({ message: err.message });
+  }
+};
     });
 
     return res.status(200).json(ride);

@@ -52,6 +52,9 @@ function Sidebar({ onToggle }) {
   const menuItems = [
     { to: `/${newUser?.type}/edit-profile`, icon: CircleUserRound, label: "Editar Perfil" },
     { to: `/${newUser?.type}/rides`, icon: History, label: "Historial de Viajes" },
+    ...(newUser?.type === 'captain' ? [
+      { to: `/captain/statistics`, icon: History, label: "📊 Estadísticas" }
+    ] : []),
     { to: `/${newUser?.type}/reset-password?token=${token}`, icon: KeyRound, label: "Cambiar Contraseña" },
     { to: "/help", icon: HelpCircle, label: "Centro de Ayuda" },
   ];
@@ -136,6 +139,22 @@ function Sidebar({ onToggle }) {
                     {newUser?.data?.fullname?.firstname}{" "}
                     {newUser?.data?.fullname?.lastname}
                   </h1>
+                  
+                  {/* Star Rating - Under Profile */}
+                  {(newUser?.data?.rating?.average || newUser?.data?.rating) && (
+                    <div className="flex items-center justify-center gap-1.5 mb-2">
+                      <span className="text-yellow-400 text-lg">⭐</span>
+                      <span className="text-base font-bold text-yellow-400">
+                        {(newUser?.data?.rating?.average || newUser?.data?.rating || 0).toFixed(1)}
+                      </span>
+                      {newUser?.data?.rating?.count > 0 && (
+                        <span className="text-xs text-white/50">
+                          ({newUser.data.rating.count})
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-center text-emerald-400 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis px-2">
                     {newUser?.data?.email}
                   </p>

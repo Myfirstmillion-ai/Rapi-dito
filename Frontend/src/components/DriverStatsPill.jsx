@@ -122,6 +122,15 @@ function DriverStatsPill({ captain, vehicle, earnings, rides }) {
                 {todaysTrips > 0 ? `${todaysTrips} ${todaysTrips === 1 ? 'viaje' : 'viajes'}` : 'Sin viajes hoy'}
               </span>
             </div>
+            {/* Star Rating Below Earnings */}
+            {(captain?.rating?.average || captain?.rating) && (
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <span className="text-yellow-400 text-xs">⭐</span>
+                <span className="text-xs font-bold text-yellow-400">
+                  {(captain?.rating?.average || captain?.rating || 0).toFixed(1)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* RIGHT: Go Offline Toggle Switch - Premium Styled */}

@@ -193,8 +193,9 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
         access_token: MAPBOX_TOKEN,
         country: 'co,ve',
         bbox: SERVICE_AREA_BBOX,
-        types: 'place,address,poi',
-        limit: 5,
+        proximity: '-72.443,7.815', // Proximity bias to San Antonio del Táchira/Cúcuta border
+        types: 'place,locality,neighborhood,address,poi',
+        limit: 8, // Increased from 5 for better results
         language: 'es',
         autocomplete: true
       }

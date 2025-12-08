@@ -146,10 +146,21 @@ function UserHomeScreen() {
     }
   };
 
-  // Memoize debounced function properly - create it once and reuse
+  // AbortController ref for canceling stale requests
+  const abortControllerRef = useRef(null);
+
+  // Memoize debounced function with AbortController for performance
   const handleLocationChange = useMemo(
     () => debounce(async (inputValue, token) => {
       if (inputValue.length >= 3) {
+        // Cancel previous request if still pending
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
+        // Create new AbortController for this request
+        abortControllerRef.current = new AbortController();
+
         try {
           const response = await axios.get(
             `${import.meta.env.VITE_SERVER_URL}/map/get-suggestions?input=${inputValue}`,
@@ -157,15 +168,18 @@ function UserHomeScreen() {
               headers: {
                 token: token,
               },
+              signal: abortControllerRef.current.signal,
             }
           );
           Console.log(response.data);
           setLocationSuggestion(response.data);
         } catch (error) {
-          Console.error(error);
+          if (error.name !== 'CanceledError') {
+            Console.error(error);
+          }
         }
       }
-    }, 700),
+    }, 300), // Reduced from 700ms to 300ms for faster response
     [] // Empty dependency - create debounced function only once
   );
 

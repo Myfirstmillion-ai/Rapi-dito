@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import debounce from "lodash.debounce";
+import toast from "react-hot-toast";
 import { useCaptain } from "../contexts/CaptainContext";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
 import DriverStatsPill from "../components/DriverStatsPill";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
+import { showRideRequestToast } from "../components/notifications/RideRequestToast";
 import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
@@ -109,6 +111,9 @@ function CaptainHomeScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [currentRideStatus, setCurrentRideStatus] = useState("pending");
   const locationUpdateInterval = useRef(null);
+  
+  // Track active ride request toasts for dismissing when rides are taken
+  const activeRideToastsRef = useRef(new Map()); // Map<rideId, toastId>
 
   // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
@@ -430,17 +435,61 @@ function CaptainHomeScreen() {
         setShowBtn("accept");
         setNewRide(data);
         setShowNewRidePanel(true);
+        
+        // Show premium toast notification
+        const toastId = showRideRequestToast(
+          data,
+          () => {
+            // Accept handler
+            acceptRide();
+            activeRideToastsRef.current.delete(data._id);
+          },
+          () => {
+            // Reject handler
+            Console.log("Viaje rechazado por el conductor");
+            activeRideToastsRef.current.delete(data._id);
+          }
+        );
+        
+        // Track this toast so we can dismiss it if ride is taken
+        activeRideToastsRef.current.set(data._id, toastId);
       };
 
       // Handler para viajes cancelados
       const handleRideCancelled = (data) => {
         Console.log("Viaje cancelado", data);
+        
+        // Dismiss toast if it's still showing
+        const toastId = activeRideToastsRef.current.get(data.rideId);
+        if (toastId) {
+          toast.dismiss(toastId);
+          activeRideToastsRef.current.delete(data.rideId);
+        }
+        
         updateLocation();
         clearRideData();
+      };
+      
+      // Handler for ride taken by another driver (race condition)
+      const handleRideTaken = (data) => {
+        Console.log("Viaje tomado por otro conductor", data);
+        
+        // Immediately dismiss the toast for this ride
+        const toastId = activeRideToastsRef.current.get(data.rideId);
+        if (toastId) {
+          toast.dismiss(toastId);
+          activeRideToastsRef.current.delete(data.rideId);
+        }
+        
+        // If this was the currently displayed ride, clear it
+        if (newRide._id === data.rideId) {
+          clearRideData();
+        }
       };
 
       socket.on("new-ride", handleNewRide);
       socket.on("ride-cancelled", handleRideCancelled);
+      socket.on("ride-taken", handleRideTaken);
       
       return () => {
         clearInterval(locationInterval);
@@ -449,6 +498,7 @@ function CaptainHomeScreen() {
         }
         socket.off("new-ride", handleNewRide);
         socket.off("ride-cancelled", handleRideCancelled);
+        socket.off("ride-taken", handleRideTaken);
       };
     }
   }, [captain?._id, socket, showBtn, newRide._id]); // Removed isPanelExpanded from dependencies
