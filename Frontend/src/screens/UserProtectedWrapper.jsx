@@ -19,14 +19,24 @@ function UserProtectedWrapper({ children }) {
       return;
     }
 
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.error("Profile fetch timeout - redirecting to login");
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      navigate("/login");
+    }, 10000); // 10 second timeout
+
     setLoading(true);
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/user/profile`, {
         headers: {
           token: token,
         },
+        timeout: 8000, // 8 second request timeout
       })
       .then((response) => {
+        clearTimeout(timeoutId); // Clear timeout on success
         if (response.status === 200) {
           const user = response.data.user;
           setUser(user);
@@ -37,7 +47,9 @@ function UserProtectedWrapper({ children }) {
           setIsVerified(user.emailVerified);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        clearTimeout(timeoutId); // Clear timeout on error
+        console.error("Profile fetch error:", error.message);
         localStorage.removeItem("token");
         localStorage.removeItem("userData");
         navigate("/login");
@@ -45,6 +57,9 @@ function UserProtectedWrapper({ children }) {
       .finally(() => {
         setLoading(false);
       });
+
+    // Cleanup
+    return () => clearTimeout(timeoutId);
   }, [token]);
 
   if (loading) return <Loading />;

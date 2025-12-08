@@ -19,13 +19,23 @@ function CaptainProtectedWrapper({ children }) {
       return;
     }
 
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.error("Captain profile fetch timeout - redirecting to login");
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      navigate("/captain/login");
+    }, 10000); // 10 second timeout
+
     axios
       .get(`${import.meta.env.VITE_SERVER_URL}/captain/profile`, {
         headers: {
           token: token,
         },
+        timeout: 8000, // 8 second request timeout
       })
       .then((response) => {
+        clearTimeout(timeoutId); // Clear timeout on success
         if (response.status === 200) {
           const captainData = response.data.captain;
           setCaptain(captainData);
@@ -37,7 +47,8 @@ function CaptainProtectedWrapper({ children }) {
         }
       })
       .catch((err) => {
-        console.error("Error fetching captain profile:", err);
+        clearTimeout(timeoutId); // Clear timeout on error
+        console.error("Error fetching captain profile:", err.message || err);
         localStorage.removeItem("token");
         localStorage.removeItem("userData");
         navigate("/captain/login");
@@ -45,6 +56,9 @@ function CaptainProtectedWrapper({ children }) {
       .finally(() => {
         setLoading(false);
       });
+
+    // Cleanup
+    return () => clearTimeout(timeoutId);
   }, [token, navigate, setCaptain]);
 
   if (loading) return <Loading />;
