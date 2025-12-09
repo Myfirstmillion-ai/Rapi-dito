@@ -26,7 +26,17 @@ const FrontendLogSchema = new mongoose.Schema({
     ],
     default: undefined,
   },
+  level: {
+    type: String,
+    default: "info",
+  },
 });
+
+// TTL index - auto-delete logs after 30 days
+FrontendLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2592000 });
+
+// Compound index for query optimization
+FrontendLogSchema.index({ level: 1, timestamp: -1 });
 
 const FrontendLog = mongoose.model("FrontendLog", FrontendLogSchema);
 
