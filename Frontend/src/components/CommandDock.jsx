@@ -4,9 +4,12 @@ import { Power, TrendingUp, Zap } from 'lucide-react';
 
 /**
  * CommandDock - Tesla-Inspired Floating Command Bar for Drivers
+ * Process 2 - Phase 2: Floating Navigation Architecture
  * 
  * Design Philosophy: Tesla Dashboard meets iOS Dynamic Island
  * Core Principle: Minimal Distraction, Maximum Information Density
+ * 
+ * Z-Index Layer: z-50 (commandDock)
  * 
  * Structure:
  * └── The Dock (fixed bottom, floating bar)
@@ -14,6 +17,17 @@ import { Power, TrendingUp, Zap } from 'lucide-react';
  *     ├── Center: GO ONLINE Button (massive, industrial)
  *     └── Right: Earnings Display (metric typography)
  */
+
+// Z-Index Layer System (Phase 2)
+const Z_INDEX = {
+  mapBase: 0,
+  mapMarkers: 10,
+  floatingControls: 20,
+  floatingHeader: 30,
+  sidebar: 40,
+  commandDock: 50,
+  modals: 60,
+};
 
 const CAPTAIN_COLORS = {
   background: '#000000',
@@ -75,8 +89,11 @@ function CommandDock({
       initial={prefersReducedMotion ? {} : { y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ ...springConfig, delay: 0.2 }}
-      className="fixed bottom-0 left-0 right-0 z-30"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed bottom-0 left-0 right-0"
+      style={{ 
+        zIndex: Z_INDEX.commandDock,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)' 
+      }}
     >
       {/* The Command Dock - Tesla Industrial Design */}
       <div 

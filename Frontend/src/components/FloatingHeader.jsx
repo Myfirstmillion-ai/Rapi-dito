@@ -4,14 +4,31 @@ import { Menu, Star } from "lucide-react";
 
 /**
  * FloatingHeader - User Pill
+ * Process 2 - Phase 2: Floating Navigation Architecture
+ * 
  * Native iOS Apple Maps inspired floating header
+ * 
+ * Z-Index Layer: z-30 (floatingHeader)
  * 
  * Features:
  * - Pill-shaped glassmorphism design
  * - User avatar with rating
  * - Hamburger menu toggle
  * - Green dot online status indicator
+ * - Respects safe area insets
  */
+
+// Z-Index Layer System (Phase 2)
+const Z_INDEX = {
+  mapBase: 0,
+  mapMarkers: 10,
+  floatingControls: 20,
+  floatingHeader: 30,
+  sidebar: 40,
+  commandDock: 50,
+  modals: 60,
+};
+
 function FloatingHeader({ 
   user = {}, 
   onMenuClick, 
@@ -42,8 +59,11 @@ function FloatingHeader({
       initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={springConfig}
-      className="fixed top-4 left-4 z-20"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      className="fixed top-4 left-4"
+      style={{ 
+        zIndex: Z_INDEX.floatingHeader,
+        paddingTop: 'env(safe-area-inset-top, 0px)' 
+      }}
     >
       <div 
         className="flex items-center gap-2 rounded-full shadow-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
