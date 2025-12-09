@@ -1,17 +1,24 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plus, Minus, Locate } from "lucide-react";
+import { Z_INDEX } from "../utils/zIndex";
 
 /**
  * MapControls - Floating Circles
+ * Process 2 - Phase 2: Floating Navigation Architecture
+ * 
  * Native iOS Apple Maps inspired map control buttons
+ * 
+ * Z-Index Layer: floatingControls (20)
  * 
  * Features:
  * - Circular glassmorphism buttons
  * - Zoom In/Out and Recenter
  * - Hover scale effect (1.1)
  * - Active press effect (0.95)
+ * - Respects safe area insets
  */
+
 function MapControls({ 
   onZoomIn, 
   onZoomOut, 
@@ -68,8 +75,11 @@ function MapControls({
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="fixed right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3"
-      style={{ paddingRight: 'env(safe-area-inset-right, 0px)' }}
+      className="fixed right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3"
+      style={{ 
+        zIndex: Z_INDEX.floatingControls,
+        paddingRight: 'env(safe-area-inset-right, 0px)' 
+      }}
     >
       {/* Zoom In Button */}
       <motion.button

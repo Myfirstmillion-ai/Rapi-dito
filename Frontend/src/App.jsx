@@ -86,14 +86,22 @@ export default App;
 function AnimatedRoutes() {
   const location = useLocation();
 
+  // Premium page transition settings - Swiss Minimalist
+  const pageTransition = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+    transition: { 
+      duration: 0.3, 
+      ease: [0.16, 1, 0.3, 1] // Premium cubic-bezier
+    }
+  };
+
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.2 }}
+        {...pageTransition}
       >
         <Routes location={location}>
           <Route path="/" element={<GetStarted />} />

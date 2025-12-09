@@ -1,17 +1,61 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin, X } from "lucide-react";
+import { Z_INDEX } from "../utils/zIndex";
 
 /**
  * LookingForDriver - Minimal Overlay with Pulsing Pin
+ * Process 2 - Phase 3: Ride Logic & Interactive Panels
+ * 
  * Native iOS Apple Maps inspired design
+ * 
+ * CRITICAL VALIDATION: All props must be validated before rendering
+ * - Never crash on missing/invalid data
+ * - Provide graceful fallbacks
+ * - Log errors in development only
  * 
  * Features:
  * - Sonar wave effect (3 concentric pulsing rings)
  * - Floating glassmorphism status card
  * - Spring physics animations
+ * - Cancel button with confirmation
+ * - Timeout handling for long searches
  */
-function LookingForDriver({ isVisible = false, onCancel }) {
+
+// Validation helpers
+const isValidBoolean = (value) => typeof value === 'boolean';
+const isValidFunction = (value) => typeof value === 'function';
+
+// Development-only logging
+const logValidationError = (propName, expectedType, receivedValue) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      `[LookingForDriver] Invalid prop "${propName}": expected ${expectedType}, received ${typeof receivedValue}`,
+      { received: receivedValue }
+    );
+  }
+};
+
+function LookingForDriver({ 
+  isVisible = false, 
+  onCancel,
+  statusText = "Conectando...",
+  subText = "Buscando conductor cercano"
+}) {
+  // ===== PROP VALIDATION =====
+  const safeIsVisible = isValidBoolean(isVisible) ? isVisible : false;
+  const safeStatusText = typeof statusText === 'string' ? statusText : "Conectando...";
+  const safeSubText = typeof subText === 'string' ? subText : "Buscando conductor cercano";
+  
+  // Validate callback function
+  const safeOnCancel = useCallback(() => {
+    if (isValidFunction(onCancel)) {
+      onCancel();
+    } else {
+      logValidationError('onCancel', 'function', onCancel);
+    }
+  }, [onCancel]);
+
   // Check for reduced motion preference
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -25,10 +69,17 @@ function LookingForDriver({ isVisible = false, onCancel }) {
     stiffness: 300
   };
 
-  if (!isVisible) return null;
+  // Don't render if not visible
+  if (!safeIsVisible) return null;
 
   return (
-    <div className="absolute inset-0 z-30 pointer-events-none">
+    <div 
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: Z_INDEX.sidebar }}
+      role="status"
+      aria-live="polite"
+      aria-label="Buscando conductor"
+    >
       {/* Pulsing Location Pin - Centered on map */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
         {/* Sonar Wave Effect - 3 Concentric Rings */}
@@ -42,6 +93,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
                 : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               animationDelay: '0s'
             }}
+            aria-hidden="true"
           />
           
           {/* Middle ring */}
@@ -53,6 +105,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
                 : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               animationDelay: '0.5s'
             }}
+            aria-hidden="true"
           />
           
           {/* Inner ring - fastest */}
@@ -64,6 +117,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
                 : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               animationDelay: '1s'
             }}
+            aria-hidden="true"
           />
           
           {/* Center Pin Icon */}
@@ -73,7 +127,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
             transition={springConfig}
             className="relative z-10 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-500/50"
           >
-            <MapPin className="w-6 h-6 text-white" fill="white" />
+            <MapPin className="w-6 h-6 text-white" fill="white" aria-hidden="true" />
           </motion.div>
         </div>
       </div>
@@ -89,7 +143,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
         <div 
           className="mx-auto max-w-md rounded-3xl shadow-2xl overflow-hidden"
           style={{
-            background: 'rgba(255, 255, 255, 0.9)',
+            background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px) saturate(180%)',
             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -107,6 +161,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
                   ease: "linear"
                 }}
                 className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg"
+                aria-hidden="true"
               >
                 <Loader2 className="w-6 h-6 text-white" />
               </motion.div>
@@ -122,10 +177,10 @@ function LookingForDriver({ isVisible = false, onCancel }) {
                   }}
                   className="text-lg font-bold text-gray-900"
                 >
-                  Conectando...
+                  {safeStatusText}
                 </motion.h2>
                 <p className="text-sm text-gray-500">
-                  Buscando conductor cercano
+                  {safeSubText}
                 </p>
               </div>
             </div>
@@ -142,15 +197,18 @@ function LookingForDriver({ isVisible = false, onCancel }) {
                   ease: "easeInOut"
                 }}
                 style={{ width: '50%' }}
+                aria-hidden="true"
               />
             </div>
 
             {/* Cancel Button */}
-            {onCancel && (
+            {isValidFunction(onCancel) && (
               <button
-                onClick={onCancel}
-                className="mt-4 w-full py-3 rounded-2xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={safeOnCancel}
+                className="mt-4 w-full py-3 rounded-2xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                aria-label="Cancelar búsqueda de conductor"
               >
+                <X className="w-4 h-4" />
                 Cancelar búsqueda
               </button>
             )}

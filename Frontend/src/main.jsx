@@ -26,11 +26,13 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <SocketContext>
-    <UserContext>
-      <CaptainContext>
-        <App />
-      </CaptainContext>
-    </UserContext>
-  </SocketContext>
+  <StrictMode>
+    <SocketContext>
+      <UserContext>
+        <CaptainContext>
+          <App />
+        </CaptainContext>
+      </UserContext>
+    </SocketContext>
+  </StrictMode>
 );
