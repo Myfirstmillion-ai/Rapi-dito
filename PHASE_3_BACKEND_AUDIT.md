@@ -13,7 +13,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Total Routes** | 29 endpoints |
+| **Total Routes** | 35 endpoints |
 | **Route Files** | 8 |
 | **Controllers** | 8 |
 | **Models** | 6 |
@@ -120,7 +120,7 @@ router.get('/cancel', query('rideId').isMongoId()..., rideController.cancelRide)
 
 **Fix:**
 ```javascript
-router.get('/chat-details/:id', authMiddleware.authUser, rideController.chatDetails)
+router.get('/chat-details/:id', authUserOrCaptain, rideController.chatDetails)
 router.get('/cancel', authMiddleware.authUser, query('rideId')..., rideController.cancelRide)
 ```
 
@@ -278,9 +278,15 @@ blacklistTokenSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 }); // 
 **Recommended Fix:**
 ```javascript
 // Add JWT verification on socket connection
-io.use((socket, next) => {
+io.use(async (socket, next) => {
   const token = socket.handshake.auth.token;
+  if (!token) return next(new Error('Authentication required'));
+  
   try {
+    // Check blacklist
+    const isBlacklisted = await blacklistTokenModel.findOne({ token });
+    if (isBlacklisted) return next(new Error('Token blacklisted'));
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.userId = decoded.id;
     socket.userType = decoded.userType;
@@ -509,7 +515,7 @@ app.get('/health', (req, res) => {
 
 | # | Issue | Location | Fix |
 |---|-------|----------|-----|
-| 1 | Unprotected `/ride/chat-details/:id` | ride.routes.js:7 | Add `authUser` or `authUserOrCaptain` |
+| 1 | Unprotected `/ride/chat-details/:id` | ride.routes.js:7 | Add `authUserOrCaptain` middleware |
 | 2 | Unprotected `/ride/cancel` | ride.routes.js:31 | Add `authUser` middleware |
 
 ### 🟠 HIGH PRIORITY
@@ -538,7 +544,7 @@ app.get('/health', (req, res) => {
 
 | # | Task | File(s) | Effort |
 |---|------|---------|--------|
-| 1 | Add auth to `/ride/chat-details/:id` | ride.routes.js | 5 min |
+| 1 | Add `authUserOrCaptain` to `/ride/chat-details/:id` | ride.routes.js | 5 min |
 | 2 | Add auth to `/ride/cancel` | ride.routes.js | 5 min |
 | 3 | Add auth to `/map/get-coordinates` | maps.routes.js | 5 min |
 | 4 | Add rate limiting to auth routes | server.js | 30 min |
