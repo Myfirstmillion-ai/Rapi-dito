@@ -22,16 +22,6 @@ const vehicles = [
     capacity: "1 persona",
     eta: "2-4 min",
   },
-  {
-    id: 3,
-    name: "Auto",
-    description: "Transporte económico compartido",
-    type: "auto",
-    image: "/auto-rickshaw.webp",
-    price: 0,
-    capacity: "3 personas",
-    eta: "4-6 min",
-  },
 ];
 
 function SelectVehicle({

@@ -45,8 +45,10 @@ function MapView({
         console.error('Mapbox error:', e.error);
       });
 
-      // Hide all default Mapbox controls - use custom MapControls instead
-      // Navigation controls removed per Swiss design requirements
+      // Add navigation controls
+      if (interactive) {
+        map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      }
     } catch (error) {
       console.error('Failed to initialize Mapbox map:', error);
     }

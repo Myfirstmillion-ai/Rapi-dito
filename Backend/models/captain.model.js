@@ -171,7 +171,4 @@ captainSchema.index({ socketId: 1 });
 // Index for status queries
 captainSchema.index({ status: 1 });
 
-// Unique index for vehicle number (plate)
-captainSchema.index({ 'vehicle.number': 1 }, { unique: true });
-
 module.exports = mongoose.model("Captain", captainSchema);

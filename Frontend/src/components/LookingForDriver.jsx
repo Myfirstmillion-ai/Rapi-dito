@@ -1,28 +1,34 @@
-import { useMemo, useCallback, useState, useEffect } from "react";
+import { useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Target, X } from "lucide-react";
+import { Loader2, MapPin, X } from "lucide-react";
 import { Z_INDEX } from "../utils/zIndex";
 
 /**
- * LookingForDriver - Swiss Minimalist Luxury Design
- * Deep slate backgrounds, emerald accents, Inter font styling
+ * LookingForDriver - Minimal Overlay with Pulsing Pin
+ * Process 2 - Phase 3: Ride Logic & Interactive Panels
+ * 
+ * Native iOS Apple Maps inspired design
+ * 
+ * CRITICAL VALIDATION: All props must be validated before rendering
+ * - Never crash on missing/invalid data
+ * - Provide graceful fallbacks
+ * - Log errors in development only
  * 
  * Features:
- * - Radar animation with concentric pulsing rings
- * - Countdown timer
- * - Auto-cancel at 0
- * - Swiss typography (tight tracking, medium weight)
- * - 60fps transform-only animations
+ * - Sonar wave effect (3 concentric pulsing rings)
+ * - Floating glassmorphism status card
+ * - Spring physics animations
+ * - Cancel button with confirmation
+ * - Timeout handling for long searches
  */
 
 // Validation helpers
 const isValidBoolean = (value) => typeof value === 'boolean';
 const isValidFunction = (value) => typeof value === 'function';
-const isValidNumber = (value) => typeof value === 'number' && !isNaN(value);
 
 // Development-only logging
 const logValidationError = (propName, expectedType, receivedValue) => {
-  if (import.meta.env.MODE !== 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     console.warn(
       `[LookingForDriver] Invalid prop "${propName}": expected ${expectedType}, received ${typeof receivedValue}`,
       { received: receivedValue }
@@ -34,17 +40,12 @@ function LookingForDriver({
   isVisible = false, 
   onCancel,
   statusText = "Conectando...",
-  subText = "Buscando conductor cercano",
-  timeoutSeconds = 30
+  subText = "Buscando conductor cercano"
 }) {
   // ===== PROP VALIDATION =====
   const safeIsVisible = isValidBoolean(isVisible) ? isVisible : false;
   const safeStatusText = typeof statusText === 'string' ? statusText : "Conectando...";
   const safeSubText = typeof subText === 'string' ? subText : "Buscando conductor cercano";
-  const safeTimeoutSeconds = isValidNumber(timeoutSeconds) && timeoutSeconds > 0 ? timeoutSeconds : 30;
-  
-  // ===== LOCAL STATE =====
-  const [countdown, setCountdown] = useState(safeTimeoutSeconds);
   
   // Validate callback function
   const safeOnCancel = useCallback(() => {
@@ -61,31 +62,6 @@ function LookingForDriver({
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
-  // Reset countdown when visibility changes
-  useEffect(() => {
-    if (safeIsVisible) {
-      setCountdown(safeTimeoutSeconds);
-    }
-  }, [safeIsVisible, safeTimeoutSeconds]);
-
-  // Countdown timer with auto-cancel
-  useEffect(() => {
-    if (!safeIsVisible) return;
-    
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          safeOnCancel();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [safeIsVisible, safeOnCancel]);
-
   // Spring animation config for smooth motion
   const springConfig = {
     type: "spring",
@@ -98,116 +74,161 @@ function LookingForDriver({
 
   return (
     <div 
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ 
-        zIndex: Z_INDEX.alerts,
-        background: 'rgba(15, 23, 42, 0.95)', // Deep slate-950/95
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)'
-      }}
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: Z_INDEX.sidebar }}
       role="status"
       aria-live="polite"
       aria-label="Buscando conductor"
     >
-      {/* Radar animation - Swiss style */}
-      <div className="relative flex items-center justify-center">
-        {/* Radar rings - emerald with ping animation */}
-        <div 
-          className="absolute h-64 w-64 rounded-full border opacity-20"
-          style={{ 
-            borderColor: '#10b981',
-            animation: prefersReducedMotion ? 'none' : 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite'
-          }}
-        />
-        <div 
-          className="absolute h-48 w-48 rounded-full border opacity-30"
-          style={{ 
-            borderColor: '#10b981',
-            animation: prefersReducedMotion ? 'none' : 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-            animationDelay: '0.5s'
-          }}
-        />
-        <div 
-          className="absolute h-32 w-32 rounded-full border opacity-40"
-          style={{ 
-            borderColor: '#10b981',
-            animation: prefersReducedMotion ? 'none' : 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-            animationDelay: '1s'
-          }}
-        />
-        
-        {/* Center icon - Emerald gradient */}
-        <motion.div
-          initial={prefersReducedMotion ? {} : { scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={springConfig}
-          className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full"
-          style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            boxShadow: '0 0 40px rgba(16, 185, 129, 0.5)'
-          }}
-        >
-          <Target className="h-10 w-10 text-white" strokeWidth={2.5} />
-        </motion.div>
+      {/* Pulsing Location Pin - Centered on map */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+        {/* Sonar Wave Effect - 3 Concentric Rings */}
+        <div className="relative w-32 h-32 flex items-center justify-center">
+          {/* Outer ring - slowest */}
+          <div 
+            className="absolute inset-0 rounded-full border-2 border-emerald-500/60"
+            style={{
+              animation: prefersReducedMotion 
+                ? 'none' 
+                : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              animationDelay: '0s'
+            }}
+            aria-hidden="true"
+          />
+          
+          {/* Middle ring */}
+          <div 
+            className="absolute inset-4 rounded-full border-2 border-emerald-500/70"
+            style={{
+              animation: prefersReducedMotion 
+                ? 'none' 
+                : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              animationDelay: '0.5s'
+            }}
+            aria-hidden="true"
+          />
+          
+          {/* Inner ring - fastest */}
+          <div 
+            className="absolute inset-8 rounded-full border-2 border-emerald-500/80"
+            style={{
+              animation: prefersReducedMotion 
+                ? 'none' 
+                : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              animationDelay: '1s'
+            }}
+            aria-hidden="true"
+          />
+          
+          {/* Center Pin Icon */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={springConfig}
+            className="relative z-10 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-500/50"
+          >
+            <MapPin className="w-6 h-6 text-white" fill="white" aria-hidden="true" />
+          </motion.div>
+        </div>
       </div>
-      
-      {/* Text - Swiss typography */}
-      <div className="absolute bottom-32 left-0 right-0 text-center px-6">
-        <motion.h2 
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-2xl font-semibold text-white"
-          style={{ 
-            letterSpacing: '-0.025em',
-            fontWeight: 600
-          }}
-        >
-          {safeStatusText}
-        </motion.h2>
-        <motion.p 
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-2 text-sm font-medium"
-          style={{ 
-            color: '#94a3b8', // slate-400
-            letterSpacing: '-0.025em'
-          }}
-        >
-          {safeSubText}
-        </motion.p>
-        <motion.p 
-          initial={prefersReducedMotion ? {} : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mt-4 text-xs"
-          style={{ 
-            color: '#64748b', // slate-500
-            letterSpacing: '-0.025em'
-          }}
-        >
-          {countdown}s
-        </motion.p>
-      </div>
-      
-      {/* Cancel button - Swiss pill with accessibility */}
-      <motion.button
-        initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+
+      {/* Floating Status Card - Bottom Center */}
+      <motion.div
+        initial={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        onClick={safeOnCancel}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 rounded-full px-8 py-3 text-sm font-medium transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-        style={{
-          background: '#1e293b', // slate-800
-          color: '#cbd5e1', // slate-300
-          letterSpacing: '-0.025em'
-        }}
-        aria-label="Cancelar búsqueda de conductor"
+        exit={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
+        transition={springConfig}
+        className="absolute bottom-6 left-6 right-6 pointer-events-auto"
       >
-        <X className="w-4 h-4" />
-        Cancelar búsqueda
-      </motion.button>
+        <div 
+          className="mx-auto max-w-md rounded-3xl shadow-2xl overflow-hidden"
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+          }}
+        >
+          <div className="px-6 py-5">
+            <div className="flex items-center gap-4">
+              {/* Spinning Loader Icon */}
+              <motion.div
+                animate={prefersReducedMotion ? {} : { rotate: 360 }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg"
+                aria-hidden="true"
+              >
+                <Loader2 className="w-6 h-6 text-white" />
+              </motion.div>
+              
+              {/* Status Text */}
+              <div className="flex-1">
+                <motion.h2
+                  animate={prefersReducedMotion ? {} : { opacity: [1, 0.7, 1] }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="text-lg font-bold text-gray-900"
+                >
+                  {safeStatusText}
+                </motion.h2>
+                <p className="text-sm text-gray-500">
+                  {safeSubText}
+                </p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full"
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{ width: '50%' }}
+                aria-hidden="true"
+              />
+            </div>
+
+            {/* Cancel Button */}
+            {isValidFunction(onCancel) && (
+              <button
+                onClick={safeOnCancel}
+                className="mt-4 w-full py-3 rounded-2xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                aria-label="Cancelar búsqueda de conductor"
+              >
+                <X className="w-4 h-4" />
+                Cancelar búsqueda
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* CSS for pulse-ring animation */}
+      <style>{`
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(0.5);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(2.5);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

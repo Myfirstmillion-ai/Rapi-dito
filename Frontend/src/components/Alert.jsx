@@ -38,7 +38,7 @@ const isValidNumber = (value) => typeof value === 'number' && !isNaN(value) && v
 
 // Development-only logging
 const logValidationError = (propName, expectedType, receivedValue) => {
-  if (import.meta.env.MODE !== 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     console.warn(
       `[Alert] Invalid prop "${propName}": expected ${expectedType}, received ${typeof receivedValue}`,
       { received: receivedValue }

@@ -7,7 +7,7 @@ import Heading from "./Heading";
 import Button from "./Button";
 import mailImg from "/mail.png";
 import useCooldownTimer from "../hooks/useCooldownTimer";
-import { Alert } from "./Alert";
+import { Alert } from "../components";
 import { useAlert } from "../hooks/useAlert";
 
 function VerifyEmail({ user, role }) {
