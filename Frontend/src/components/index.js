@@ -19,6 +19,11 @@ import LocationSearchPanel from "./LocationSearchPanel";
 import VehiclePanel from "./VehiclePanel";
 import LookingForDriver from "./LookingForDriver";
 
+// Phase 3 - Tesla Command Center Components for Captains
+import CommandDock from "./CommandDock";
+import RideRequestCard from "./RideRequestCard";
+import ActiveRideHUD, { RIDE_STATUS } from "./ActiveRideHUD";
+
 export {
   Alert,
   Button,
@@ -39,4 +44,9 @@ export {
   LocationSearchPanel,
   VehiclePanel,
   LookingForDriver,
+  // Phase 3 Components
+  CommandDock,
+  RideRequestCard,
+  ActiveRideHUD,
+  RIDE_STATUS,
 };
