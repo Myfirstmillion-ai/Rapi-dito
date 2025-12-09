@@ -6,6 +6,215 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== SWISS MINIMALIST LUXURY - DESIGN SYSTEM ===== */
+/* Process 2 - Phase 1: Global Styles & Atomic Components Foundation */
+
+/* ===== GLASSMORPHISM UTILITIES ===== */
+
+/* Standard glass panel - Light mode */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Glass panel - Dark mode via class */
+.dark .glass-panel {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Intense glass panel - Stronger blur for hero sections */
+.glass-panel-intense {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+}
+
+.dark .glass-panel-intense {
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* Dark glass panel - Black glass for captain/driver UI */
+.glass-panel-dark {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== TEXT GRADIENT UTILITIES ===== */
+
+/* Emerald gradient text */
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Primary green gradient text */
+.text-gradient-green {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Premium dark gradient text */
+.text-gradient-dark {
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ===== SAFE AREA UTILITIES (iOS Notch/Dynamic Island) ===== */
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.mt-safe {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.ml-safe {
+  margin-left: env(safe-area-inset-left, 0px);
+}
+
+.mr-safe {
+  margin-right: env(safe-area-inset-right, 0px);
+}
+
+/* Full safe area inset */
+.inset-safe {
+  top: env(safe-area-inset-top, 0px);
+  right: env(safe-area-inset-right, 0px);
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: env(safe-area-inset-left, 0px);
+}
+
+/* ===== SHADOW UTILITIES ===== */
+
+/* Premium floating shadow */
+.shadow-float {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+              0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dark .shadow-float {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Emerald glow shadow */
+.shadow-glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
+              0 0 40px rgba(16, 185, 129, 0.15);
+}
+
+/* ===== ANIMATION UTILITIES ===== */
+
+/* Smooth spring transition */
+.transition-spring {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Buttery smooth transition */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== INTERACTION UTILITIES ===== */
+
+/* Touch-friendly minimum size */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Disable selection for UI elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Hardware acceleration hint */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Reduced motion safety */
+@media (prefers-reduced-motion: reduce) {
+  .motion-reduce-safe,
+  .transition-spring,
+  .transition-smooth {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* 
+ * Dark Mode Implementation:
+ * 
+ * 1. `.dark .class` - Manual dark mode toggle via JavaScript
+ *    Use when you want user-controlled dark mode preference
+ * 
+ * 2. `@media (prefers-color-scheme: dark)` - Automatic system preference
+ *    Use when you want to follow the user's OS/browser setting
+ * 
+ * Both are intentionally included to support both use cases.
+ * The `.dark` class takes precedence when applied to the root element.
+ */
+@media (prefers-color-scheme: dark) {
+  .glass-panel {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  
+  .glass-panel-intense {
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  }
+  
+  .shadow-float {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
 /* ===== CRITICAL LAYOUT FIXES ===== */
 
 /* CSS Variables for Safe Areas */

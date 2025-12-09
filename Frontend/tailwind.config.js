@@ -176,6 +176,35 @@ export default {
     'ease-spring',
     'duration-300',
     'duration-350',
+    // Glassmorphism utilities (Process 2 - Phase 1)
+    'glass-panel',
+    'glass-panel-intense',
+    'glass-panel-dark',
+    // Text gradient utilities
+    'text-gradient-emerald',
+    'text-gradient-green',
+    'text-gradient-dark',
+    // Safe area utilities (padding)
+    'pt-safe',
+    'pb-safe',
+    'pl-safe',
+    'pr-safe',
+    // Safe area utilities (margin)
+    'mt-safe',
+    'mb-safe',
+    'ml-safe',
+    'mr-safe',
+    'inset-safe',
+    // Shadow utilities
+    'shadow-float',
+    'shadow-glow-emerald',
+    // Animation utilities
+    'transition-spring',
+    'transition-smooth',
+    // Interaction utilities
+    'touch-target',
+    'no-select',
+    'gpu-accelerated',
   ],
 };
 
