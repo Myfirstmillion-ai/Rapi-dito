@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plus, Minus, Locate } from "lucide-react";
+import { Z_INDEX } from "../utils/zIndex";
 
 /**
  * MapControls - Floating Circles
@@ -8,7 +9,7 @@ import { Plus, Minus, Locate } from "lucide-react";
  * 
  * Native iOS Apple Maps inspired map control buttons
  * 
- * Z-Index Layer: z-20 (floatingControls)
+ * Z-Index Layer: floatingControls (20)
  * 
  * Features:
  * - Circular glassmorphism buttons
@@ -17,17 +18,6 @@ import { Plus, Minus, Locate } from "lucide-react";
  * - Active press effect (0.95)
  * - Respects safe area insets
  */
-
-// Z-Index Layer System (Phase 2)
-const Z_INDEX = {
-  mapBase: 0,
-  mapMarkers: 10,
-  floatingControls: 20,
-  floatingHeader: 30,
-  sidebar: 40,
-  commandDock: 50,
-  modals: 60,
-};
 
 function MapControls({ 
   onZoomIn, 

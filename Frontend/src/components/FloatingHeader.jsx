@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Menu, Star } from "lucide-react";
+import { Z_INDEX } from "../utils/zIndex";
 
 /**
  * FloatingHeader - User Pill
@@ -8,7 +9,7 @@ import { Menu, Star } from "lucide-react";
  * 
  * Native iOS Apple Maps inspired floating header
  * 
- * Z-Index Layer: z-30 (floatingHeader)
+ * Z-Index Layer: floatingHeader (30)
  * 
  * Features:
  * - Pill-shaped glassmorphism design
@@ -17,17 +18,6 @@ import { Menu, Star } from "lucide-react";
  * - Green dot online status indicator
  * - Respects safe area insets
  */
-
-// Z-Index Layer System (Phase 2)
-const Z_INDEX = {
-  mapBase: 0,
-  mapMarkers: 10,
-  floatingControls: 20,
-  floatingHeader: 30,
-  sidebar: 40,
-  commandDock: 50,
-  modals: 60,
-};
 
 function FloatingHeader({ 
   user = {}, 

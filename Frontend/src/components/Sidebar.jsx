@@ -4,6 +4,7 @@ import { ChevronRight, CircleUserRound, History, KeyRound, Menu, X, HelpCircle, 
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Console from "../utils/console";
+import { Z_INDEX } from "../utils/zIndex";
 
 /**
  * Sidebar - The Floating Glass Sheet
@@ -12,28 +13,17 @@ import Console from "../utils/console";
  * Design Philosophy:
  * - Floating glass sheet that slides over content (doesn't push)
  * - Dismissible backdrop with blur effect
- * - Z-Index Layer: z-40 (sidebar when open)
- * - Z-Index Layer: z-30 (hamburger menu button)
+ * - Z-Index Layer: sidebar (40) for backdrop, sidebarPanel (41) for panel
+ * - Z-Index Layer: floatingHeader (30) for hamburger menu button
  * 
  * Structure:
  * └── Hamburger Button (z-30, fixed top-left)
  * └── Backdrop Overlay (z-40, dismissible)
- * └── Sidebar Panel (z-40, slides from left)
+ * └── Sidebar Panel (z-41, slides from left)
  *     ├── Profile Card (glassmorphism)
  *     ├── Navigation Links
  *     └── Logout Button
  */
-
-// Z-Index Layer System (Phase 2)
-const Z_INDEX = {
-  mapBase: 0,
-  mapMarkers: 10,
-  floatingControls: 20,
-  floatingHeader: 30,
-  sidebar: 40,
-  commandDock: 50,
-  modals: 60,
-};
 
 function Sidebar({ onToggle }) {
   const token = localStorage.getItem("token");
@@ -176,7 +166,7 @@ function Sidebar({ onToggle }) {
               transition={prefersReducedMotion ? { duration: 0.15 } : springConfig}
               className="fixed top-0 left-0 h-dvh pb-safe rounded-r-3xl overflow-hidden"
               style={{
-                zIndex: Z_INDEX.sidebar + 1,
+                zIndex: Z_INDEX.sidebarPanel,
                 width: '320px',
                 maxWidth: '85vw',
                 background: 'rgba(255, 255, 255, 0.95)',

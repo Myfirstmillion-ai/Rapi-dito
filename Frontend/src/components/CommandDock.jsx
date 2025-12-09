@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Power, TrendingUp, Zap } from 'lucide-react';
+import { Z_INDEX } from '../utils/zIndex';
 
 /**
  * CommandDock - Tesla-Inspired Floating Command Bar for Drivers
@@ -9,7 +10,7 @@ import { Power, TrendingUp, Zap } from 'lucide-react';
  * Design Philosophy: Tesla Dashboard meets iOS Dynamic Island
  * Core Principle: Minimal Distraction, Maximum Information Density
  * 
- * Z-Index Layer: z-50 (commandDock)
+ * Z-Index Layer: commandDock (50)
  * 
  * Structure:
  * └── The Dock (fixed bottom, floating bar)
@@ -17,17 +18,6 @@ import { Power, TrendingUp, Zap } from 'lucide-react';
  *     ├── Center: GO ONLINE Button (massive, industrial)
  *     └── Right: Earnings Display (metric typography)
  */
-
-// Z-Index Layer System (Phase 2)
-const Z_INDEX = {
-  mapBase: 0,
-  mapMarkers: 10,
-  floatingControls: 20,
-  floatingHeader: 30,
-  sidebar: 40,
-  commandDock: 50,
-  modals: 60,
-};
 
 const CAPTAIN_COLORS = {
   background: '#000000',
