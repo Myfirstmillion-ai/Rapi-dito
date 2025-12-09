@@ -60,10 +60,11 @@ function MapControls({
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="absolute right-4 top-20 flex flex-col gap-2"
+      className="absolute right-4 flex flex-col gap-2"
       style={{ 
         zIndex: Z_INDEX.floatingControls,
-        paddingRight: 'env(safe-area-inset-right, 0px)' 
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        top: 'calc(env(safe-area-inset-top, 16px) + 64px)' // Responsive positioning below header
       }}
     >
       {/* Zoom In Button */}

@@ -191,13 +191,13 @@ function LookingForDriver({
         </motion.p>
       </div>
       
-      {/* Cancel button - Swiss pill */}
+      {/* Cancel button - Swiss pill with accessibility */}
       <motion.button
         initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         onClick={safeOnCancel}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 rounded-full px-8 py-3 text-sm font-medium transition-all active:scale-95"
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 rounded-full px-8 py-3 text-sm font-medium transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
         style={{
           background: '#1e293b', // slate-800
           color: '#cbd5e1', // slate-300
