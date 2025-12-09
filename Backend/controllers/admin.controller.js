@@ -3,17 +3,38 @@ const captainModel = require("../models/captain.model");
 const { validationResult } = require("express-validator");
 
 // Get all captains with their membership status
+// PERFORMANCE: Paginated with .lean() for read-only data
 module.exports.getAllCaptains = asyncHandler(async (req, res) => {
-  const captains = await captainModel
-    .find({})
-    .select(
-      "fullname email phone vehicle isMembershipActive membershipPlan membershipExpiresAt status emailVerified profileImage rating createdAt"
-    )
-    .sort({ createdAt: -1 });
+  // Pagination parameters
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const skip = (page - 1) * limit;
 
-  res.status(200).json({ 
+  // Parallel execution for better performance
+  const [captains, totalCount] = await Promise.all([
+    captainModel
+      .find({})
+      .select(
+        "fullname email phone vehicle isMembershipActive membershipPlan membershipExpiresAt status emailVerified profileImage rating createdAt"
+      )
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(), // PERFORMANCE: .lean() returns plain JavaScript objects (faster, less memory)
+
+    captainModel.countDocuments({})
+  ]);
+
+  res.status(200).json({
     captains,
-    count: captains.length 
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+      totalCount,
+      limit,
+      hasNextPage: page < Math.ceil(totalCount / limit),
+      hasPrevPage: page > 1
+    }
   });
 });
 

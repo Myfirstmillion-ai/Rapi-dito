@@ -17,7 +17,13 @@ module.exports.authUser = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userModel.findOne({ _id: decoded.id }).populate("rides");
+    // PERFORMANCE: Removed .populate("rides") - fetch rides only when needed
+    // PERFORMANCE: Added .lean() since we don't need Mongoose document methods
+    const user = await userModel
+      .findOne({ _id: decoded.id })
+      .select("_id fullname email phone socketId emailVerified profileImage rating")
+      .lean();
+
     if (!user) {
       return res.status(401).json({ message: "Unauthorized User" });
     }
@@ -30,7 +36,6 @@ module.exports.authUser = async (req, res, next) => {
       },
       email: user.email,
       phone: user.phone,
-      rides: user.rides,
       socketId: user.socketId,
       emailVerified: user.emailVerified || false,
       profileImage: user.profileImage || "",
@@ -62,9 +67,13 @@ module.exports.authCaptain = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // PERFORMANCE: Removed .populate("rides") - fetch rides only when needed
+    // PERFORMANCE: Added .lean() since we don't need Mongoose document methods
     const captain = await captainModel
       .findOne({ _id: decoded.id })
-      .populate("rides");
+      .select("_id fullname email phone socketId emailVerified vehicle status profileImage rating")
+      .lean();
+
     if (!captain) {
       return res.status(401).json({ message: "Unauthorized User" });
     }
@@ -76,7 +85,6 @@ module.exports.authCaptain = async (req, res, next) => {
       },
       email: captain.email,
       phone: captain.phone,
-      rides: captain.rides,
       socketId: captain.socketId,
       emailVerified: captain.emailVerified,
       vehicle: captain.vehicle,
@@ -168,8 +176,15 @@ module.exports.authUserOrCaptain = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // PERFORMANCE: Removed .populate("rides") - fetch rides only when needed
+    // PERFORMANCE: Added .lean() since we don't need Mongoose document methods
+
     // Try to find user first
-    let user = await userModel.findOne({ _id: decoded.id }).populate("rides");
+    let user = await userModel
+      .findOne({ _id: decoded.id })
+      .select("_id fullname email phone socketId emailVerified profileImage rating")
+      .lean();
+
     if (user) {
       req.user = {
         _id: user._id,
@@ -179,7 +194,6 @@ module.exports.authUserOrCaptain = async (req, res, next) => {
         },
         email: user.email,
         phone: user.phone,
-        rides: user.rides,
         socketId: user.socketId,
         emailVerified: user.emailVerified || false,
         profileImage: user.profileImage || "",
@@ -190,7 +204,11 @@ module.exports.authUserOrCaptain = async (req, res, next) => {
     }
 
     // Try to find captain if user not found
-    let captain = await captainModel.findOne({ _id: decoded.id }).populate("rides");
+    let captain = await captainModel
+      .findOne({ _id: decoded.id })
+      .select("_id fullname email phone socketId emailVerified vehicle status profileImage rating")
+      .lean();
+
     if (captain) {
       req.captain = {
         _id: captain._id,
@@ -200,7 +218,6 @@ module.exports.authUserOrCaptain = async (req, res, next) => {
         },
         email: captain.email,
         phone: captain.phone,
-        rides: captain.rides,
         socketId: captain.socketId,
         emailVerified: captain.emailVerified,
         vehicle: captain.vehicle,

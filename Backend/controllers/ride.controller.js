@@ -8,10 +8,12 @@ const userModel = require("../models/user.model");
 module.exports.chatDetails = async (req, res) => {
   const { id } = req.params;
   try {
+    // PERFORMANCE: Added .lean() for read-only query
     const ride = await rideModel
       .findOne({ _id: id })
       .populate("user", "socketId fullname phone")
-      .populate("captain", "socketId fullname phone");
+      .populate("captain", "socketId fullname phone")
+      .lean();
 
     if (!ride) {
       return res.status(400).json({ message: "Ride not found" });
