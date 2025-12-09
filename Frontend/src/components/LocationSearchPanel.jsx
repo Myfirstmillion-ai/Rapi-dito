@@ -24,7 +24,8 @@ function LocationSearchPanel({
   suggestions = [],
   selectedInput = "destination",
   onInputFocus,
-  isGettingLocation = false
+  isGettingLocation = false,
+  isSearching = false // New prop to show loading state during debounce
 }) {
   const destinationInputRef = useRef(null);
   const [activeInput, setActiveInput] = useState(selectedInput);
@@ -187,7 +188,17 @@ function LocationSearchPanel({
                 animate="show"
                 className="space-y-2"
               >
-                {suggestions.length > 0 ? (
+                {/* Loading State - Shows during debounce */}
+                {isSearching && (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                      <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm">Buscando ubicaciones...</span>
+                    </div>
+                  </div>
+                )}
+                
+                {!isSearching && suggestions.length > 0 ? (
                   suggestions.map((suggestion, index) => (
                     <motion.div
                       key={index}
@@ -220,7 +231,7 @@ function LocationSearchPanel({
                       <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     </motion.div>
                   ))
-                ) : (
+                ) : !isSearching && (
                   /* Empty State - Recent & Favorites */
                   <div className="space-y-4 py-4">
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">

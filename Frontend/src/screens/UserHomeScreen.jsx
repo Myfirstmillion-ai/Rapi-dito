@@ -69,6 +69,7 @@ function UserHomeScreen() {
   const [loading, setLoading] = useState(false);
   const [selectedInput, setSelectedInput] = useState("pickup");
   const [locationSuggestion, setLocationSuggestion] = useState([]);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false); // Loading state for location search
   const [mapCenter, setMapCenter] = useState({
     lat: DEFAULT_LOCATION.lat,
     lng: DEFAULT_LOCATION.lng
@@ -170,6 +171,9 @@ function UserHomeScreen() {
 
         // Create new AbortController for this request
         abortControllerRef.current = new AbortController();
+        
+        // Show loading indicator
+        setIsSearchingLocation(true);
 
         try {
           const response = await axios.get(
@@ -187,7 +191,11 @@ function UserHomeScreen() {
           if (error.name !== 'CanceledError') {
             Console.error(error);
           }
+        } finally {
+          setIsSearchingLocation(false);
         }
+      } else {
+        setIsSearchingLocation(false);
       }
     }, 300), // Reduced from 700ms to 300ms for faster response
     [] // Empty dependency - create debounced function only once
@@ -709,17 +717,25 @@ function UserHomeScreen() {
           setPickupLocation(value);
           setSelectedInput("pickup");
           if (import.meta.env.VITE_ENVIRONMENT === "production" && value.length >= 3) {
+            setIsSearchingLocation(true); // Show loading immediately
             handleLocationChange(value, token);
           }
-          if (value.length < 3) setLocationSuggestion([]);
+          if (value.length < 3) {
+            setLocationSuggestion([]);
+            setIsSearchingLocation(false);
+          }
         }}
         onDestinationChange={(value) => {
           setDestinationLocation(value);
           setSelectedInput("destination");
           if (import.meta.env.VITE_ENVIRONMENT === "production" && value.length >= 3) {
+            setIsSearchingLocation(true); // Show loading immediately
             handleLocationChange(value, token);
           }
-          if (value.length < 3) setLocationSuggestion([]);
+          if (value.length < 3) {
+            setLocationSuggestion([]);
+            setIsSearchingLocation(false);
+          }
         }}
         onLocationSelect={(location, inputType) => {
           if (inputType === "pickup") {
@@ -728,6 +744,7 @@ function UserHomeScreen() {
             setDestinationLocation(location);
           }
           setLocationSuggestion([]);
+          setIsSearchingLocation(false);
           // If both fields have values, proceed to vehicle selection
           if (inputType === "destination" && pickupLocation.length > 2 && location.length > 2) {
             setShowLocationSearchPanel(false);
@@ -742,6 +759,7 @@ function UserHomeScreen() {
         selectedInput={selectedInput}
         onInputFocus={(inputType) => setSelectedInput(inputType)}
         isGettingLocation={gettingLocation}
+        isSearching={isSearchingLocation}
       />
 
       {/* Looking For Driver - Pulsing Pin Overlay */}
