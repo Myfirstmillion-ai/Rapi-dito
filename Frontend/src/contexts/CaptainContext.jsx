@@ -1,6 +1,12 @@
 import { createContext, useContext, useState } from "react";
 
-export const captainDataContext = createContext();
+/**
+ * Captain Context for captain/driver authentication state management
+ * 
+ * Usage: Import { useCaptain } from this file to access captain data
+ * Must be used within CaptainContext provider
+ */
+export const captainDataContext = createContext(undefined);
 
 function CaptainContext({ children }) {
   const userData = JSON.parse(localStorage.getItem("userData"));
@@ -32,9 +38,18 @@ function CaptainContext({ children }) {
   );
 }
 
+/**
+ * Custom hook to access captain context
+ * @throws Error if used outside CaptainContext provider
+ */
 export const useCaptain = () => {
-  const { captain, setCaptain } = useContext(captainDataContext);
-  return { captain, setCaptain };
+  const context = useContext(captainDataContext);
+  
+  if (context === undefined) {
+    throw new Error("useCaptain must be used within a CaptainContextProvider");
+  }
+  
+  return context;
 };
 
 export default CaptainContext;

@@ -1,7 +1,13 @@
-import { createContext, useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import { io } from "socket.io-client";
 
-export const SocketDataContext = createContext();
+/**
+ * Socket Context for real-time communication
+ * 
+ * Usage: Import useSocket from this file to access socket instance
+ * Must be used within SocketContext provider
+ */
+export const SocketDataContext = createContext(undefined);
 
 import Console from "../utils/console";
 
@@ -30,11 +36,27 @@ function SocketContext({ children }) {
     };
   }, [socket]);
 
+  const value = useMemo(() => ({ socket }), [socket]);
+
   return (
-    <SocketDataContext.Provider value={{ socket }}>
+    <SocketDataContext.Provider value={value}>
       {children}
     </SocketDataContext.Provider>
   );
 }
+
+/**
+ * Custom hook to access socket context
+ * @throws Error if used outside SocketContext provider
+ */
+export const useSocket = () => {
+  const context = useContext(SocketDataContext);
+  
+  if (context === undefined) {
+    throw new Error("useSocket must be used within a SocketContextProvider");
+  }
+  
+  return context;
+};
 
 export default SocketContext;
