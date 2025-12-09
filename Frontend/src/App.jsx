@@ -1,38 +1,41 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import {
-  GetStarted,
-  UserLogin,
-  CaptainLogin,
-  UserHomeScreen,
-  CaptainHomeScreen,
-  UserProtectedWrapper,
-  CaptainProtectedWrapper,
-  UserSignup,
-  CaptainSignup,
-  RideHistory,
-  UserEditProfile,
-  CaptainEditProfile,
-  Error,
-  ChatScreen,
-  VerifyEmail,
-  ResetPassword,
-  ForgotPassword,
-  AboutUs,
-  Blog,
-  Careers,
-  Terms,
-  Privacy,
-  Help,
-  AdminDashboard
-} from "./screens/";
+// PERFORMANCE: Code splitting with React.lazy() for route-based code splitting
+import { lazy, Suspense, useEffect, useContext } from "react";
+import { ChevronLeft, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+// Eagerly load critical components (needed on initial load)
+import { UserProtectedWrapper, CaptainProtectedWrapper } from "./screens/";
 import { logger } from "./utils/logger";
 import { SocketDataContext } from "./contexts/SocketContext";
-import { useEffect, useContext } from "react";
-import { ChevronLeft, Trash2 } from "lucide-react";
 import ToastProvider from "./components/notifications/ToastProvider";
 import RatingModalWrapper from "./components/RatingModalWrapper";
-import { AnimatePresence, motion } from "framer-motion";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Spinner from "./components/Spinner";
+
+// PERFORMANCE: Lazy load all route components for code splitting
+const GetStarted = lazy(() => import("./screens/GetStarted"));
+const UserLogin = lazy(() => import("./screens/UserLogin"));
+const CaptainLogin = lazy(() => import("./screens/CaptainLogin"));
+const UserSignup = lazy(() => import("./screens/UserSignup"));
+const CaptainSignup = lazy(() => import("./screens/CaptainSignup"));
+const UserHomeScreen = lazy(() => import("./screens/UserHomeScreen"));
+const CaptainHomeScreen = lazy(() => import("./screens/CaptainHomeScreen"));
+const RideHistory = lazy(() => import("./screens/RideHistory"));
+const UserEditProfile = lazy(() => import("./screens/UserEditProfile"));
+const CaptainEditProfile = lazy(() => import("./screens/CaptainEditProfile"));
+const ChatScreen = lazy(() => import("./screens/ChatScreen"));
+const VerifyEmail = lazy(() => import("./screens/VerifyEmail"));
+const ResetPassword = lazy(() => import("./screens/ResetPassword"));
+const ForgotPassword = lazy(() => import("./screens/ForgotPassword"));
+const AboutUs = lazy(() => import("./screens/AboutUs"));
+const Blog = lazy(() => import("./screens/Blog"));
+const Careers = lazy(() => import("./screens/Careers"));
+const Terms = lazy(() => import("./screens/Terms"));
+const Privacy = lazy(() => import("./screens/Privacy"));
+const Help = lazy(() => import("./screens/Help"));
+const AdminDashboard = lazy(() => import("./screens/AdminDashboard"));
+const Error = lazy(() => import("./screens/Error"));
 
 function App() {
   return (
@@ -83,6 +86,18 @@ function App() {
 
 export default App;
 
+// Loading component for Suspense fallback
+function SuspenseLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <Spinner size="lg" />
+        <p className="mt-4 text-gray-600">Cargando...</p>
+      </div>
+    </div>
+  );
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -91,8 +106,8 @@ function AnimatedRoutes() {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
-    transition: { 
-      duration: 0.3, 
+    transition: {
+      duration: 0.3,
       ease: [0.16, 1, 0.3, 1] // Premium cubic-bezier
     }
   };
@@ -103,7 +118,9 @@ function AnimatedRoutes() {
         key={location.pathname}
         {...pageTransition}
       >
-        <Routes location={location}>
+        {/* PERFORMANCE: Suspense boundary for lazy-loaded routes */}
+        <Suspense fallback={<SuspenseLoader />}>
+          <Routes location={location}>
           <Route path="/" element={<GetStarted />} />
           <Route
             path="/home"
@@ -179,7 +196,8 @@ function AnimatedRoutes() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
           <Route path="*" element={<Error />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </motion.div>
     </AnimatePresence>
   );

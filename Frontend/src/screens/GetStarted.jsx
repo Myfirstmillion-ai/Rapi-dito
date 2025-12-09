@@ -51,9 +51,9 @@ function GetStarted() {
       }
     }
 
-    // Preload hero background image
+    // Preload hero background image (WebP for better performance)
     const img = new Image();
-    img.src = '/IMG_3639.jpeg';
+    img.src = '/IMG_3639.webp';
     img.onload = () => setImageLoaded(true);
     
     return () => {
@@ -64,12 +64,12 @@ function GetStarted() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black">
-      {/* Background Image Layer - City skyline */}
+      {/* Background Image Layer - City skyline (WebP optimized: 575KB vs 4.4MB) */}
       <motion.img
-        src="/IMG_3639.jpeg"
+        src="/IMG_3639.webp"
         alt=""
         initial={prefersReducedMotion ? { opacity: 0 } : { scale: 1.1, opacity: 0 }}
-        animate={prefersReducedMotion 
+        animate={prefersReducedMotion
           ? { opacity: imageLoaded ? 1 : 0 }
           : { scale: imageLoaded ? 1 : 1.1, opacity: imageLoaded ? 1 : 0 }
         }
