@@ -70,6 +70,19 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// General API rate limiter for authenticated routes (more permissive)
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute
+  message: { 
+    success: false, 
+    error: "RATE_LIMIT_EXCEEDED", 
+    message: "Demasiadas solicitudes. Por favor espera un momento." 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 if (process.env.ENVIRONMENT == "production") {
   keepServerRunning();
 }
@@ -96,6 +109,10 @@ app.use("/user/login", authLimiter);
 app.use("/user/register", authLimiter);
 app.use("/captain/login", authLimiter);
 app.use("/captain/register", authLimiter);
+
+// Apply general API rate limiting to all routes
+app.use("/map", apiLimiter);
+app.use("/ride", apiLimiter);
 
 app.use("/user", userRoutes);
 app.use("/captain", captainRoutes);
