@@ -1,22 +1,16 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Minus, Locate } from "lucide-react";
+import { Plus, Minus, Target } from "lucide-react";
 import { Z_INDEX } from "../utils/zIndex";
 
 /**
- * MapControls - Floating Circles
- * Process 2 - Phase 2: Floating Navigation Architecture
+ * MapControls - Swiss Minimalist Floating Controls
  * 
- * Native iOS Apple Maps inspired map control buttons
- * 
- * Z-Index Layer: floatingControls (20)
- * 
- * Features:
- * - Circular glassmorphism buttons
- * - Zoom In/Out and Recenter
- * - Hover scale effect (1.1)
- * - Active press effect (0.95)
- * - Respects safe area insets
+ * Swiss Design Principles:
+ * - Emerald circular buttons (48px)
+ * - Position: Absolute right-4 top-20, stack vertically with 8px gap
+ * - Shadow: Subtle emerald-tinted
+ * - Smooth animations on press (scale 0.95)
  */
 
 function MapControls({ 
@@ -38,12 +32,6 @@ function MapControls({
     stiffness: 300
   };
 
-  // Button variants for hover/tap animations
-  const buttonVariants = {
-    hover: prefersReducedMotion ? {} : { scale: 1.1 },
-    tap: prefersReducedMotion ? {} : { scale: 0.95 }
-  };
-
   // Stagger animation for children
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -61,13 +49,10 @@ function MapControls({
     show: prefersReducedMotion ? {} : { opacity: 1, x: 0 }
   };
 
-  // Button style object for glassmorphism
-  const buttonStyle = {
-    background: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+  // Swiss button style - Deep slate background
+  const buttonBaseStyle = {
+    background: '#1e293b', // slate-800
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)'
   };
 
   return (
@@ -75,7 +60,7 @@ function MapControls({
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="fixed right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3"
+      className="absolute right-4 top-20 flex flex-col gap-2"
       style={{ 
         zIndex: Z_INDEX.floatingControls,
         paddingRight: 'env(safe-area-inset-right, 0px)' 
@@ -84,48 +69,45 @@ function MapControls({
       {/* Zoom In Button */}
       <motion.button
         variants={itemVariants}
-        whileHover="hover"
-        whileTap="tap"
+        whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
         onClick={onZoomIn}
-        className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
-        style={buttonStyle}
+        className="w-12 h-12 rounded-full flex items-center justify-center transition-colors hover:bg-slate-700 active:bg-slate-600"
+        style={buttonBaseStyle}
         aria-label="Acercar mapa"
       >
-        <Plus className="w-5 h-5 text-gray-700" />
+        <Plus className="w-5 h-5 text-slate-300" />
       </motion.button>
 
       {/* Zoom Out Button */}
       <motion.button
         variants={itemVariants}
-        whileHover="hover"
-        whileTap="tap"
+        whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
         onClick={onZoomOut}
-        className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
-        style={buttonStyle}
+        className="w-12 h-12 rounded-full flex items-center justify-center transition-colors hover:bg-slate-700 active:bg-slate-600"
+        style={buttonBaseStyle}
         aria-label="Alejar mapa"
       >
-        <Minus className="w-5 h-5 text-gray-700" />
+        <Minus className="w-5 h-5 text-slate-300" />
       </motion.button>
 
-      {/* Recenter Button - Emerald Background */}
+      {/* Recenter Button - Emerald accent */}
       <motion.button
         variants={itemVariants}
-        whileHover="hover"
-        whileTap="tap"
+        whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
         onClick={onRecenter}
         disabled={isLocating}
-        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-lg ${
+        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
           isLocating 
             ? 'opacity-70 cursor-wait' 
-            : 'hover:shadow-xl'
+            : 'hover:shadow-lg'
         }`}
         style={{
-          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
           boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)'
         }}
         aria-label="Centrar en mi ubicación"
       >
-        <Locate 
+        <Target 
           className={`w-5 h-5 text-white ${isLocating ? 'animate-pulse' : ''}`} 
         />
       </motion.button>
