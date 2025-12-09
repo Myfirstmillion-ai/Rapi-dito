@@ -19,6 +19,29 @@ const rideSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // PHASE 4: Geospatial coordinates for location-based queries
+    pickupLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: "2dsphere", // 2D sphere index for geospatial queries
+      },
+    },
+    destinationLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: "2dsphere",
+      },
+    },
     fare: {
       type: Number,
       required: true,
@@ -112,5 +135,10 @@ rideSchema.index({ status: 1, createdAt: -1 });
 
 // Index for efficient ride lookups
 rideSchema.index({ _id: 1, status: 1 });
+
+// PHASE 4: Geospatial indexes for location-based queries
+// 2dsphere index for finding rides near a location
+rideSchema.index({ "pickupLocation": "2dsphere" });
+rideSchema.index({ "destinationLocation": "2dsphere" });
 
 module.exports = mongoose.model("Ride", rideSchema);

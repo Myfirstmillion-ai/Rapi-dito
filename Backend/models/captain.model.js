@@ -26,10 +26,12 @@ const captainSchema = new mongoose.Schema(
       minlength: 8,
       select: false,
     },
+    // PHASE 4: Standardized phone validation (supports international formats)
     phone: {
       type: String,
-      minlength: 10,
-      maxlength: 15,
+      minlength: [10, "El número de teléfono debe tener al menos 10 dígitos"],
+      maxlength: [15, "El número de teléfono no puede exceder 15 dígitos"],
+      match: [/^\d{10,15}$/, "El número de teléfono debe contener solo dígitos (10-15)"],
     },
     socketId: {
       type: String,
@@ -55,6 +57,9 @@ const captainSchema = new mongoose.Schema(
         type: String,
         required: true,
         minlength: [3, "La placa debe tener al menos 3 caracteres"],
+        unique: true, // PHASE 4: Unique constraint for vehicle plates
+        uppercase: true, // Normalize to uppercase
+        trim: true,
       },
       capacity: {
         type: Number,
@@ -175,5 +180,8 @@ captainSchema.index({ socketId: 1 });
 
 // Index for status queries
 captainSchema.index({ status: 1 });
+
+// PHASE 4: Unique index for vehicle plates
+captainSchema.index({ 'vehicle.number': 1 }, { unique: true });
 
 module.exports = mongoose.model("Captain", captainSchema);

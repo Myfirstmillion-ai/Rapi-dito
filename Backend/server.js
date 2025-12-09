@@ -12,6 +12,7 @@ const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 
 const userRoutes = require("./routes/user.routes");
+const userFeaturesRoutes = require("./routes/user-features.routes");
 const captainRoutes = require("./routes/captain.routes");
 const mapsRoutes = require("./routes/maps.routes");
 const rideRoutes = require("./routes/ride.routes");
@@ -64,6 +65,7 @@ app.get("/reload", (req, res) => {
 });
 
 app.use("/user", userRoutes);
+app.use("/user", userFeaturesRoutes); // PHASE 4: Saved locations & search history
 app.use("/captain", captainRoutes);
 app.use("/map", mapsRoutes);
 app.use("/ride", rideRoutes);

@@ -27,10 +27,12 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false,
     },
+    // PHASE 4: Standardized phone validation (supports international formats)
     phone: {
       type: String,
-      minlength: 10,
-      maxlength: 10,
+      minlength: [10, "El número de teléfono debe tener al menos 10 dígitos"],
+      maxlength: [15, "El número de teléfono no puede exceder 15 dígitos"],
+      match: [/^\d{10,15}$/, "El número de teléfono debe contener solo dígitos (10-15)"],
     },
     socketId: {
       type: String,
@@ -67,6 +69,58 @@ const userSchema = new mongoose.Schema(
         default: 0,
       },
     },
+    // PHASE 4: Saved Locations Feature
+    savedLocations: [
+      {
+        name: {
+          type: String,
+          required: true,
+          maxlength: 100,
+        },
+        address: {
+          type: String,
+          required: true,
+          maxlength: 500,
+        },
+        coordinates: {
+          lat: {
+            type: Number,
+            required: true,
+          },
+          lng: {
+            type: Number,
+            required: true,
+          },
+        },
+        type: {
+          type: String,
+          enum: ['home', 'work', 'other'],
+          default: 'other',
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    // PHASE 4: Search History Feature
+    searchHistory: [
+      {
+        query: {
+          type: String,
+          required: true,
+          maxlength: 500,
+        },
+        coordinates: {
+          lat: Number,
+          lng: Number,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
