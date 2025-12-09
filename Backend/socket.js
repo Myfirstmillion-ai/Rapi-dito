@@ -1,13 +1,32 @@
 const moment = require("moment-timezone");
 const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
 const userModel = require("./models/user.model");
 const rideModel = require("./models/ride.model");
 const captainModel = require("./models/captain.model");
 const frontendLogModel = require("./models/frontend-log.model");
+const blacklistTokenModel = require("./models/blacklistToken.model");
 
 let io;
 // Map to track connected drivers for better management
 const connectedDrivers = new Map();
+
+// Helper function to verify JWT token for socket connections
+async function verifySocketToken(token) {
+  if (!token) return null;
+  
+  try {
+    // Check if token is blacklisted
+    const isBlacklisted = await blacklistTokenModel.findOne({ token });
+    if (isBlacklisted) return null;
+    
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded;
+  } catch {
+    return null;
+  }
+}
 
 // Helper function to calculate distance between two points (Haversine formula)
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -44,8 +63,35 @@ function initializeSocket(server) {
     reconnectionAttempts: 5,
   });
 
+  // Socket authentication middleware
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth.token || socket.handshake.headers.token;
+    
+    if (!token) {
+      // Allow connection but mark as unauthenticated for public events (like logs)
+      socket.authenticated = false;
+      socket.userId = null;
+      socket.userType = null;
+      return next();
+    }
+    
+    const decoded = await verifySocketToken(token);
+    if (decoded) {
+      socket.authenticated = true;
+      socket.userId = decoded.id;
+      socket.userType = decoded.userType;
+      return next();
+    }
+    
+    // Token invalid but allow connection for graceful handling
+    socket.authenticated = false;
+    socket.userId = null;
+    socket.userType = null;
+    next();
+  });
+
   io.on("connection", (socket) => {
-    console.log(`Cliente conectado: ${socket.id}`);
+    console.log(`Cliente conectado: ${socket.id} (authenticated: ${socket.authenticated})`);
 
     if (process.env.ENVIRONMENT === "production") {
       socket.on("log", async (log) => {
@@ -59,7 +105,29 @@ function initializeSocket(server) {
     }
 
     socket.on("join", async (data) => {
-      const { userId, userType } = data;
+      const { userId, userType, token } = data;
+      
+      // Verify token matches the userId being joined
+      if (!socket.authenticated) {
+        // Try to verify with token provided in event
+        if (token) {
+          const decoded = await verifySocketToken(token);
+          if (!decoded || decoded.id !== userId) {
+            return socket.emit("error", { message: "Autenticación requerida" });
+          }
+          socket.authenticated = true;
+          socket.userId = decoded.id;
+          socket.userType = decoded.userType;
+        } else {
+          return socket.emit("error", { message: "Autenticación requerida" });
+        }
+      }
+      
+      // Verify userId matches authenticated user
+      if (socket.userId !== userId) {
+        return socket.emit("error", { message: "Usuario no autorizado" });
+      }
+      
       console.log(userType + " conectado: " + userId);
       
       if (userType === "user") {
@@ -151,6 +219,11 @@ function initializeSocket(server) {
     socket.on("update-location-captain", async (data) => {
       const { userId, location } = data;
 
+      // Verify authentication and userId match
+      if (!socket.authenticated || socket.userId !== userId) {
+        return socket.emit("error", { message: "Usuario no autorizado" });
+      }
+
       if (!location || !location.lat || !location.lng) {
         return socket.emit("error", { message: "Datos de ubicación inválidos" });
       }
@@ -176,6 +249,11 @@ function initializeSocket(server) {
     // Enhanced driver location update with ride tracking
     socket.on("driver:locationUpdate", async (data) => {
       const { driverId, location, rideId } = data;
+      
+      // Verify authentication and driverId match
+      if (!socket.authenticated || socket.userId !== driverId) {
+        return socket.emit("error", { message: "Usuario no autorizado" });
+      }
       
       if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
         return socket.emit("error", { message: "Datos de ubicación inválidos" });

@@ -10,6 +10,9 @@ socket.initializeSocket(server);
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const mongoose = require("mongoose");
 
 const userRoutes = require("./routes/user.routes");
 const captainRoutes = require("./routes/captain.routes");
@@ -51,6 +54,22 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Security headers with helmet
+app.use(helmet());
+
+// Rate limiting for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per window
+  message: { 
+    success: false, 
+    error: "RATE_LIMIT_EXCEEDED", 
+    message: "Demasiados intentos. Por favor espera 15 minutos antes de intentar de nuevo." 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 if (process.env.ENVIRONMENT == "production") {
   keepServerRunning();
 }
@@ -62,6 +81,21 @@ app.get("/", (req, res) => {
 app.get("/reload", (req, res) => {
   res.json("Server Reloaded");
 });
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    timestamp: new Date(),
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+  });
+});
+
+// Apply rate limiting to authentication routes
+app.use("/user/login", authLimiter);
+app.use("/user/register", authLimiter);
+app.use("/captain/login", authLimiter);
+app.use("/captain/register", authLimiter);
 
 app.use("/user", userRoutes);
 app.use("/captain", captainRoutes);
