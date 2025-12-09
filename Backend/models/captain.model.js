@@ -95,6 +95,11 @@ const captainSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // SECURITY: Role-based access control field
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     // Rating statistics
     rating: {
       average: {

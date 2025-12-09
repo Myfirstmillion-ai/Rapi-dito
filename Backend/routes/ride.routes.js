@@ -4,7 +4,11 @@ const { body, query } = require('express-validator');
 const rideController = require('../controllers/ride.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-router.get('/chat-details/:id', rideController.chatDetails)
+// SECURITY: Protected - both users and captains can view chat details
+router.get('/chat-details/:id',
+    authMiddleware.authUserOrCaptain,
+    rideController.chatDetails
+)
 
 router.post('/create',
     authMiddleware.authUser,
@@ -27,9 +31,11 @@ router.post('/confirm',
     rideController.confirmRide
 )
 
-
-router.get('/cancel',
-    query('rideId').isMongoId().withMessage('Invalid ride id'),
+// SECURITY: Protected - only authenticated users can cancel rides
+// Changed from GET to POST to prevent CSRF and follow REST best practices
+router.post('/cancel',
+    authMiddleware.authUser,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
     rideController.cancelRide
 )
 

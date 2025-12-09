@@ -311,7 +311,8 @@ module.exports.cancelRide = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { rideId } = req.query;
+  // SECURITY FIX: Changed from req.query to req.body (endpoint now uses POST)
+  const { rideId } = req.body;
 
   try {
     const ride = await rideModel.findOneAndUpdate(

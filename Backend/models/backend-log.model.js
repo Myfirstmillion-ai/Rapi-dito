@@ -34,6 +34,15 @@ const BackendLogSchema = new mongoose.Schema({
   },
 });
 
+// PERFORMANCE & STORAGE: Add TTL index - automatically delete logs after 30 days
+BackendLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2592000 }); // 30 days in seconds
+
+// PERFORMANCE: Compound index for filtering by method and status
+BackendLogSchema.index({ method: 1, status: 1 });
+
+// PERFORMANCE: Index for querying by timestamp (most recent first)
+BackendLogSchema.index({ timestamp: -1 });
+
 const BackendLog = mongoose.model("BackendLog", BackendLogSchema);
 
 module.exports = BackendLog;
