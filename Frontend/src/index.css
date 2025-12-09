@@ -1,10 +1,107 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 @import './styles/animations.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== PREMIUM TYPOGRAPHY SYSTEM ===== */
+/* Swiss Minimalist Luxury - Inter Global Typography */
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* ===== PREMIUM KEYFRAME ANIMATIONS ===== */
+/* Swiss Minimalist Luxury - Core Motion System */
+
+@keyframes swiss-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes swiss-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes swiss-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Swiss animation utility classes (prefixed to avoid conflicts) */
+.swiss-slide-up {
+  animation: swiss-slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.swiss-fade-in {
+  animation: swiss-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.swiss-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.swiss-scale-in {
+  animation: swiss-scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered animation delays */
+.delay-0 { animation-delay: 0ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Reduced motion safety */
+@media (prefers-reduced-motion: reduce) {
+  .swiss-slide-up,
+  .swiss-fade-in,
+  .swiss-pulse-ring,
+  .swiss-scale-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
 
 /* ===== SWISS MINIMALIST LUXURY - DESIGN SYSTEM ===== */
 /* Process 2 - Phase 1: Global Styles & Atomic Components Foundation */
@@ -268,8 +365,8 @@ body {
 
 /* Base styles with layout fixes */
 * {
-  font-family: "Poppins", serif;
-  font-weight: 500;
+  font-family: "Inter", "Geist", system-ui, -apple-system, sans-serif;
+  font-weight: 400;
   font-style: normal;
   scrollbar-width: none;
   -webkit-tap-highlight-color: transparent;
