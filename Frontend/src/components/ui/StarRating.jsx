@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Star } from "lucide-react";
 import { cn } from "../../utils/cn";
 
@@ -70,4 +71,4 @@ function StarRating({ average = 0, count = 0, size = 16, className, showCount = 
   );
 }
 
-export default StarRating;
+export default memo(StarRating);

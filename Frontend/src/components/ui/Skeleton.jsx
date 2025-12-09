@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "../../utils/cn";
 
 function Skeleton({ className, variant = "default" }) {
@@ -14,4 +15,4 @@ function Skeleton({ className, variant = "default" }) {
   return <div className={cn(baseClasses, variants[variant], className)} />;
 }
 
-export default Skeleton;
+export default memo(Skeleton);

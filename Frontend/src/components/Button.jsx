@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { memo } from "react";
 import PropTypes from "prop-types";
 import Spinner from "./Spinner";
 
@@ -238,4 +239,6 @@ Button.defaultProps = {
   disabled: false,
 };
 
-export default Button;
+// PERFORMANCE: Wrap with React.memo to prevent unnecessary re-renders
+// when props haven't changed
+export default memo(Button);

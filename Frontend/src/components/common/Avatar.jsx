@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { User } from "lucide-react";
 import { cn } from "../../utils/cn";
 
@@ -42,4 +43,4 @@ function Avatar({ src, alt, size = "md", className, fallbackText }) {
   );
 }
 
-export default Avatar;
+export default memo(Avatar);

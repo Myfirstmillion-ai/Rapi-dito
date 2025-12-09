@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "../../utils/cn";
 
 const badgeVariants = {
@@ -23,4 +24,4 @@ function Badge({ children, variant = "default", className }) {
   );
 }
 
-export default Badge;
+export default memo(Badge);

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "../../utils/cn";
 
 /**
@@ -28,4 +29,4 @@ function MessageBadge({ count, className }) {
   );
 }
 
-export default MessageBadge;
+export default memo(MessageBadge);

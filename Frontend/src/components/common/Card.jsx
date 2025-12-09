@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "../../utils/cn";
 
 /**
@@ -45,5 +46,5 @@ function Card({
   );
 }
 
-export default Card;
+export default memo(Card);
 

@@ -1,8 +1,11 @@
+import { memo } from "react";
+
 /**
  * Premium Fintech Skeleton Loader
  * Pulse animation for loading states - Revolut/Uber Pro style
  * Note: Uses Tailwind's animate-pulse for browser compatibility
  * For true shimmer effect, would need custom @keyframes
+ * PERFORMANCE: Memoized to prevent unnecessary re-renders
  */
 function FintechSkeleton({ variant = "stat-card" }) {
   const variants = {
@@ -39,8 +42,9 @@ function FintechSkeleton({ variant = "stat-card" }) {
 
 /**
  * Dashboard Grid Skeleton - Full Bento Grid
+ * PERFORMANCE: Memoized to prevent unnecessary re-renders
  */
-export function DashboardSkeleton() {
+export const DashboardSkeleton = memo(function DashboardSkeleton() {
   return (
     <div className="px-4 pb-8 space-y-5">
       {/* Profile skeleton */}
@@ -60,6 +64,6 @@ export function DashboardSkeleton() {
       <FintechSkeleton variant="vehicle" />
     </div>
   );
-}
+});
 
-export default FintechSkeleton;
+export default memo(FintechSkeleton);

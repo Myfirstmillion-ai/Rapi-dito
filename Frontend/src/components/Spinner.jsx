@@ -1,6 +1,9 @@
+import { memo } from "react";
+
 /**
  * Premium Spinner Component - "Pulsing Radar" Effect
  * A sleek, branded loading indicator with emerald gradient
+ * PERFORMANCE: Memoized to prevent unnecessary re-renders
  */
 function Spinner({ scale = 1, size = "md", variant = "default" }) {
   const sizes = {
@@ -67,4 +70,4 @@ function Spinner({ scale = 1, size = "md", variant = "default" }) {
   );
 }
 
-export default Spinner;
+export default memo(Spinner);
