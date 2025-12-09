@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 import Spinner from "./Spinner";
 
 /**
@@ -208,5 +209,33 @@ function Button({
     </button>
   );
 }
+
+// PropTypes for type checking and documentation
+Button.propTypes = {
+  path: PropTypes.string,
+  title: PropTypes.string,
+  children: PropTypes.node,
+  icon: PropTypes.node,
+  iconRight: PropTypes.node,
+  type: PropTypes.oneOf(["button", "submit", "reset", "link"]),
+  variant: PropTypes.oneOf(["primary", "secondary", "danger", "ghost"]),
+  size: PropTypes.oneOf(["sm", "md", "lg"]),
+  fullWidth: PropTypes.bool,
+  classes: PropTypes.string, // Deprecated, use className
+  className: PropTypes.string,
+  fun: PropTypes.func, // Deprecated, use onClick
+  onClick: PropTypes.func,
+  loading: PropTypes.bool,
+  loadingMessage: PropTypes.string,
+  disabled: PropTypes.bool,
+};
+
+Button.defaultProps = {
+  variant: "primary",
+  size: "md",
+  fullWidth: true,
+  loading: false,
+  disabled: false,
+};
 
 export default Button;

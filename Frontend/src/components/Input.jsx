@@ -1,4 +1,5 @@
 import { useState, useId } from "react";
+import PropTypes from "prop-types";
 import { Eye, EyeOff, Search, X, AlertCircle, Check } from "lucide-react";
 
 /**
@@ -324,5 +325,41 @@ function Input({
     </div>
   );
 }
+
+// PropTypes for type checking and documentation
+Input.propTypes = {
+  label: PropTypes.string,
+  type: PropTypes.oneOf(["text", "email", "password", "tel", "number", "search", "select"]),
+  name: PropTypes.string,
+  placeholder: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  register: PropTypes.func, // React Hook Form register
+  error: PropTypes.shape({
+    message: PropTypes.string,
+  }),
+  options: PropTypes.arrayOf(PropTypes.string), // For select type
+  disabled: PropTypes.bool,
+  fullWidth: PropTypes.bool,
+  icon: PropTypes.node,
+  iconRight: PropTypes.node,
+  helperText: PropTypes.string,
+  floatingLabel: PropTypes.bool,
+  required: PropTypes.bool,
+  valid: PropTypes.bool,
+  className: PropTypes.string,
+};
+
+Input.defaultProps = {
+  type: "text",
+  fullWidth: true,
+  floatingLabel: false,
+  required: false,
+  valid: false,
+  disabled: false,
+};
 
 export default Input;

@@ -72,6 +72,15 @@ app.use("/ratings", ratingRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/admin", adminRoutes);
 
+// ARCHITECTURE: Standardized error handling (must be after all routes)
+const { errorHandler, notFoundHandler } = require("./middlewares/errorHandler.middleware");
+
+// Handle 404 - Route not found
+app.use(notFoundHandler);
+
+// Global error handler - must be last
+app.use(errorHandler);
+
 server.listen(PORT, () => {
   console.log("Server is listening on port", PORT);
 });
