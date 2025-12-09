@@ -70,6 +70,9 @@ function Input({
   const hasValue = value !== undefined ? !!value : !!localValue;
   const isFloatingActive = floatingLabel && (isFocused || hasValue);
   
+  // Determine if input is controlled
+  const isControlled = value !== undefined;
+  
   // Handle password visibility toggle
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -80,7 +83,10 @@ function Input({
     if (onChange) {
       onChange({ target: { name, value: "" } });
     }
-    setLocalValue("");
+    // Only update local state if uncontrolled
+    if (!isControlled) {
+      setLocalValue("");
+    }
   };
   
   // Determine if we need to add icon padding
@@ -108,9 +114,12 @@ function Input({
     ${className || ""}
   `.trim().replace(/\s+/g, ' ');
   
-  // Handle internal value changes for uncontrolled inputs
+  // Handle internal value changes
   const handleChange = (e) => {
-    setLocalValue(e.target.value);
+    // Only update local state if uncontrolled
+    if (!isControlled) {
+      setLocalValue(e.target.value);
+    }
     if (onChange) {
       onChange(e);
     }
