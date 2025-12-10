@@ -1,26 +1,79 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, GripHorizontal, Check, Clock, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Clock, Users, Zap, ChevronRight } from "lucide-react";
 
+/**
+ * 🏆 TESLA MATTE PREMIUM - SelectVehicle Component
+ * 
+ * Design System: $100K Premium UI
+ * - Dynamic Island vehicle cards (iOS-inspired)
+ * - Matte Black surfaces (NO transparency)
+ * - Bento Grid vehicle comparison
+ * - Monochromatic palette + emerald accent
+ * - Physics-based card selection
+ * - Typography-driven hierarchy
+ * 
+ * Interaction Flow:
+ * 1. Cards float as islands (16px from edges)
+ * 2. Selected card expands with spring physics
+ * 3. Haptic feedback on tap
+ * 4. Smooth transition to next screen
+ */
+
+// Tesla Matte Color System
+const TESLA_COLORS = {
+  bg: '#000000',
+  surface_1: '#0A0A0A',
+  surface_2: '#1C1C1E',
+  surface_3: '#2C2C2E',
+  text_primary: '#FFFFFF',
+  text_secondary: '#8E8E93',
+  text_tertiary: '#636366',
+  accent: '#10B981',
+  divider: '#38383A',
+};
+
+// Physics Spring Configuration
+const SPRING_CONFIG = {
+  type: "spring",
+  stiffness: 400,
+  damping: 30,
+  mass: 0.8,
+};
+
+// Haptic feedback
+const triggerHaptic = (intensity = 'light') => {
+  if (navigator.vibrate) {
+    const patterns = {
+      light: [5],
+      medium: [10],
+      heavy: [15],
+    };
+    navigator.vibrate(patterns[intensity]);
+  }
+};
+
+// Vehicle data with matte styling
 const vehicles = [
   {
     id: 1,
     name: "Carro",
-    description: "Viajes cómodos y seguros",
+    description: "Cómodo y seguro",
     type: "car",
     image: "/Uber-PNG-Photos.png",
-    price: 0,
     capacity: "4 personas",
     eta: "3-5 min",
+    icon: "🚗",
   },
   {
     id: 2,
     name: "Moto",
-    description: "Viajes rápidos y económicos",
+    description: "Rápido y económico",
     type: "bike",
     image: "/bike.webp",
-    price: 0,
     capacity: "1 persona",
     eta: "2-4 min",
+    icon: "🏍️",
   },
 ];
 
@@ -32,13 +85,13 @@ function SelectVehicle({
   showNextPanel,
   fare,
 }) {
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [hoveredVehicle, setHoveredVehicle] = useState(null);
   const [currentlySelected, setCurrentlySelected] = useState(null);
+  const [hoveredVehicle, setHoveredVehicle] = useState(null);
 
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
-  };
+  // Check for reduced motion
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
 
   // Reset selection when panel closes
   useEffect(() => {
@@ -47,189 +100,290 @@ function SelectVehicle({
     }
   }, [showPanel]);
 
-  return (
-    <>
-      <div
-        className={`${showPanel ? "bottom-0" : "-bottom-full"} ${
-          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
-      >
-        {/* Premium Drag Handle */}
-        <div 
-          onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
-        >
-          <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
-            {isMinimized ? (
-              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            ) : (
-              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            )}
-          </div>
-        </div>
+  // Format currency
+  const formatPrice = (price) => {
+    if (!price) return '$0';
+    return `$${(price / 1000).toFixed(0)}K`;
+  };
 
-        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
+  const formatFullPrice = (price) => {
+    if (!price) return 'COP$ 0';
+    return `COP$ ${price.toLocaleString('es-CO')}`;
+  };
 
-        {isMinimized ? (
-          /* Minimized View - Premium */
-          <div className="text-center">
-            <h2 className="text-base font-bold text-white">
-              Selecciona tu vehículo
-            </h2>
-            <p className="text-sm text-slate-400">Toca para ver opciones</p>
-          </div>
-        ) : (
-          /* Maximized View - Premium */
-          <>
-            <div className="mb-5">
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ textWrap: 'balance' }}>
-                Elige tu viaje
-              </h2>
-              <p className="text-sm text-white/50" style={{ textWrap: 'balance' }}>
-                Selecciona el vehículo que prefieras
-              </p>
-            </div>
-            <div className="space-y-3 pb-2">
-              {vehicles.map((vehicle) => (
-                <Vehicle
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  fare={fare}
-                  selectedVehicle={selectedVehicle}
-                  setShowPanel={setShowPanel}
-                  showNextPanel={showNextPanel}
-                  isHovered={hoveredVehicle === vehicle.id}
-                  onHover={() => setHoveredVehicle(vehicle.id)}
-                  onLeave={() => setHoveredVehicle(null)}
-                  currentlySelected={currentlySelected}
-                  setCurrentlySelected={setCurrentlySelected}
-                />
-              ))}
-            </div>
-          </>
-        )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-const Vehicle = ({
-  vehicle,
-  selectedVehicle,
-  fare,
-  setShowPanel,
-  showNextPanel,
-  isHovered,
-  onHover,
-  onLeave,
-  currentlySelected,
-  setCurrentlySelected,
-}) => {
-  const isSelected = currentlySelected === vehicle.id;
-
-  const handleSelect = () => {
+  const handleSelect = (vehicle) => {
     setCurrentlySelected(vehicle.id);
+    triggerHaptic('medium');
+    
     setTimeout(() => {
       selectedVehicle(vehicle.type);
       setShowPanel(false);
       showNextPanel(true);
-    }, 200);
+      triggerHaptic('heavy');
+    }, 300);
   };
 
   return (
-    <div
-      onClick={handleSelect}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      className={`
-        cursor-pointer group relative flex items-center rounded-2xl overflow-hidden
-        transition-all duration-300 ease-out
-        active:scale-[0.97]
-        ${isSelected
-          ? "bg-gradient-to-r from-emerald-500/90 to-cyan-500/90 ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900 shadow-[0_0_30px_rgba(52,211,153,0.4)] scale-[1.02]"
-          : isHovered
-          ? "bg-gradient-to-r from-white/15 to-white/10 border border-emerald-400/50 backdrop-blur-xl shadow-[0_8px_24px_rgba(52,211,153,0.15)]"
-          : "bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 shadow-lg"
-        }
-      `}
-    >
-      {/* Vehicle Image Section - Floating effect */}
-      <div className="relative p-3 flex items-center justify-center w-28 sm:w-32">
-        <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-l-2xl ${isSelected ? 'from-white/10' : ''}`} />
-        <img
-          src={vehicle.image}
-          className={`w-24 sm:w-28 h-auto relative z-10 drop-shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            isHovered || isSelected ? "scale-110 -translate-y-1" : "scale-100"
-          }`}
-          alt={vehicle.name}
-        />
-        {isSelected && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 animate-scale-in">
-              <Check size={22} className="text-emerald-600" strokeWidth={3} />
-            </div>
-          </div>
-        )}
-      </div>
+    <AnimatePresence>
+      {showPanel && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50"
+        >
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowPanel(false)}
+            className="absolute inset-0"
+            style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+          />
 
-      {/* Vehicle Info Section - Fixed text wrapping */}
-      <div className="flex-1 pr-3 py-4 min-w-0">
-        <div className="mb-2">
-          <h1 className="text-base sm:text-lg font-bold text-white transition-colors whitespace-nowrap leading-tight">
+          {/* Floating Island Container */}
+          <div 
+            className="absolute bottom-0 left-0 right-0"
+            style={{ 
+              padding: '16px',
+              paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+            }}
+          >
+            <motion.div
+              initial={prefersReducedMotion ? {} : { y: '100%', scale: 0.95 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={prefersReducedMotion ? {} : { y: '100%', scale: 0.95 }}
+              transition={SPRING_CONFIG}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(e, { offset, velocity }) => {
+                if (offset.y > 150 || velocity.y > 500) {
+                  setShowPanel(false);
+                  triggerHaptic('light');
+                }
+              }}
+              className="overflow-hidden"
+              style={{
+                background: TESLA_COLORS.surface_1,
+                borderRadius: '32px',
+                boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              {/* Drag Handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <motion.div 
+                  whileHover={{ scale: 1.2 }}
+                  className="w-12 h-1.5 rounded-full"
+                  style={{ background: TESLA_COLORS.divider }}
+                />
+              </div>
+
+              {/* Content */}
+              <div className="px-4 pb-4">
+                {/* Header - Typography Hierarchy */}
+                <div className="mb-6 text-center">
+                  <h2 className="text-2xl font-black mb-1" style={{ color: TESLA_COLORS.text_primary }}>
+                    Elige tu viaje
+                  </h2>
+                  <p className="text-sm" style={{ color: TESLA_COLORS.text_secondary }}>
+                    Selecciona el vehículo que prefieras
+                  </p>
+                </div>
+
+                {/* Vehicle Cards - Dynamic Islands */}
+                <div className="space-y-3 mb-4">
+                  {vehicles.map((vehicle, index) => (
+                    <VehicleCard
+                      key={vehicle.id}
+                      vehicle={vehicle}
+                      fare={fare}
+                      isSelected={currentlySelected === vehicle.id}
+                      isHovered={hoveredVehicle === vehicle.id}
+                      onSelect={() => handleSelect(vehicle)}
+                      onHoverStart={() => setHoveredVehicle(vehicle.id)}
+                      onHoverEnd={() => setHoveredVehicle(null)}
+                      formatPrice={formatPrice}
+                      formatFullPrice={formatFullPrice}
+                      prefersReducedMotion={prefersReducedMotion}
+                      delay={index * 0.1}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/**
+ * VehicleCard - Dynamic Island Component
+ * Matte card with physics-based selection animation
+ */
+function VehicleCard({
+  vehicle,
+  fare,
+  isSelected,
+  isHovered,
+  onSelect,
+  onHoverStart,
+  onHoverEnd,
+  formatPrice,
+  formatFullPrice,
+  prefersReducedMotion,
+  delay,
+}) {
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...SPRING_CONFIG, delay }}
+      whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+      onHoverStart={onHoverStart}
+      onHoverEnd={onHoverEnd}
+      onTapStart={() => triggerHaptic('medium')}
+      onClick={onSelect}
+      className="relative cursor-pointer rounded-3xl overflow-hidden"
+      style={{
+        background: isSelected 
+          ? `linear-gradient(135deg, ${TESLA_COLORS.accent}15, ${TESLA_COLORS.accent}08)` 
+          : TESLA_COLORS.surface_2,
+        border: isSelected 
+          ? `2px solid ${TESLA_COLORS.accent}` 
+          : `1px solid ${TESLA_COLORS.divider}`,
+        boxShadow: isSelected 
+          ? `0 8px 24px ${TESLA_COLORS.accent}40, 0 0 0 1px ${TESLA_COLORS.accent}` 
+          : '0 4px 12px rgba(0, 0, 0, 0.4)',
+      }}
+    >
+      {/* Selection Indicator - Floating Check */}
+      <AnimatePresence>
+        {isSelected && (
+          <motion.div
+            initial={prefersReducedMotion ? {} : { scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={prefersReducedMotion ? {} : { scale: 0, rotate: 180 }}
+            transition={SPRING_CONFIG}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: TESLA_COLORS.accent,
+              boxShadow: `0 4px 12px ${TESLA_COLORS.accent}60`,
+            }}
+          >
+            <Check size={20} strokeWidth={3} style={{ color: TESLA_COLORS.text_primary }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Content Grid */}
+      <div className="p-4 flex items-center gap-4">
+        {/* Vehicle Image/Icon - Left */}
+        <div className="flex-shrink-0 relative">
+          <motion.div
+            animate={isSelected || isHovered ? { scale: 1.1, rotate: -5 } : { scale: 1, rotate: 0 }}
+            transition={SPRING_CONFIG}
+            className="w-20 h-20 rounded-2xl flex items-center justify-center"
+            style={{ background: TESLA_COLORS.surface_3 }}
+          >
+            {/* Vehicle emoji icon */}
+            <span className="text-4xl">{vehicle.icon}</span>
+          </motion.div>
+        </div>
+
+        {/* Vehicle Info - Center */}
+        <div className="flex-1 min-w-0">
+          {/* Name */}
+          <h3 
+            className="text-lg font-bold mb-0.5" 
+            style={{ 
+              color: isSelected ? TESLA_COLORS.accent : TESLA_COLORS.text_primary 
+            }}
+          >
             {vehicle.name}
-          </h1>
-          <p className={`text-xs sm:text-sm transition-colors leading-relaxed ${
-            isSelected ? "text-emerald-100" : "text-white/60"
-          }`} style={{ textWrap: 'balance' }}>
+          </h3>
+
+          {/* Description */}
+          <p className="text-sm mb-2" style={{ color: TESLA_COLORS.text_secondary }}>
             {vehicle.description}
           </p>
+
+          {/* Bento Grid - Capacity + ETA */}
+          <div className="flex items-center gap-2">
+            {/* Capacity */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: TESLA_COLORS.surface_3 }}>
+              <Users size={12} style={{ color: TESLA_COLORS.text_tertiary }} />
+              <span className="text-xs font-medium" style={{ color: TESLA_COLORS.text_secondary }}>
+                {vehicle.capacity}
+              </span>
+            </div>
+
+            {/* ETA */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: TESLA_COLORS.surface_3 }}>
+              <Clock size={12} style={{ color: TESLA_COLORS.text_tertiary }} />
+              <span className="text-xs font-medium" style={{ color: TESLA_COLORS.text_secondary }}>
+                {vehicle.eta}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Vehicle Details - Pill badges */}
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
-            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
-          }`}>
-            <Clock size={12} />
-            <span className="whitespace-nowrap">{vehicle.eta}</span>
-          </div>
-          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
-            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
-          }`}>
-            <Users size={12} />
-            <span className="whitespace-nowrap">{vehicle.capacity}</span>
-          </div>
+        {/* Price - Right (Prominent Typography) */}
+        <div className="flex-shrink-0 text-right">
+          {/* Large Price */}
+          <motion.div
+            animate={isSelected ? { scale: [1, 1.1, 1] } : {}}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 
+              className="text-3xl font-black leading-none mb-1" 
+              style={{ 
+                color: isSelected ? TESLA_COLORS.accent : TESLA_COLORS.text_primary 
+              }}
+            >
+              {formatPrice(fare?.[vehicle.type])}
+            </h2>
+          </motion.div>
+
+          {/* Small Full Price */}
+          <p className="text-xs" style={{ color: TESLA_COLORS.text_tertiary }}>
+            {formatFullPrice(fare?.[vehicle.type])}
+          </p>
         </div>
       </div>
 
-      {/* Price Section - Enhanced hierarchy */}
-      <div className="pr-3 sm:pr-4 py-4 text-right flex-shrink-0">
-        <p className={`text-[10px] sm:text-xs font-medium mb-0.5 ${
-          isSelected ? "text-white/80" : "text-white/40"
-        }`}>
-          Tarifa
-        </p>
-        <h3 className={`text-lg sm:text-xl font-bold transition-colors whitespace-nowrap ${
-          isSelected ? "text-white" : "text-emerald-400"
-        }`}>
-          ${Math.floor(fare[vehicle.type] / 1000)}K
-        </h3>
-        <p className={`text-[10px] sm:text-xs mt-0.5 whitespace-nowrap ${
-          isSelected ? "text-white/70" : "text-white/40"
-        }`}>
-          COP$ {fare[vehicle.type]?.toLocaleString('es-CO') || 0}
-        </p>
-      </div>
-
-      {/* Glow accent line at bottom when selected */}
+      {/* Accent Glow Line at Bottom (when selected) */}
       {isSelected && (
-        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400" />
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={SPRING_CONFIG}
+          className="absolute bottom-0 left-0 right-0 h-1"
+          style={{
+            background: `linear-gradient(90deg, ${TESLA_COLORS.accent}, ${TESLA_COLORS.accent}80, ${TESLA_COLORS.accent})`,
+          }}
+        />
       )}
-    </div>
+
+      {/* Hover Indicator - Subtle Arrow */}
+      <AnimatePresence>
+        {isHovered && !isSelected && (
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            className="absolute right-4 top-1/2 -translate-y-1/2"
+          >
+            <ChevronRight size={24} style={{ color: TESLA_COLORS.text_tertiary }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
-};
+}
 
 export default SelectVehicle;
