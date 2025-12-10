@@ -1,12 +1,7 @@
-import { Alert } from "./Alert";
-import Button from "./Button";
-import Heading from "./Heading";
-import Input from "./Input";
 import LocationSuggestions from "./LocationSuggestions";
 import NewRide from "./NewRide";
 import RideDetails from "./RideDetails";
 import SelectVehicle from "./SelectVehicle";
-import Spinner from "./Spinner";
 import Sidebar from "./Sidebar";
 import VerifyEmail from "./VerifyEmail";
 import ErrorBoundary from "./ErrorBoundary";
@@ -24,17 +19,16 @@ import CommandDock from "./CommandDock";
 import RideRequestCard from "./RideRequestCard";
 import ActiveRideHUD, { RIDE_STATUS } from "./ActiveRideHUD";
 
+// Phase 2 - Atomic Components (New Design System)
+// Export all atomic components
+export * from "./atoms";
+
 export {
-  Alert,
-  Button,
-  Heading,
-  Input,
   LocationSuggestions,
   NewRide,
   RideDetails,
   SelectVehicle,
   Sidebar,
-  Spinner,
   VerifyEmail,
   ErrorBoundary,
   // Phase 2 Components

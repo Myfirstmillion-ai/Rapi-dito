@@ -1,13 +1,12 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Console from "../utils/console";
-import Heading from "./Heading";
-import Button from "./Button";
+// Import from new atomic components
+import { Button, Text, Alert as AtomicAlert } from "./atoms";
 import useCooldownTimer from "../hooks/useCooldownTimer";
-import { Alert } from "./Alert";
 import { useAlert } from "../hooks/useAlert";
 
 /**
@@ -75,13 +74,18 @@ function VerifyEmail({ user, role }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50/30 to-gray-50 dark:from-gray-950 dark:via-emerald-950/30 dark:to-gray-950 flex flex-col">
-      <Alert
-        heading={alert.heading}
-        text={alert.text}
-        isVisible={alert.isVisible}
-        onClose={hideAlert}
-        type={alert.type}
-      />
+      {/* Alert notification */}
+      {alert.isVisible && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+          <AtomicAlert
+            status={alert.type === 'success' ? 'success' : 'error'}
+            title={alert.heading}
+            message={alert.text}
+            onClose={hideAlert}
+            dismissible={true}
+          />
+        </div>
+      )}
 
       {/* Header with Back Button */}
       <motion.div
@@ -163,11 +167,14 @@ function VerifyEmail({ user, role }) {
                 transition={{ delay: 0.4, duration: 0.3 }}
                 className="mb-6"
               >
-                <Heading 
-                  title="Verifica tu Email" 
-                  level="h2"
-                  className="mb-0"
-                />
+                <Text 
+                  as="h2"
+                  size="xl"
+                  weight="bold"
+                  className="mb-0 text-gray-900 dark:text-white"
+                >
+                  Verifica tu Email
+                </Text>
               </motion.div>
 
               {/* Email Badge */}
@@ -201,14 +208,16 @@ function VerifyEmail({ user, role }) {
                 transition={{ delay: 0.7, duration: 0.3 }}
               >
                 <Button
-                  title={getButtonTitle()}
-                  fun={sendVerificationEmail}
+                  onClick={sendVerificationEmail}
                   loading={loading}
-                  loadingMessage="Enviando..."
+                  loadingText="Enviando..."
                   disabled={loading || isActive}
                   variant="primary"
                   icon={loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                />
+                  fullWidth={true}
+                >
+                  {getButtonTitle()}
+                </Button>
               </motion.div>
 
               {/* Cooldown Info */}
