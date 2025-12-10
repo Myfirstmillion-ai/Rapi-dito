@@ -1,274 +1,369 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   HelpCircle,
-  Search,
-  Phone,
-  Mail,
-  MessageCircle,
   ChevronDown,
-  ChevronUp,
+  MessageCircle,
+  Mail,
+  Phone,
+  Shield,
   MapPin,
   CreditCard,
-  Shield,
+  User,
   AlertCircle,
-  Clock,
-  Users,
-  Headphones,
-  MessagesSquare,
-} from 'lucide-react';
+  ExternalLink,
+} from "lucide-react";
 
 function Help() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const categories = [
+    { id: "all", label: "Todas", icon: HelpCircle },
+    { id: "account", label: "Cuenta", icon: User },
+    { id: "rides", label: "Viajes", icon: MapPin },
+    { id: "payment", label: "Pagos", icon: CreditCard },
+    { id: "safety", label: "Seguridad", icon: Shield },
+  ];
 
   const faqs = [
     {
-      id: 1,
-      category: 'Viajes',
-      question: '¿Cómo solicito un viaje?',
-      answer: 'Abre la app, ingresa tu destino, selecciona el tipo de vehículo que prefieres (carro o moto) y confirma tu solicitud. Un conductor cercano aceptará tu viaje en segundos.',
-      icon: <MapPin size={20} className="text-emerald-500" />,
+      category: "account",
+      question: "¿Cómo creo una cuenta?",
+      answer:
+        "Para crear una cuenta, descarga la aplicación Rapi-dito y selecciona 'Registrarse'. Ingresa tu nombre completo, correo electrónico, número de teléfono y crea una contraseña segura. Recibirás un código de verificación por correo electrónico para activar tu cuenta.",
     },
     {
-      id: 2,
-      category: 'Pagos',
-      question: '¿Qué métodos de pago aceptan?',
-      answer: 'Aceptamos pagos en efectivo y tarjetas de crédito/débito. Próximamente integraremos billeteras digitales para mayor comodidad.',
-      icon: <CreditCard size={20} className="text-blue-500" />,
+      category: "account",
+      question: "¿Cómo cambio mi contraseña?",
+      answer:
+        "Ve a 'Perfil' > 'Configuración' > 'Seguridad' > 'Cambiar contraseña'. Ingresa tu contraseña actual y luego tu nueva contraseña dos veces para confirmar. Si olvidaste tu contraseña, usa la opción 'Olvidé mi contraseña' en la pantalla de inicio de sesión.",
     },
     {
-      id: 3,
-      category: 'Seguridad',
-      question: '¿Cómo garantizan mi seguridad?',
-      answer: 'Todos nuestros conductores pasan por verificación de antecedentes. Compartimos los detalles del viaje en tiempo real y contamos con soporte 24/7.',
-      icon: <Shield size={20} className="text-purple-500" />,
+      category: "account",
+      question: "¿Puedo tener múltiples cuentas?",
+      answer:
+        "Cada usuario debe tener solo una cuenta asociada a su número de teléfono y correo electrónico. Tener múltiples cuentas puede resultar en la suspensión de todas las cuentas relacionadas.",
     },
     {
-      id: 4,
-      category: 'Cancelaciones',
-      question: '¿Puedo cancelar un viaje?',
-      answer: 'Sí, puedes cancelar antes de que el conductor llegue. Ten en cuenta que pueden aplicarse cargos por cancelación dependiendo del tiempo transcurrido.',
-      icon: <AlertCircle size={20} className="text-red-500" />,
+      category: "rides",
+      question: "¿Cómo solicito un viaje?",
+      answer:
+        "Abre la app, ingresa tu destino en el buscador, confirma tu ubicación de origen (o ajústala manualmente), selecciona el tipo de vehículo (carro o moto) y presiona 'Solicitar viaje'. El sistema buscará el conductor más cercano disponible.",
     },
     {
-      id: 5,
-      category: 'Horarios',
-      question: '¿Están disponibles las 24 horas?',
-      answer: 'Sí, Rapidito opera las 24 horas del día, los 7 días de la semana para brindarte servicio cuando lo necesites.',
-      icon: <Clock size={20} className="text-cyan-500" />,
+      category: "rides",
+      question: "¿Puedo cancelar un viaje?",
+      answer:
+        "Sí, puedes cancelar un viaje antes de que el conductor llegue. Sin embargo, si cancelas después de que el conductor haya aceptado y esté en camino, puede aplicarse una tarifa de cancelación dependiendo del tiempo transcurrido.",
     },
     {
-      id: 6,
-      category: 'Conductores',
-      question: '¿Cómo puedo ser conductor de Rapidito?',
-      answer: 'Visita nuestra página de Carreras, completa el formulario de registro como conductor, envía tus documentos y tu vehículo. Nuestro equipo revisará tu solicitud en 24-48 horas.',
-      icon: <Users size={20} className="text-orange-500" />,
+      category: "rides",
+      question: "¿Cómo sé quién es mi conductor?",
+      answer:
+        "Una vez que un conductor acepte tu solicitud, verás su nombre, foto de perfil, calificación, tipo de vehículo, marca, modelo, color y placa. También podrás ver su ubicación en tiempo real en el mapa mientras se dirige hacia ti.",
+    },
+    {
+      category: "rides",
+      question: "¿Qué hago si olvido algo en el vehículo?",
+      answer:
+        "Ve a tu historial de viajes, selecciona el viaje correspondiente y usa la opción 'Reportar objeto perdido'. El sistema te conectará con el conductor o nuestro equipo de soporte para ayudarte a recuperar tu pertenencia.",
+    },
+    {
+      category: "payment",
+      question: "¿Qué métodos de pago aceptan?",
+      answer:
+        "Aceptamos efectivo, tarjetas de crédito y débito (Visa, Mastercard), y métodos de pago digital como PSE. Puedes agregar y administrar tus métodos de pago en la sección 'Pagos' de tu perfil.",
+    },
+    {
+      category: "payment",
+      question: "¿Cómo funcionan las tarifas?",
+      answer:
+        "Las tarifas se calculan en base a la distancia del viaje, tiempo estimado, demanda actual y tipo de vehículo seleccionado. Verás una estimación de la tarifa antes de confirmar tu solicitud. La tarifa final puede variar ligeramente si cambias la ruta durante el viaje.",
+    },
+    {
+      category: "payment",
+      question: "¿Puedo obtener un recibo de mi viaje?",
+      answer:
+        "Sí, después de cada viaje recibirás un recibo digital por correo electrónico con todos los detalles: fecha, hora, origen, destino, distancia recorrida y monto cobrado. También puedes acceder a todos tus recibos desde el historial de viajes.",
+    },
+    {
+      category: "safety",
+      question: "¿Cómo garantizan mi seguridad?",
+      answer:
+        "Todos nuestros conductores pasan por verificación de antecedentes, capacitación de seguridad y sus vehículos son inspeccionados regularmente. Puedes compartir tu viaje en tiempo real con contactos de confianza, y contamos con un botón de emergencia integrado en la app.",
+    },
+    {
+      category: "safety",
+      question: "¿Qué es el botón de emergencia?",
+      answer:
+        "El botón de emergencia te conecta directamente con nuestro equipo de seguridad y las autoridades locales. Al activarlo, tu ubicación en tiempo real se comparte automáticamente. Úsalo solo en situaciones de emergencia real.",
+    },
+    {
+      category: "safety",
+      question: "¿Puedo compartir mi viaje con alguien?",
+      answer:
+        "Sí, antes o durante el viaje puedes compartir tu ubicación en tiempo real con hasta 5 contactos de confianza. Ellos recibirán un enlace para seguir tu viaje en el mapa hasta que llegues a tu destino.",
     },
   ];
 
-  const contactMethods = [
-    {
-      id: 1,
-      title: 'Llámanos',
-      description: '+58 276 123 4567',
-      icon: <Phone size={24} className="text-white" />,
-      gradient: 'from-green-500 to-emerald-500',
-      action: () => window.location.href = 'tel:+582761234567',
-    },
-    {
-      id: 2,
-      title: 'Envía un correo',
-      description: 'ayuda@rapidito.com',
-      icon: <Mail size={24} className="text-white" />,
-      gradient: 'from-blue-500 to-cyan-500',
-      action: () => window.location.href = 'mailto:ayuda@rapidito.com',
-    },
-    {
-      id: 3,
-      title: 'Chat en vivo',
-      description: 'Disponible 24/7',
-      icon: <MessageCircle size={24} className="text-white" />,
-      gradient: 'from-purple-500 to-pink-500',
-      action: () => alert('Chat en vivo próximamente'),
-    },
-  ];
+  const filteredFaqs =
+    selectedCategory === "all"
+      ? faqs
+      : faqs.filter((faq) => faq.category === selectedCategory);
 
-  const filteredFaqs = faqs.filter((faq) =>
-    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const toggleFaq = (index) => {
+    setExpandedFaq(expandedFaq === index ? null : index);
+  };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto overflow-x-hidden pb-safe">
-      {/* Animated Background Grid */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgb(16, 185, 129) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }} />
-      </div>
-
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-white/5 backdrop-blur-xl border-b border-white/10">
-        <div className="px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
+    <div className="min-h-screen bg-white dark:bg-black">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-20 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800"
+      >
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all active:scale-95 backdrop-blur-lg"
+              className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center"
             >
-              <ArrowLeft strokeWidth={2.5} size={24} className="text-white" />
+              <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
             </button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                Centro de Ayuda
-              </h1>
-              <p className="text-sm text-emerald-200/80">¿En qué podemos ayudarte?</p>
-            </div>
-            <div className="p-3 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full">
-              <Headphones size={24} className="text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <HelpCircle size={20} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Centro de ayuda
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Estamos aquí para ayudarte
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-300"
-              size={20}
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar ayuda..."
-              className="w-full pl-12 pr-4 py-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl outline-none focus:border-emerald-500 focus:bg-white/15 transition-all text-white placeholder:text-emerald-200/50"
-            />
+          {/* Category Pills */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center gap-2 px-4 h-10 rounded-2xl whitespace-nowrap font-medium text-sm transition-all flex-shrink-0 ${
+                    selectedCategory === category.id
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+                      : "bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
+                  }`}
+                >
+                  <Icon size={16} />
+                  {category.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="relative z-10 px-4 pb-20 pt-6">
-        {/* Contact Methods Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 gap-3 mb-8"
-        >
-          <h2 className="text-lg font-bold text-white mb-2">Contacto Directo</h2>
-          {contactMethods.map((method, index) => (
-            <motion.button
-              key={method.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              onClick={method.action}
-              className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl hover:bg-white/20 hover:scale-[1.02] transition-all active:scale-95"
-            >
-              <div className={`p-3 bg-gradient-to-br ${method.gradient} rounded-xl shadow-lg`}>
-                {method.icon}
+      <div className="px-6 py-6">
+        {/* Contact Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <motion.a
+            href="mailto:support@rapidito.com"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800 rounded-3xl p-6 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center">
+                <Mail size={24} className="text-white" />
               </div>
-              <div className="flex-1 text-left">
-                <h3 className="font-semibold text-white">{method.title}</h3>
-                <p className="text-sm text-emerald-200/80">{method.description}</p>
+              <ExternalLink
+                size={16}
+                className="text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              />
+            </div>
+            <h3 className="font-bold text-blue-700 dark:text-blue-300 mb-1">
+              Email
+            </h3>
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              support@rapidito.com
+            </p>
+          </motion.a>
+
+          <motion.a
+            href="tel:+573001234567"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="group bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border border-emerald-200 dark:border-emerald-800 rounded-3xl p-6 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center">
+                <Phone size={24} className="text-white" />
               </div>
-              <ChevronDown size={20} className="text-white/50 -rotate-90" />
-            </motion.button>
-          ))}
-        </motion.div>
+              <ExternalLink
+                size={16}
+                className="text-emerald-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              />
+            </div>
+            <h3 className="font-bold text-emerald-700 dark:text-emerald-300 mb-1">
+              Teléfono
+            </h3>
+            <p className="text-sm text-emerald-600 dark:text-emerald-400">
+              +57 300 123 4567
+            </p>
+          </motion.a>
+
+          <motion.button
+            onClick={() => navigate("/chat-support")}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="group bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800 rounded-3xl p-6 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-12 h-12 bg-purple-500 rounded-2xl flex items-center justify-center">
+                <MessageCircle size={24} className="text-white" />
+              </div>
+              <ExternalLink
+                size={16}
+                className="text-purple-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              />
+            </div>
+            <h3 className="font-bold text-purple-700 dark:text-purple-300 mb-1">
+              Chat en vivo
+            </h3>
+            <p className="text-sm text-purple-600 dark:text-purple-400">
+              Disponible 24/7
+            </p>
+          </motion.button>
+        </div>
 
         {/* FAQs Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <MessagesSquare size={24} className="text-emerald-400" />
-            <h2 className="text-lg font-bold text-white">Preguntas Frecuentes</h2>
-          </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            Preguntas frecuentes
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {filteredFaqs.length}{" "}
+            {filteredFaqs.length === 1 ? "pregunta" : "preguntas"}
+          </p>
+        </div>
 
-          {filteredFaqs.length === 0 ? (
-            <div className="text-center py-12 bg-white/5 backdrop-blur-lg rounded-xl border border-white/10">
-              <HelpCircle size={48} className="text-white/30 mx-auto mb-3" />
-              <p className="text-white/70">No se encontraron resultados</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredFaqs.map((faq, index) => (
-                <motion.div
-                  key={faq.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl overflow-hidden hover:bg-white/15 transition-all"
-                >
-                  <button
-                    onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                    className="w-full flex items-start gap-3 p-4 text-left"
-                  >
-                    <div className="p-2 bg-white/10 rounded-lg mt-1">
-                      {faq.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <span className="inline-block px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-xs font-medium rounded-full mb-2">
-                            {faq.category}
-                          </span>
-                          <h3 className="font-semibold text-white text-sm">{faq.question}</h3>
-                        </div>
-                        {expandedFaq === faq.id ? (
-                          <ChevronUp size={20} className="text-emerald-400 flex-shrink-0 mt-1" />
-                        ) : (
-                          <ChevronDown size={20} className="text-white/50 flex-shrink-0 mt-1" />
-                        )}
-                      </div>
-                    </div>
-                  </button>
-
-                  {expandedFaq === faq.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="px-4 pb-4"
-                    >
-                      <div className="pl-12 pr-4">
-                        <p className="text-sm text-emerald-100/80 leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    </motion.div>
+        {/* FAQ Accordion */}
+        <div className="space-y-3">
+          {filteredFaqs.map((faq, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-700 transition-all"
+            >
+              <button
+                onClick={() => toggleFaq(index)}
+                className="w-full px-6 py-5 flex items-center justify-between gap-4 text-left"
+              >
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-1 break-words">
+                    {faq.question}
+                  </h3>
+                  {expandedFaq !== index && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                      {faq.answer}
+                    </p>
                   )}
+                </div>
+                <motion.div
+                  animate={{ rotate: expandedFaq === index ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-shrink-0"
+                >
+                  <ChevronDown
+                    size={20}
+                    className="text-gray-400 dark:text-gray-500"
+                  />
                 </motion.div>
-              ))}
+              </button>
+
+              <AnimatePresence>
+                {expandedFaq === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-5 pt-0 border-t border-gray-200 dark:border-gray-800">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed pt-4">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredFaqs.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16"
+          >
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle size={32} className="text-gray-400" />
             </div>
-          )}
-        </motion.div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              No hay preguntas
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No se encontraron preguntas en esta categoría
+            </p>
+          </motion.div>
+        )}
 
         {/* Additional Help Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-8 p-6 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 backdrop-blur-lg border border-emerald-500/30 rounded-2xl"
+          transition={{ delay: 0.4 }}
+          className="mt-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-800 rounded-3xl p-6"
         >
-          <h3 className="font-bold text-white text-lg mb-2">¿Aún necesitas ayuda?</h3>
-          <p className="text-emerald-100/80 text-sm mb-4">
-            Nuestro equipo de soporte está disponible 24/7 para asistirte con cualquier problema o consulta.
-          </p>
-          <button
-            onClick={() => navigate('/contact')}
-            className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-semibold rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
-          >
-            Contactar Soporte
-          </button>
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <HelpCircle size={24} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2">
+                ¿No encuentras lo que buscas?
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Nuestro equipo de soporte está disponible para ayudarte con
+                cualquier pregunta o problema que tengas.
+              </p>
+              <button
+                onClick={() => navigate("/chat-support")}
+                className="w-full h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <MessageCircle size={20} />
+                Contactar soporte
+              </button>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
