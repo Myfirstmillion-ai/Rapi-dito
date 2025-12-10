@@ -6,22 +6,27 @@ import {
   SelectVehicle,
   RideDetails,
   Sidebar,
-  FloatingHeader,
-  FloatingSearchBar,
-  MapControls,
-  LocationSearchPanel,
-  LookingForDriver,
 } from "../components";
 import EliteTrackingMap from "../components/maps/EliteTrackingMap";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
-import MapInteractionWrapper from "../components/MapInteractionWrapper";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
-import { Navigation } from "lucide-react";
+import { 
+  Navigation, 
+  MapPin, 
+  Search, 
+  X, 
+  Plus,
+  Minus,
+  Compass,
+  Menu,
+  Loader2
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -69,7 +74,7 @@ function UserHomeScreen() {
   const [loading, setLoading] = useState(false);
   const [selectedInput, setSelectedInput] = useState("pickup");
   const [locationSuggestion, setLocationSuggestion] = useState([]);
-  const [isSearchingLocation, setIsSearchingLocation] = useState(false); // Loading state for location search
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [mapCenter, setMapCenter] = useState({
     lat: DEFAULT_LOCATION.lat,
     lng: DEFAULT_LOCATION.lng
@@ -91,29 +96,26 @@ function UserHomeScreen() {
     bike: 0,
   });
   const [confirmedRideData, setConfirmedRideData] = useState(null);
-  const [rideETA, setRideETA] = useState(null); // Added missing state for ETA tracking
+  const [rideETA, setRideETA] = useState(null);
   const rideTimeout = useRef(null);
 
-  // Paneles - Legacy (keeping for compatibility)
-  const [showFindTripPanel, setShowFindTripPanel] = useState(true);
+  // UI State - Swiss Minimalist
+  const [showSearchPanel, setShowSearchPanel] = useState(false);
   const [showSelectVehiclePanel, setShowSelectVehiclePanel] = useState(false);
   const [showRideDetailsPanel, setShowRideDetailsPanel] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [panelsVisible, setPanelsVisible] = useState(true); // For map interaction
-
-  // Phase 2 - Floating UI Panels
-  const [showLocationSearchPanel, setShowLocationSearchPanel] = useState(false);
   const [mapZoom, setMapZoom] = useState(14);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Handle sidebar toggle - hide all panels when sidebar opens
+  // Check for reduced motion preference
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  // Handle sidebar toggle
   const handleSidebarToggle = (isOpen) => {
     setIsSidebarOpen(isOpen);
-  };
-
-  // Handle panels visibility when interacting with map
-  const handlePanelsVisibilityChange = (visible) => {
-    setPanelsVisible(visible);
   };
 
   // Obtener ubicación actual y convertirla a dirección
@@ -124,7 +126,6 @@ function UserHomeScreen() {
         async (position) => {
           try {
             const { latitude, longitude } = position.coords;
-            // Usar API de geocodificación inversa
             const response = await axios.get(
               `${import.meta.env.VITE_SERVER_URL}/map/get-address?lat=${latitude}&lng=${longitude}`,
               {
@@ -134,12 +135,10 @@ function UserHomeScreen() {
             if (response.data && response.data.address) {
               setPickupLocation(response.data.address);
             } else {
-              // Fallback: usar coordenadas como texto
               setPickupLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
             }
           } catch (error) {
             Console.error("Error obteniendo dirección:", error);
-            // Fallback con coordenadas
             setPickupLocation(`${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`);
           }
           setGettingLocation(false);
@@ -160,19 +159,15 @@ function UserHomeScreen() {
   // AbortController ref for canceling stale requests
   const abortControllerRef = useRef(null);
 
-  // Memoize debounced function with AbortController for performance
+  // Memoize debounced function with AbortController
   const handleLocationChange = useMemo(
     () => debounce(async (inputValue, token) => {
       if (inputValue.length >= 3) {
-        // Cancel previous request if still pending
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
         }
 
-        // Create new AbortController for this request
         abortControllerRef.current = new AbortController();
-        
-        // Show loading indicator
         setIsSearchingLocation(true);
 
         try {
@@ -197,8 +192,8 @@ function UserHomeScreen() {
       } else {
         setIsSearchingLocation(false);
       }
-    }, 300), // Reduced from 700ms to 300ms for faster response
-    [] // Empty dependency - create debounced function only once
+    }, 300),
+    []
   );
 
   const onChangeHandler = (e) => {
@@ -223,8 +218,6 @@ function UserHomeScreen() {
     Console.log(pickupLocation, destinationLocation);
     try {
       setLoading(true);
-      // Note: Map will stay centered on current location
-      // Route will be shown when ride is created
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/ride/get-fare?pickup=${encodeURIComponent(pickupLocation)}&destination=${encodeURIComponent(destinationLocation)}`,
         {
@@ -236,7 +229,6 @@ function UserHomeScreen() {
       Console.log(response);
       setFare(response.data.fare);
       
-      // Store coordinates if available
       if (response.data.pickupCoordinates) {
         setPickupCoordinates(response.data.pickupCoordinates);
       }
@@ -244,7 +236,7 @@ function UserHomeScreen() {
         setDestinationCoordinates(response.data.destinationCoordinates);
       }
 
-      setShowFindTripPanel(false);
+      setShowSearchPanel(false);
       setShowSelectVehiclePanel(true);
       setLocationSuggestion([]);
       setLoading(false);
@@ -283,7 +275,6 @@ function UserHomeScreen() {
       setLoading(false);
       setRideCreated(true);
 
-      // Cancelar automáticamente después de 1.5 minutos
       rideTimeout.current = setTimeout(() => {
         cancelRide();
       }, import.meta.env.VITE_RIDE_TIMEOUT);
@@ -317,7 +308,7 @@ function UserHomeScreen() {
       updateLocation();
       setShowRideDetailsPanel(false);
       setShowSelectVehiclePanel(false);
-      setShowFindTripPanel(true);
+      setShowSearchPanel(false);
       setDefaults();
       localStorage.removeItem("rideDetails");
       localStorage.removeItem("panelDetails");
@@ -330,7 +321,6 @@ function UserHomeScreen() {
     }
   };
 
-  // Restablecer valores por defecto
   const setDefaults = () => {
     setPickupLocation("");
     setDestinationLocation("");
@@ -343,7 +333,6 @@ function UserHomeScreen() {
     setRideCreated(false);
   };
 
-  // Actualizar ubicación
   const updateLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -355,7 +344,6 @@ function UserHomeScreen() {
         },
         (error) => {
           console.error("Error obteniendo posición:", error);
-          // Usar ubicación por defecto si hay error
           setMapCenter({
             lat: DEFAULT_LOCATION.lat,
             lng: DEFAULT_LOCATION.lng
@@ -363,7 +351,6 @@ function UserHomeScreen() {
         }
       );
     } else {
-      // Usar ubicación por defecto
       setMapCenter({
         lat: DEFAULT_LOCATION.lat,
         lng: DEFAULT_LOCATION.lng
@@ -371,15 +358,13 @@ function UserHomeScreen() {
     }
   };
 
-  // Actualizar ubicación al cargar
   useEffect(() => {
     updateLocation();
   }, []);
 
-  // Eventos de Socket
+  // Socket events
   useEffect(() => {
     if (!user._id || !socket) {
-      // Early return if dependencies not ready
       return;
     }
 
@@ -395,11 +380,9 @@ function UserHomeScreen() {
       Console.log("Viaje Confirmado");
       Console.log(data.captain.location);
       
-      // Vibrar y reproducir sonido
       vibrate([200, 100, 200, 100, 200]);
       playSound(NOTIFICATION_SOUNDS.rideConfirmed);
       
-      // Set initial driver location and ride status
       if (data.captain.location && data.captain.location.coordinates) {
         setDriverLocation({
           lng: data.captain.location.coordinates[0],
@@ -407,7 +390,6 @@ function UserHomeScreen() {
         });
       }
       
-      // Set pickup and destination coordinates from the response
       if (data.pickupCoordinates) {
         setPickupCoordinates(data.pickupCoordinates);
       }
@@ -415,8 +397,7 @@ function UserHomeScreen() {
         setDestinationCoordinates(data.destinationCoordinates);
       }
       
-      setCurrentRideStatus("accepted"); // Driver on the way to pickup
-      // Update map center to driver's location
+      setCurrentRideStatus("accepted");
       if (data.captain?.location?.coordinates) {
         setMapCenter({
           lat: data.captain.location.coordinates[1],
@@ -430,8 +411,7 @@ function UserHomeScreen() {
       Console.log("Viaje iniciado");
       playSound(NOTIFICATION_SOUNDS.rideStarted);
       vibrate([300, 100, 300]);
-      setCurrentRideStatus("ongoing"); // Ride in progress
-      // Map will show route from pickup to destination via EliteTrackingMap
+      setCurrentRideStatus("ongoing");
     };
 
     const handleDriverLocationUpdated = (data) => {
@@ -450,7 +430,7 @@ function UserHomeScreen() {
       vibrate([500]);
       setShowRideDetailsPanel(false);
       setShowSelectVehiclePanel(false);
-      setShowFindTripPanel(true);
+      setShowSearchPanel(false);
       setDefaults();
       setDriverLocation(null);
       setCurrentRideStatus("pending");
@@ -487,9 +467,9 @@ function UserHomeScreen() {
       socket.off("ride-ended", handleRideEnded);
       socket.off("driver:locationUpdated", handleDriverLocationUpdated);
     };
-  }, [user._id, socket]); // Removed pickupLocation from dependencies
+  }, [user._id, socket]);
 
-  // Obtener detalles del viaje
+  // Restore ride details from localStorage
   useEffect(() => {
     const storedRideDetails = localStorage.getItem("rideDetails");
     const storedPanelDetails = localStorage.getItem("panelDetails");
@@ -505,13 +485,13 @@ function UserHomeScreen() {
 
     if (storedPanelDetails) {
       const panels = JSON.parse(storedPanelDetails);
-      setShowFindTripPanel(panels.showFindTripPanel);
-      setShowSelectVehiclePanel(panels.showSelectVehiclePanel);
-      setShowRideDetailsPanel(panels.showRideDetailsPanel);
+      setShowSearchPanel(panels.showFindTripPanel || false);
+      setShowSelectVehiclePanel(panels.showSelectVehiclePanel || false);
+      setShowRideDetailsPanel(panels.showRideDetailsPanel || false);
     }
   }, []);
 
-  // Debounced localStorage save to avoid excessive writes
+  // Debounced localStorage saves
   const saveRideDetailsDebounced = useMemo(
     () => debounce((rideData) => {
       localStorage.setItem("rideDetails", JSON.stringify(rideData));
@@ -533,7 +513,6 @@ function UserHomeScreen() {
     []
   );
 
-  // Guardar detalles del viaje (debounced to reduce writes)
   useEffect(() => {
     const rideData = {
       pickup: pickupLocation,
@@ -552,17 +531,15 @@ function UserHomeScreen() {
     saveRideDetailsDebounced,
   ]);
 
-  // Guardar información de paneles (debounced to reduce writes)
   useEffect(() => {
     const panelDetails = {
-      showFindTripPanel,
+      showFindTripPanel: showSearchPanel,
       showSelectVehiclePanel,
       showRideDetailsPanel,
     };
     savePanelDetailsDebounced(panelDetails);
-  }, [showFindTripPanel, showSelectVehiclePanel, showRideDetailsPanel, savePanelDetailsDebounced]);
+  }, [showSearchPanel, showSelectVehiclePanel, showRideDetailsPanel, savePanelDetailsDebounced]);
 
-  // Guardar mensajes (debounced to reduce writes)
   useEffect(() => {
     saveMessagesDebounced(messages);
   }, [messages, saveMessagesDebounced]);
@@ -571,7 +548,6 @@ function UserHomeScreen() {
     socket.emit("join-room", confirmedRideData?._id);
 
     socket.on("receiveMessage", (data) => {
-      // Fix: data is an object {msg, by, time}, not a string
       const messageText = typeof data === 'string' ? data : (data?.msg || '');
       const messageBy = typeof data === 'string' ? 'other' : (data?.by || 'other');
       const messageTime = typeof data === 'string' ? '' : (data?.time || '');
@@ -579,16 +555,12 @@ function UserHomeScreen() {
       setMessages((prev) => [...prev, { msg: messageText, by: messageBy, time: messageTime }]);
       setUnreadMessages((prev) => prev + 1);
       
-      // Set message info for banner - use msg property
       setLastMessage({
         sender: confirmedRideData?.captain?.fullname?.firstname || "Conductor",
         text: messageText
       });
       
-      // Show notification banner
       setShowMessageBanner(true);
-      
-      // Play sound and vibrate
       playSound(NOTIFICATION_SOUNDS.newMessage);
       vibrate([200, 100, 200]);
     });
@@ -598,304 +570,348 @@ function UserHomeScreen() {
     };
   }, [confirmedRideData]);
 
-  // Helper function to convert pickup/destination strings to coordinates
-  const parseLocationString = async (locationStr) => {
-    // For now, use geocoding to get coordinates from address
-    // In production, store coordinates when user selects from suggestions
-    try {
-      const response = await axios.get(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationStr)}.json`,
-        {
-          params: {
-            access_token: import.meta.env.VITE_MAPBOX_TOKEN,
-            limit: 1,
-          },
-        }
-      );
-      
-      if (response.data.features && response.data.features.length > 0) {
-        const [lng, lat] = response.data.features[0].center;
-        return { lng, lat };
-      }
-    } catch (error) {
-      Console.log("Error geocoding location:", error);
-    }
-    return null;
-  };
-
-  // Handle ETA updates from tracking map
   const handleETAUpdate = (data) => {
     setRideETA(data);
     Console.log("ETA actualizado:", data);
   };
 
-  // Determine if we should show the elite tracking map
   const showEliteMap = confirmedRideData && driverLocation;
 
   return (
-    <div className="relative w-full h-dvh overflow-hidden">
+    <div className="relative w-full h-dvh overflow-hidden bg-white dark:bg-black">
       <Sidebar onToggle={handleSidebarToggle} />
       
-      {/* Map Container - Full Height with Interaction Wrapper */}
+      {/* Map Container */}
       <div className="absolute inset-0 z-0">
-        <MapInteractionWrapper
-          panelsVisible={panelsVisible}
-          onPanelsVisibilityChange={handlePanelsVisibilityChange}
-        >
-          {showEliteMap ? (
-            <EliteTrackingMap
-              driverLocation={driverLocation}
-              pickupLocation={pickupCoordinates}
-              dropoffLocation={currentRideStatus === "ongoing" ? destinationCoordinates : null}
-              rideId={confirmedRideData._id}
-              rideStatus={currentRideStatus}
-              userType="user"
-              vehicleType={selectedVehicle}
-              onETAUpdate={handleETAUpdate}
-              className="w-full h-full"
-            />
-          ) : (
-            <MapboxStaticMap
-              latitude={mapCenter.lat}
-              longitude={mapCenter.lng}
-              zoom={mapZoom}
-              interactive={true}
-              showMarker={true}
-              markerColor="#10B981"
-              className="w-full h-full"
-            />
-          )}
-        </MapInteractionWrapper>
+        {showEliteMap ? (
+          <EliteTrackingMap
+            driverLocation={driverLocation}
+            pickupLocation={pickupCoordinates}
+            dropoffLocation={currentRideStatus === "ongoing" ? destinationCoordinates : null}
+            rideId={confirmedRideData._id}
+            rideStatus={currentRideStatus}
+            userType="user"
+            vehicleType={selectedVehicle}
+            onETAUpdate={handleETAUpdate}
+            className="w-full h-full"
+          />
+        ) : (
+          <MapboxStaticMap
+            latitude={mapCenter.lat}
+            longitude={mapCenter.lng}
+            zoom={mapZoom}
+            interactive={true}
+            showMarker={true}
+            markerColor="#10B981"
+            className="w-full h-full"
+          />
+        )}
       </div>
 
-      {/* ===== PHASE 2: FLOATING UI COMPONENTS ===== */}
-      
-      {/* Floating Header - User Pill (top-left) */}
-      {!isSidebarOpen && !showLocationSearchPanel && !showSelectVehiclePanel && !showRideDetailsPanel && (
-        <FloatingHeader
-          user={user}
-          onMenuClick={() => setIsSidebarOpen(true)}
-          isOnline={true}
-        />
-      )}
+      {/* Swiss Minimalist UI Layer */}
+      {!isSidebarOpen && !showSelectVehiclePanel && !showRideDetailsPanel && !rideCreated && (
+        <>
+          {/* Top Bar - User Profile Pill */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between"
+          >
+            {/* User Pill */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center gap-3 pl-2 pr-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800"
+            >
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+                {user?.fullname?.firstname?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {user?.fullname?.firstname}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">En línea</p>
+              </div>
+            </motion.button>
 
-      {/* Map Controls - Floating Circles (right side) */}
-      {!isSidebarOpen && !showLocationSearchPanel && !showSelectVehiclePanel && !showRideDetailsPanel && (
-        <MapControls
-          onZoomIn={() => setMapZoom(prev => Math.min(prev + 1, 20))}
-          onZoomOut={() => setMapZoom(prev => Math.max(prev - 1, 1))}
-          onRecenter={() => {
-            setIsLocating(true);
-            updateLocation();
-            setTimeout(() => setIsLocating(false), 1500);
-          }}
-          isLocating={isLocating}
-        />
-      )}
+            {/* Menu Button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsSidebarOpen(true)}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Menu size={20} className="text-gray-900 dark:text-white" />
+            </motion.button>
+          </motion.div>
 
-      {/* Floating Search Bar - The Island (bottom-center) */}
-      {showFindTripPanel && !isSidebarOpen && !showSelectVehiclePanel && !showRideDetailsPanel && !rideCreated && (
-        <FloatingSearchBar
-          onClick={() => setShowLocationSearchPanel(true)}
-          onHomeClick={() => {
-            // Could implement saved home location
-            setShowLocationSearchPanel(true);
-          }}
-          onRecentClick={() => {
-            setShowLocationSearchPanel(true);
-          }}
-        />
-      )}
+          {/* Map Controls - Right Side */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="absolute right-6 top-24 z-20 flex flex-col gap-3"
+          >
+            {/* Zoom In */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMapZoom(prev => Math.min(prev + 1, 20))}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Plus size={20} className="text-gray-900 dark:text-white" />
+            </motion.button>
 
-      {/* Location Search Panel - Bottom Sheet */}
-      <LocationSearchPanel
-        isOpen={showLocationSearchPanel}
-        onClose={() => setShowLocationSearchPanel(false)}
-        pickupValue={pickupLocation}
-        destinationValue={destinationLocation}
-        onPickupChange={(value) => {
-          setPickupLocation(value);
-          setSelectedInput("pickup");
-          if (import.meta.env.VITE_ENVIRONMENT === "production" && value.length >= 3) {
-            setIsSearchingLocation(true); // Show loading immediately
-            handleLocationChange(value, token);
-          }
-          if (value.length < 3) {
-            setLocationSuggestion([]);
-            setIsSearchingLocation(false);
-          }
-        }}
-        onDestinationChange={(value) => {
-          setDestinationLocation(value);
-          setSelectedInput("destination");
-          if (import.meta.env.VITE_ENVIRONMENT === "production" && value.length >= 3) {
-            setIsSearchingLocation(true); // Show loading immediately
-            handleLocationChange(value, token);
-          }
-          if (value.length < 3) {
-            setLocationSuggestion([]);
-            setIsSearchingLocation(false);
-          }
-        }}
-        onLocationSelect={(location, inputType) => {
-          if (inputType === "pickup") {
-            setPickupLocation(location);
-          } else {
-            setDestinationLocation(location);
-          }
-          setLocationSuggestion([]);
-          setIsSearchingLocation(false);
-          // If both fields have values, proceed to vehicle selection
-          if (inputType === "destination" && pickupLocation.length > 2 && location.length > 2) {
-            setShowLocationSearchPanel(false);
-            getDistanceAndFare(pickupLocation, location);
-          } else if (inputType === "pickup" && location.length > 2 && destinationLocation.length > 2) {
-            setShowLocationSearchPanel(false);
-            getDistanceAndFare(location, destinationLocation);
-          }
-        }}
-        onGetCurrentLocation={getCurrentLocation}
-        suggestions={locationSuggestion}
-        selectedInput={selectedInput}
-        onInputFocus={(inputType) => setSelectedInput(inputType)}
-        isGettingLocation={gettingLocation}
-        isSearching={isSearchingLocation}
-      />
+            {/* Zoom Out */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMapZoom(prev => Math.max(prev - 1, 1))}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Minus size={20} className="text-gray-900 dark:text-white" />
+            </motion.button>
 
-      {/* Looking For Driver - Pulsing Pin Overlay */}
-      <LookingForDriver
-        isVisible={rideCreated && !confirmedRideData}
-        onCancel={cancelRide}
-      />
+            {/* Recenter */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                setIsLocating(true);
+                updateLocation();
+                setTimeout(() => setIsLocating(false), 1500);
+              }}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Compass size={20} className={`text-gray-900 dark:text-white ${isLocating ? 'animate-spin' : ''}`} />
+            </motion.button>
+          </motion.div>
 
-      {/* ===== LEGACY UI (keeping for compatibility during transition) ===== */}
-      
-      {/* Componente Buscar viaje - Floating Route Card with Glassmorphism */}
-      {showFindTripPanel && !isSidebarOpen && (
-        <div className={`fixed bottom-0 left-0 right-0 z-10 transition-all duration-300 ease-out ${
-          panelsVisible ? 'translate-y-0' : 'translate-y-full'
-        } hidden`}> {/* Hidden - replaced by FloatingSearchBar */}
-          {/* Premium Floating Route Card */}
-          <div className="mx-4 mb-6 bg-slate-900/95 backdrop-blur-xl rounded-[32px] border border-white/10 shadow-2xl overflow-hidden"
-               style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}>
-            {/* Top accent glow */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent rounded-t-[32px]" />
-            
-            {/* Drag Handle */}
-            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-4"></div>
-            
-            <div className="px-5 pb-4">
-              <h1 className="text-2xl font-black text-white mb-5" style={{ textWrap: 'balance' }}>Buscar viaje</h1>
-              
-              {/* Route Input Container with Visual Connector */}
-              <div className="relative mb-5">
-                {/* Connector Line - Dotted vertical line between inputs */}
-                <div className="absolute left-6 top-0 bottom-0 w-[2px] flex flex-col items-center justify-between z-0">
-                  <div className="w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-900 shadow-lg shadow-emerald-400/50" />
-                  <div className="flex-1 w-[2px] border-l-2 border-dashed border-white/20 my-2" />
-                  <div className="w-3 h-3 rounded-sm bg-cyan-400 border-2 border-slate-900 shadow-lg shadow-cyan-400/50" />
+          {/* Bottom Search Card */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-8 left-6 right-6 z-20"
+          >
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowSearchPanel(true)}
+              className="w-full p-6 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                  <Search size={20} className="text-gray-900 dark:text-white" />
                 </div>
-
-                {/* Pickup Input */}
-                <div className="relative mb-3 pl-12">
-                  <input
-                    id="pickup"
-                    placeholder="Punto de recogida"
-                    className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 px-4 pr-12 py-4 rounded-2xl outline-none text-base transition-all duration-300 ease-out text-white placeholder:text-slate-400"
-                    value={pickupLocation}
-                    onChange={onChangeHandler}
-                    autoComplete="off"
-                  />
-                  <button
-                    onClick={getCurrentLocation}
-                    disabled={gettingLocation}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 disabled:bg-slate-700 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30 transition-all duration-300 ease-out active:scale-90 hover:shadow-xl hover:shadow-emerald-500/40"
-                    style={{
-                      willChange: 'transform',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden'
-                    }}
-                    title="Usar ubicación actual"
-                  >
-                    <Navigation 
-                      size={18} 
-                      className={`transition-transform ${gettingLocation ? "animate-pulse" : ""}`}
-                    />
-                  </button>
-                </div>
-
-                {/* Destination Input */}
-                <div className="relative pl-12">
-                  <input
-                    id="destination"
-                    placeholder="Destino"
-                    className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 px-4 py-4 rounded-2xl outline-none text-base transition-all duration-300 ease-out text-white placeholder:text-slate-400"
-                    value={destinationLocation}
-                    onChange={onChangeHandler}
-                    autoComplete="off"
-                  />
+                <div className="text-left flex-1">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    ¿A dónde vamos?
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Toca para buscar destino
+                  </p>
                 </div>
               </div>
+            </motion.button>
+          </motion.div>
+        </>
+      )}
 
-              {/* Search Button - Enhanced */}
-              {pickupLocation.length > 2 && destinationLocation.length > 2 && (
-                <Button
-                  title={"Buscar"}
-                  loading={loading}
-                  fun={() => {
-                    getDistanceAndFare(pickupLocation, destinationLocation);
-                  }}
-                  classes="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-2xl shadow-lg shadow-emerald-500/30 transition-all duration-300 ease-out"
-                />
-              )}
+      {/* Search Panel - Bottom Sheet */}
+      <AnimatePresence>
+        {showSearchPanel && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSearchPanel(false)}
+              className="absolute inset-0 bg-black/50 z-30"
+            />
 
-              {/* Location Suggestions */}
-              <div className="max-h-[30vh] overflow-y-auto mt-3" style={{ WebkitOverflowScrolling: 'touch' }}>
-                {locationSuggestion.length > 0 && (
-                  <LocationSuggestions
-                    suggestions={locationSuggestion}
-                    setSuggestions={setLocationSuggestion}
-                    setPickupLocation={setPickupLocation}
-                    setDestinationLocation={setDestinationLocation}
-                    input={selectedInput}
-                  />
+            {/* Panel */}
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="absolute inset-x-0 bottom-0 z-40 bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
+            >
+              {/* Drag Handle */}
+              <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mt-3 mb-6"></div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowSearchPanel(false)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
+              >
+                <X size={20} className="text-gray-900 dark:text-white" />
+              </button>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto px-6 pb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+                  Planear viaje
+                </h2>
+
+                {/* Route Inputs */}
+                <div className="relative mb-6">
+                  {/* Connector Line */}
+                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800 flex flex-col items-center justify-between z-0">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-900" />
+                    <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-600 border-2 border-white dark:border-gray-900" />
+                  </div>
+
+                  {/* Pickup Input */}
+                  <div className="relative mb-4 pl-12">
+                    <input
+                      id="pickup"
+                      placeholder="Punto de recogida"
+                      className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-500 px-4 pr-12 py-4 rounded-2xl outline-none text-base transition-all text-gray-900 dark:text-white placeholder:text-gray-400"
+                      value={pickupLocation}
+                      onChange={onChangeHandler}
+                      autoComplete="off"
+                    />
+                    <button
+                      onClick={getCurrentLocation}
+                      disabled={gettingLocation}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 transition-all active:scale-90"
+                      title="Usar ubicación actual"
+                    >
+                      {gettingLocation ? (
+                        <Loader2 size={18} className="animate-spin text-white" />
+                      ) : (
+                        <Navigation size={18} className="text-white" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Destination Input */}
+                  <div className="relative pl-12">
+                    <input
+                      id="destination"
+                      placeholder="Destino"
+                      className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-gray-400 dark:focus:border-gray-500 px-4 py-4 rounded-2xl outline-none text-base transition-all text-gray-900 dark:text-white placeholder:text-gray-400"
+                      value={destinationLocation}
+                      onChange={onChangeHandler}
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+
+                {/* Search Button */}
+                {pickupLocation.length > 2 && destinationLocation.length > 2 && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => getDistanceAndFare(pickupLocation, destinationLocation)}
+                    disabled={loading}
+                    className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-2xl shadow-lg transition-all disabled:opacity-50 mb-6"
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 size={20} className="animate-spin" />
+                        <span>Buscando...</span>
+                      </div>
+                    ) : (
+                      'Buscar viaje'
+                    )}
+                  </motion.button>
+                )}
+
+                {/* Location Suggestions */}
+                {isSearchingLocation && (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 size={24} className="animate-spin text-emerald-500" />
+                  </div>
+                )}
+
+                {locationSuggestion.length > 0 && !isSearchingLocation && (
+                  <div className="space-y-2">
+                    <LocationSuggestions
+                      suggestions={locationSuggestion}
+                      setSuggestions={setLocationSuggestion}
+                      setPickupLocation={setPickupLocation}
+                      setDestinationLocation={setDestinationLocation}
+                      input={selectedInput}
+                    />
+                  </div>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Vehicle Selection & Ride Details - Keep existing components but render conditionally */}
+      {!isSidebarOpen && (
+        <>
+          <SelectVehicle
+            selectedVehicle={setSelectedVehicle}
+            showPanel={showSelectVehiclePanel}
+            setShowPanel={setShowSelectVehiclePanel}
+            showPreviousPanel={setShowSearchPanel}
+            showNextPanel={setShowRideDetailsPanel}
+            fare={fare}
+          />
+
+          <RideDetails
+            pickupLocation={pickupLocation}
+            destinationLocation={destinationLocation}
+            selectedVehicle={selectedVehicle}
+            fare={fare}
+            showPanel={showRideDetailsPanel}
+            setShowPanel={setShowRideDetailsPanel}
+            showPreviousPanel={setShowSelectVehiclePanel}
+            createRide={createRide}
+            cancelRide={cancelRide}
+            loading={loading}
+            rideCreated={rideCreated}
+            confirmedRideData={confirmedRideData}
+            unreadMessages={unreadMessages}
+          />
+        </>
       )}
 
-      {/* Panel de selección de vehículo - Hidden when sidebar is open */}
-      {!isSidebarOpen && (
-        <SelectVehicle
-          selectedVehicle={setSelectedVehicle}
-          showPanel={showSelectVehiclePanel}
-          setShowPanel={setShowSelectVehiclePanel}
-          showPreviousPanel={setShowFindTripPanel}
-          showNextPanel={setShowRideDetailsPanel}
-          fare={fare}
-        />
-      )}
+      {/* Looking for Driver Overlay */}
+      <AnimatePresence>
+        {rideCreated && !confirmedRideData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className="text-center px-6"
+            >
+              {/* Pulsing Pin */}
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-2xl"
+              >
+                <MapPin size={40} className="text-white" />
+              </motion.div>
 
-      {/* Panel de detalles del viaje - Hidden when sidebar is open */}
-      {!isSidebarOpen && (
-        <RideDetails
-          pickupLocation={pickupLocation}
-          destinationLocation={destinationLocation}
-          selectedVehicle={selectedVehicle}
-          fare={fare}
-          showPanel={showRideDetailsPanel}
-          setShowPanel={setShowRideDetailsPanel}
-          showPreviousPanel={setShowSelectVehiclePanel}
-          createRide={createRide}
-          cancelRide={cancelRide}
-          loading={loading}
-          rideCreated={rideCreated}
-          confirmedRideData={confirmedRideData}
-          unreadMessages={unreadMessages}
-        />
-      )}
+              <h2 className="text-3xl font-bold text-white mb-2">
+                Buscando conductor
+              </h2>
+              <p className="text-gray-300 mb-8">
+                Conectando con conductores cercanos...
+              </p>
+
+              {/* Cancel Button */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={cancelRide}
+                disabled={loading}
+                className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-2xl border border-white/20 transition-all"
+              >
+                {loading ? 'Cancelando...' : 'Cancelar búsqueda'}
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Message Notification Banner */}
       <MessageNotificationBanner
