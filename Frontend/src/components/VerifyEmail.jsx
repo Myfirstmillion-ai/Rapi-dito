@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";

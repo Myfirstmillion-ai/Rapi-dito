@@ -14,6 +14,7 @@
  * - Dark mode support
  */
 
+import { useId } from 'react';
 import { motion } from 'framer-motion';
 import { InputProps } from './types';
 import { cn } from '../../utils/cn';
@@ -38,7 +39,8 @@ function Input({
   id,
   ...props
 }: InputProps) {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const inputId = id || generatedId;
   const hasError = !!error;
 
   return (
@@ -59,12 +61,13 @@ function Input({
           </div>
         )}
 
-        <motion.input
+        <motion.div
           whileFocus={{ scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          id={inputId}
-          // @ts-ignore - Framer Motion types conflict
-          className={cn(
+        >
+          <input
+            id={inputId}
+            className={cn(
             // Base styles
             'w-full rounded-2xl',
             'bg-white/10 dark:bg-white/5',
@@ -116,6 +119,7 @@ function Input({
           }
           {...props}
         />
+        </motion.div>
 
         {icon && iconPosition === 'right' && (
           <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
