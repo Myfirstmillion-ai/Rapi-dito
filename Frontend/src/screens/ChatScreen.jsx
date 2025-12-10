@@ -1,10 +1,11 @@
 import axios from "axios";
-import { ArrowLeft, Send, CheckCheck } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Loader2 } from "lucide-react";
 import { useContext, useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SocketDataContext } from "../contexts/SocketContext";
 import Console from "../utils/console";
 import Loading from "./Loading";
+import { motion } from "framer-motion";
 
 // URL de sonido de notificación
 const MESSAGE_SOUND = "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3";
@@ -144,22 +145,19 @@ function ChatScreen() {
       await getUserDetails();
     };
     
-    // Add a small delay to ensure socket is connected
     const timeoutId = setTimeout(() => {
       loadChatDetails();
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [getUserDetails]); // Depend on getUserDetails
+  }, [getUserDetails]);
 
-  // Setup socket event listeners - FIX for white screen bug
+  // Setup socket event listeners
   useEffect(() => {
     if (!socket || !rideId) return;
 
-    // Handle incoming messages with proper validation
     const handleReceiveMessage = (data) => {
       try {
-        // Validate message structure
         if (!data || typeof data.msg !== 'string') {
           Console.log('Invalid message data received:', data);
           return;
@@ -171,7 +169,6 @@ function ChatScreen() {
         playSound();
         setHasNewMessage(true);
         
-        // Vibrar si está disponible
         if (navigator.vibrate) {
           navigator.vibrate([100]);
         }
@@ -200,45 +197,43 @@ function ChatScreen() {
       }
     };
 
-    // Register event listeners
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("user-typing", handleUserTyping);
     socket.on("user-stop-typing", handleUserStopTyping);
 
-    // Cleanup function - CRITICAL to prevent duplicate listeners
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("user-typing", handleUserTyping);
       socket.off("user-stop-typing", handleUserStopTyping);
     };
-  }, [socket, rideId, userType]); // Include all dependencies
+  }, [socket, rideId, userType]);
 
   // Show error state
   if (error) {
     return (
-      <div className="flex flex-col h-dvh bg-gray-100 items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
+      <div className="flex flex-col h-dvh bg-white dark:bg-black items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-800">
           <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Error en el chat</h2>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <div className="flex gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Error en el chat</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setError(null);
                   getUserDetails();
                 }}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-2xl transition-all"
               >
                 Reintentar
               </button>
               <button
                 onClick={() => navigation(-1)}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors"
+                className="flex-1 h-12 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-2xl transition-all"
               >
                 Volver
               </button>
@@ -251,77 +246,90 @@ function ChatScreen() {
 
   if (userData) {
     return (
-      <div className="flex flex-col h-dvh bg-gray-100">
-        {/* Header estilo WhatsApp */}
-        <div className="flex h-fit items-center p-3 bg-green-600 gap-3 shadow-md">
-          <ArrowLeft
-            strokeWidth={2.5}
-            className="cursor-pointer text-white"
-            onClick={() => navigation(-1)}
-          />
-          <div className="relative w-10 h-10">
-            {userData?.profileImage ? (
-              <img
-                src={userData.profileImage}
-                alt={`${userData?.fullname?.firstname} ${userData?.fullname?.lastname}`}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
-                loading="lazy"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  if (e.target.nextElementSibling) {
-                    e.target.nextElementSibling.classList.remove('hidden');
-                    e.target.nextElementSibling.classList.add('flex');
-                  }
-                }}
-              />
-            ) : null}
-            <div 
-              className={`select-none rounded-full w-10 h-10 bg-white items-center justify-center ${userData?.profileImage ? 'hidden' : 'flex'}`}
+      <div className="flex flex-col h-dvh bg-white dark:bg-black">
+        {/* Header - Swiss Minimalist */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky top-0 z-20 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800"
+        >
+          <div className="px-4 py-3 flex items-center gap-3">
+            {/* Back Button */}
+            <button
+              onClick={() => navigation(-1)}
+              className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center flex-shrink-0"
             >
-              <h1 className="text-lg font-semibold text-green-600">
-                {userData?.fullname?.firstname[0]}
-                {userData?.fullname?.lastname[0]}
-              </h1>
-            </div>
-          </div>
+              <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
+            </button>
 
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold text-white leading-5">
-              {userData?.fullname?.firstname} {userData?.fullname?.lastname}
-            </h1>
-            {isTyping ? (
-              <p className="text-xs text-green-100 animate-pulse">escribiendo...</p>
-            ) : (
-              <p className="text-xs text-green-100">
-                {userType === "user" ? "Conductor" : "Cliente"}
-              </p>
+            {/* Profile Image + Info */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="relative w-10 h-10 flex-shrink-0">
+                {userData?.profileImage ? (
+                  <img
+                    src={userData.profileImage}
+                    alt={`${userData?.fullname?.firstname} ${userData?.fullname?.lastname}`}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-800"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      if (e.target.nextElementSibling) {
+                        e.target.nextElementSibling.classList.remove('hidden');
+                        e.target.nextElementSibling.classList.add('flex');
+                      }
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className={`w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center ${userData?.profileImage ? 'hidden' : 'flex'}`}
+                >
+                  <span className="text-sm font-bold text-white">
+                    {userData?.fullname?.firstname[0]}
+                    {userData?.fullname?.lastname[0]}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
+                  {userData?.fullname?.firstname} {userData?.fullname?.lastname}
+                </h1>
+                {isTyping ? (
+                  <p className="text-xs text-emerald-500 animate-pulse">escribiendo...</p>
+                ) : (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {userType === "user" ? "Conductor" : "Pasajero"}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* New Message Indicator */}
+            {hasNewMessage && (
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse flex-shrink-0"></div>
             )}
           </div>
+        </motion.div>
 
-          {hasNewMessage && (
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          )}
-        </div>
-
-        {/* Área de mensajes con fondo estilo WhatsApp */}
+        {/* Messages Area */}
         <div 
-          className="overflow-y-auto flex-1 bg-[#e5ddd5]" 
+          className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black px-4 py-4" 
           ref={scrollableDivRef}
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4ccc4' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="flex flex-col justify-end min-h-full w-full p-3">
+          <div className="flex flex-col justify-end min-h-full">
             {messages.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500 text-sm bg-white/80 inline-block px-4 py-2 rounded-lg">
-                  Inicia la conversación con tu {userType === "user" ? "conductor" : "cliente"}
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <ImageIcon size={24} className="text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Inicia la conversación
                 </p>
               </div>
             )}
             {messages.length > 0 &&
               messages.map((message, i) => {
-                // Validate message before rendering
                 if (!message || typeof message.msg !== 'string') {
                   Console.log('Invalid message in render:', message);
                   return null;
@@ -329,85 +337,91 @@ function ChatScreen() {
                 
                 const isMyMessage = message.by === userType;
                 return (
-                  <div
+                  <motion.div
                     key={`${message.time}-${i}`}
-                    className={`flex ${isMyMessage ? "justify-end" : "justify-start"} mb-1`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex ${isMyMessage ? "justify-end" : "justify-start"} mb-2`}
                   >
                     <div
-                      className={`relative max-w-[75%] px-3 pt-2 pb-1 shadow-sm ${
+                      className={`max-w-[75%] px-4 py-2.5 rounded-3xl shadow-sm ${
                         isMyMessage
-                          ? "bg-[#dcf8c6] rounded-tl-lg rounded-tr-lg rounded-bl-lg"
-                          : "bg-white rounded-tl-lg rounded-tr-lg rounded-br-lg"
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-br-lg"
+                          : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded-bl-lg"
                       }`}
                     >
-                      {/* Triángulo del mensaje */}
-                      <div
-                        className={`absolute top-0 w-0 h-0 ${
-                          isMyMessage
-                            ? "right-[-6px] border-l-[6px] border-l-[#dcf8c6] border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent"
-                            : "left-[-6px] border-r-[6px] border-r-white border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent"
-                        }`}
-                      ></div>
-                      
-                      <p className="text-sm text-gray-800 break-words">{message.msg}</p>
+                      <p className="text-sm break-words">{message.msg}</p>
                       <div className={`flex items-center gap-1 justify-end mt-1`}>
-                        <span className="text-[10px] text-gray-500">{message.time || ''}</span>
-                        {isMyMessage && (
-                          <CheckCheck size={14} className="text-blue-500" />
-                        )}
+                        <span className={`text-[10px] ${isMyMessage ? 'text-emerald-100' : 'text-gray-400'}`}>
+                          {message.time || ''}
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             
-            {/* Indicador de escribiendo */}
+            {/* Typing Indicator */}
             {isTyping && (
-              <div className="flex justify-start mb-1">
-                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start mb-2"
+              >
+                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl px-4 py-3 shadow-sm">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
 
-        {/* Input de mensaje estilo WhatsApp - Improved Visibility */}
-        <div className="flex items-center p-2 bg-gray-100 gap-2">
-          <div className="flex-1 flex items-center bg-white rounded-full px-4 py-2.5 shadow-sm border border-gray-200">
-            <input
-              ref={inputRef}
-              placeholder="Escribe un mensaje..."
-              className="w-full outline-none text-sm bg-transparent text-gray-900 placeholder-gray-500"
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                handleTyping();
-              }}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  sendMessage(e);
-                }
-              }}
-              autoFocus
-              spellCheck="false"
-            />
+        {/* Input Area - Swiss Minimalist */}
+        <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-4">
+          <div className="flex items-end gap-3">
+            {/* Input Container */}
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                placeholder="Escribe un mensaje..."
+                className="w-full h-12 pl-4 pr-4 bg-gray-100 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-3xl outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400 transition-colors"
+                value={message}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  handleTyping();
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    sendMessage(e);
+                  }
+                }}
+                autoFocus
+                spellCheck="false"
+              />
+            </div>
+
+            {/* Send Button */}
+            <button 
+              onClick={sendMessage}
+              disabled={!message.trim()}
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all flex-shrink-0 ${
+                message.trim() 
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg active:scale-95' 
+                  : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+              }`}
+            >
+              {message.trim() ? (
+                <Send size={18} />
+              ) : (
+                <Send size={18} className="opacity-50" />
+              )}
+            </button>
           </div>
-          <button 
-            onClick={sendMessage}
-            className={`cursor-pointer p-3 rounded-full flex items-center justify-center text-white transition-all duration-200 ${
-              message.trim() 
-                ? 'bg-green-500 hover:bg-green-600 active:scale-95' 
-                : 'bg-gray-400'
-            }`}
-            disabled={!message.trim()}
-          >
-            <Send size={20} />
-          </button>
         </div>
       </div>
     );
