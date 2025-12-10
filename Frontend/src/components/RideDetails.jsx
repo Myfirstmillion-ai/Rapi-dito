@@ -1,24 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 import {
-  CreditCard,
   MapPinMinus,
   MapPinPlus,
   PhoneCall,
-  SendHorizontal,
-  ChevronDown,
-  ChevronUp,
-  GripHorizontal,
+  MessageSquare,
   Navigation,
   Clock,
-  ArrowLeft,
+  User,
+  CreditCard,
+  ChevronLeft,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-import Button from "./Button";
 import MessageBadge from "./ui/MessageBadge";
 
-// UI Constants
-const BUTTON_CLASSES = {
-  message: "bg-white/10 hover:bg-white/20 backdrop-blur-xl font-semibold text-sm text-white w-full rounded-xl shadow-lg border border-white/20 transition-all hover:border-white/30",
-  call: "flex items-center justify-center px-5 h-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/20"
+/**
+ * 🏆 TESLA MATTE PREMIUM - RideDetails Component
+ * 
+ * Design System: $100K Premium UI
+ * - Floating Islands detached from edges (16px margin)
+ * - Matte Black surfaces (NO transparency/blur)
+ * - Bento Grid data organization
+ * - Monochromatic palette (black/white/gray + emerald accent)
+ * - Physics-based spring interactions
+ * - Typography-driven hierarchy
+ * 
+ * Elevation System:
+ * Level 0: Background (#000000)
+ * Level 1: Cards (#0A0A0A)
+ * Level 2: Elevated (#1C1C1E)  
+ * Level 3: Interactive (#2C2C2E)
+ */
+
+// Tesla Matte Color System
+const TESLA_COLORS = {
+  bg: '#000000',           // Pure black background
+  surface_1: '#0A0A0A',    // Matte cards
+  surface_2: '#1C1C1E',    // Elevated elements
+  surface_3: '#2C2C2E',    // Interactive states
+  text_primary: '#FFFFFF',
+  text_secondary: '#8E8E93',
+  text_tertiary: '#636366',
+  accent: '#10B981',       // Emerald (only accent color)
+  divider: '#38383A',
+};
+
+// Physics Spring Configuration (60fps smooth)
+const SPRING_CONFIG = {
+  type: "spring",
+  stiffness: 400,
+  damping: 30,
+  mass: 0.8,
+};
+
+// Haptic feedback simulation
+const triggerHaptic = (intensity = 'light') => {
+  if (navigator.vibrate) {
+    const patterns = {
+      light: [5],
+      medium: [10],
+      heavy: [15],
+    };
+    navigator.vibrate(patterns[intensity] || patterns.light);
+  }
 };
 
 function RideDetails({
@@ -36,383 +81,411 @@ function RideDetails({
   confirmedRideData,
   unreadMessages = 0,
 }) {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const springY = useSpring(0, SPRING_CONFIG);
+  const opacity = useTransform(springY, [0, 300], [1, 0]);
 
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
+  // Check for reduced motion
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return '$0';
+    return `$${(amount / 1000).toFixed(0)}K`;
   };
-  
+
+  // Vehicle display name
+  const vehicleDisplay = selectedVehicle === "car" ? "Carro" : "Moto";
+
   return (
-    <>
-      <div
-        className={`${
-          showPanel ? "bottom-0" : "-bottom-full"
-        } ${
-          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-20 overflow-hidden`}
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
+    <motion.div
+      initial={prefersReducedMotion ? {} : { y: '100%', opacity: 0 }}
+      animate={{ 
+        y: showPanel ? 0 : '100%',
+        opacity: showPanel ? 1 : 0,
+      }}
+      transition={SPRING_CONFIG}
+      className="fixed inset-0 z-50 pointer-events-none"
+    >
+      {/* Overlay */}
+      {showPanel && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setShowPanel(false)}
+          className="absolute inset-0 pointer-events-auto"
+          style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+        />
+      )}
+
+      {/* Floating Island Container - Detached from edges */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 pointer-events-auto"
+        style={{ 
+          padding: '16px',
+          paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+        }}
       >
-        {/* Premium Drag Handle */}
-        <div 
-          onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
+        <motion.div
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.5 }}
+          onDragEnd={(e, { offset, velocity }) => {
+            if (offset.y > 150 || velocity.y > 500) {
+              setShowPanel(false);
+              triggerHaptic('light');
+            }
+          }}
+          style={{ 
+            y: springY,
+            opacity: opacity,
+          }}
+          className="overflow-hidden"
+          // Matte Black Island with elevation shadow
+          css={{
+            background: TESLA_COLORS.surface_1,
+            borderRadius: '32px',
+            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+          }}
         >
-          <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
-            {isMinimized ? (
-              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            ) : (
-              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            )}
+          {/* Drag Handle */}
+          <div className="flex justify-center pt-3 pb-2">
+            <motion.div 
+              whileHover={{ scale: 1.2 }}
+              className="w-12 h-1.5 rounded-full"
+              style={{ background: TESLA_COLORS.divider }}
+            />
           </div>
-        </div>
 
-        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
-          {/* Back Button - Only show before ride is created */}
-          {!rideCreated && !confirmedRideData && !isMinimized && showPreviousPanel && (
-            <button
-              onClick={() => {
-                setShowPanel(false);
-                showPreviousPanel(true);
-              }}
-              className="mb-3 flex items-center gap-2 text-white/80 hover:text-white transition-colors group"
-            >
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="text-sm font-medium">Cambiar vehículo</span>
-            </button>
-          )}
-          
-          {/* Searching Animation - Premium Radar Pulse Effect */}
-          {rideCreated && !confirmedRideData && !isMinimized && (
-            <div className="mb-4 relative bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 backdrop-blur-xl border border-emerald-400/20 rounded-[28px] p-6 overflow-hidden">
-              {/* Animated gradient background pulse */}
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 animate-pulse" />
+          {/* Scrollable Content */}
+          <div 
+            className="px-4 pb-4 overflow-y-auto"
+            style={{ maxHeight: 'calc(85vh - 100px)' }}
+          >
+            {/* Back Button - Floating Island */}
+            {!rideCreated && !confirmedRideData && showPreviousPanel && (
+              <motion.button
+                whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                onTapStart={() => triggerHaptic('light')}
+                onClick={() => {
+                  setShowPanel(false);
+                  showPreviousPanel(true);
+                }}
+                className="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-full"
+                style={{
+                  background: TESLA_COLORS.surface_2,
+                  color: TESLA_COLORS.text_secondary,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+                }}
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} />
+                <span className="text-sm font-semibold">Cambiar vehículo</span>
+              </motion.button>
+            )}
 
-              <div className="relative flex flex-col items-center gap-4">
-                {/* Enhanced Radar Pulse Animation - Multiple Ripples */}
-                <div className="relative w-20 h-20 flex items-center justify-center">
-                  {/* Outer ripple - slowest */}
-                  <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping" style={{ animationDuration: '2s' }} />
-                  {/* Middle ripple - medium */}
-                  <div className="absolute inset-3 rounded-full bg-emerald-400/30 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.3s' }} />
-                  {/* Inner ripple - fastest */}
-                  <div className="absolute inset-6 rounded-full bg-emerald-400/40 animate-ping" style={{ animationDuration: '1s', animationDelay: '0.6s' }} />
-                  {/* Center dot with glow */}
-                  <div className="absolute inset-0 m-auto w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 shadow-lg shadow-emerald-500/50 animate-pulse" />
+            {/* Loading State - Radar Animation */}
+            {rideCreated && !confirmedRideData && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-4 rounded-3xl p-6 relative overflow-hidden"
+                style={{ background: TESLA_COLORS.surface_2 }}
+              >
+                {/* Radar pulse effect */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    animate={{
+                      scale: [1, 2, 2],
+                      opacity: [0.5, 0.2, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeOut",
+                    }}
+                    className="w-24 h-24 rounded-full border-2"
+                    style={{ borderColor: TESLA_COLORS.accent }}
+                  />
                 </div>
 
-                {/* Text with breathing effect */}
-                <div className="text-center space-y-2">
-                  <h1 className="text-base sm:text-lg font-bold text-white animate-pulse" style={{ textWrap: 'balance', animationDuration: '2s' }}>
-                    Conectando con conductores cercanos...
-                  </h1>
-                  <p className="text-sm text-white/60 font-medium" style={{ textWrap: 'balance' }}>
+                {/* Loading content */}
+                <div className="relative z-10 text-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                    style={{ background: `${TESLA_COLORS.accent}20` }}
+                  >
+                    <Loader2 size={32} style={{ color: TESLA_COLORS.accent }} />
+                  </motion.div>
+                  <p className="text-base font-semibold" style={{ color: TESLA_COLORS.text_primary }}>
+                    Conectando con conductores
+                  </p>
+                  <p className="text-sm mt-1" style={{ color: TESLA_COLORS.text_secondary }}>
                     Esto puede tomar unos segundos
                   </p>
                 </div>
+              </motion.div>
+            )}
 
-                {/* Enhanced Progress bar with shimmer and gradient */}
-                <div className="w-full overflow-hidden rounded-full h-2 bg-white/10 shadow-inner">
-                  <div 
-                    className="h-full w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-[length:200%_100%]" 
-                    style={{
-                      animation: 'shimmer 1.5s ease-in-out infinite'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-          {isMinimized ? (
-            /* Minimized View - Premium Summary with Profile Photo */
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                {confirmedRideData?.captain?.profileImage ? (
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-400/50 shadow-lg">
+            {/* Bento Grid - Driver Info (when confirmed) */}
+            {confirmedRideData?._id && (
+              <div className="mb-4 rounded-3xl p-5" style={{ background: TESLA_COLORS.surface_2 }}>
+                {/* Driver Profile - Monochromatic Hierarchy */}
+                <div className="flex items-center gap-4 mb-4">
+                  {/* Avatar */}
+                  <div className="relative flex-shrink-0">
+                    {confirmedRideData.captain?.profileImage ? (
                       <img 
-                        src={confirmedRideData.captain.profileImage} 
-                        alt="Conductor" 
-                        className="w-full h-full object-cover"
+                        src={confirmedRideData.captain.profileImage}
+                        alt="Conductor"
+                        className="w-16 h-16 rounded-2xl object-cover"
                       />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <img
-                      src={
-                        selectedVehicle === "car"
-                          ? "/Uber-PNG-Photos.png"
-                          : `/${selectedVehicle}.webp`
-                      }
-                      className="h-14 w-auto"
-                      alt="Vehículo"
+                    ) : (
+                      <div 
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                        style={{ background: TESLA_COLORS.surface_3 }}
+                      >
+                        <User size={28} style={{ color: TESLA_COLORS.text_secondary }} />
+                      </div>
+                    )}
+                    {/* Status indicator */}
+                    <div 
+                      className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2"
+                      style={{ 
+                        background: TESLA_COLORS.accent,
+                        borderColor: TESLA_COLORS.surface_2,
+                      }}
                     />
                   </div>
-                )}
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">
-                    {confirmedRideData ? "Tu conductor" : "Tu viaje"}
-                  </p>
-                  <h1 className="text-base font-bold text-white capitalize">
-                    {confirmedRideData 
-                      ? `${confirmedRideData.captain?.fullname?.firstname || ''} ${confirmedRideData.captain?.fullname?.lastname?.[0] || ''}.`
-                      : selectedVehicle === "car" ? "Carro" : "Moto"
-                    }
-                  </h1>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-slate-400 font-medium">Total</p>
-                <h1 className="font-bold text-xl text-emerald-400">
-                  ${Math.floor(fare[selectedVehicle] / 1000)}K
-                </h1>
-              </div>
-            </div>
-          ) : (
-            /* Maximized View - Premium Details */
-            <>
-          {/* Premium Driver Details Card - Glassmorphism Design */}
-          {confirmedRideData?._id ? (
-            <div className="relative bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-5 mb-4 shadow-2xl overflow-hidden">
-              {/* Subtle gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-cyan-500/10 pointer-events-none rounded-3xl" />
-              
-              {/* Top glow accent */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
-              
-              <div className="relative space-y-4">
-                {/* Driver Profile Section - Focal Point */}
-                <div className="flex items-start gap-4">
-                  {/* Driver Photo with Ring */}
-                  <div className="flex-shrink-0">
-                    {confirmedRideData?.captain?.profileImage ? (
-                      <img 
-                        src={confirmedRideData.captain.profileImage} 
-                        alt={`${confirmedRideData?.captain?.fullname?.firstname} ${confirmedRideData?.captain?.fullname?.lastname}`}
-                        className="w-24 h-24 rounded-2xl object-cover border-2 border-white/20 shadow-lg ring-4 ring-emerald-400/30"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.style.display = 'none';
-                          e.target.nextElementSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div 
-                      className={`w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg border-2 border-white/20 ring-4 ring-emerald-400/30 ${confirmedRideData?.captain?.profileImage ? 'hidden' : 'flex'}`}
-                    >
-                      <span className="text-3xl font-black text-white">
-                        {confirmedRideData?.captain?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
-                        {confirmedRideData?.captain?.fullname?.lastname?.[0]?.toUpperCase() || ''}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Driver Name & Info */}
-                  <div className="flex-1 space-y-1.5">
-                    <p className="text-xs text-white/50 font-semibold uppercase tracking-wider">Tu conductor</p>
-                    <h1 className="text-xl font-black text-white leading-tight">
-                      {confirmedRideData?.captain?.fullname?.firstname}{" "}
-                      {confirmedRideData?.captain?.fullname?.lastname}
-                    </h1>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-yellow-500/30">
-                        <span className="text-yellow-400 text-sm">★</span>
-                        <span className="text-sm font-bold text-yellow-400">
-                          {confirmedRideData?.captain?.rating?.toFixed(1) || "5.0"}
+
+                  {/* Driver Info - Typography Hierarchy */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wider mb-0.5" style={{ color: TESLA_COLORS.text_tertiary }}>
+                      Tu conductor
+                    </p>
+                    <h3 className="text-xl font-bold truncate" style={{ color: TESLA_COLORS.text_primary }}>
+                      {confirmedRideData.captain?.fullname?.firstname}{" "}
+                      {confirmedRideData.captain?.fullname?.lastname}
+                    </h3>
+                    {confirmedRideData.captain?.rating && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span style={{ color: TESLA_COLORS.accent }}>★</span>
+                        <span className="text-sm font-semibold" style={{ color: TESLA_COLORS.text_secondary }}>
+                          {confirmedRideData.captain.rating.toFixed(1)}
                         </span>
                       </div>
-                      <span className="text-xs text-white/40 font-medium">Conductor verificado</span>
-                    </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Vehicle Information - Elegant Display */}
-                <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 space-y-3">
-                  {/* Vehicle Icon */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/10 flex items-center justify-center shadow-lg">
-                      <img
-                        src={
-                          selectedVehicle === "car"
-                            ? "/Uber-PNG-Photos.png"
-                            : `/${selectedVehicle}.webp`
-                        }
-                        className="h-10 w-auto"
-                        alt="Vehículo"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-white/50 font-medium mb-1">Vehículo</p>
-                      <p className="text-sm font-bold text-white capitalize leading-tight">
-                        {confirmedRideData?.captain?.vehicle?.color}{" "}
-                        {confirmedRideData?.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
-                      </p>
-                      {(confirmedRideData?.captain?.vehicle?.brand || confirmedRideData?.captain?.vehicle?.model) && (
-                        <p className="text-xs text-white/60 font-medium mt-0.5">
-                          {confirmedRideData?.captain?.vehicle?.brand} {confirmedRideData?.captain?.vehicle?.model}
-                        </p>
-                      )}
-                    </div>
+                {/* Vehicle Info - Bento Grid */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {/* Vehicle Type */}
+                  <div className="rounded-2xl p-3" style={{ background: TESLA_COLORS.surface_3 }}>
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                      Vehículo
+                    </p>
+                    <p className="text-sm font-bold" style={{ color: TESLA_COLORS.text_primary }}>
+                      {confirmedRideData.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
+                    </p>
                   </div>
-                  
-                  {/* License Plate Badge - ULTRA-PREMIUM High Contrast Design */}
-                  <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 border-3 border-white/30 rounded-2xl px-5 py-4 shadow-2xl shadow-black/50">
-                    {/* Subtle shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-2xl" />
-                    {/* Top accent */}
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                    
-                    <div className="relative flex items-center justify-between">
-                      <div>
-                        <span className="text-xs text-white/60 font-bold uppercase tracking-widest block mb-1">Placa</span>
-                        <span className="text-[9px] text-emerald-400 font-semibold">Verifica antes de abordar</span>
-                      </div>
-                      <div className="bg-white/95 px-4 py-2.5 rounded-xl shadow-lg">
-                        <span className="text-2xl font-black text-slate-900 tracking-[0.2em] font-mono" style={{ letterSpacing: '0.15em' }}>
-                          {confirmedRideData?.captain?.vehicle?.number || "---"}
-                        </span>
-                      </div>
-                    </div>
+
+                  {/* Color */}
+                  <div className="rounded-2xl p-3" style={{ background: TESLA_COLORS.surface_3 }}>
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                      Color
+                    </p>
+                    <p className="text-sm font-bold capitalize" style={{ color: TESLA_COLORS.text_primary }}>
+                      {confirmedRideData.captain?.vehicle?.color}
+                    </p>
                   </div>
                 </div>
 
-                {/* OTP Code - Critical & Integrated Glass Design */}
-                <div className="relative bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 backdrop-blur-xl border-2 border-emerald-400/40 rounded-2xl p-4 shadow-lg">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/5 to-cyan-400/5 rounded-2xl" />
-                  <div className="relative flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-emerald-300/80 font-bold uppercase tracking-wide mb-1">Código de verificación</p>
-                      <p className="text-xs text-white/60">Muéstralo al conductor</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm px-5 py-3 rounded-xl border border-white/20 shadow-lg">
-                      <span className="text-2xl font-black text-white tracking-wider">
-                        {confirmedRideData?.otp}
-                      </span>
-                    </div>
+                {/* License Plate - High Contrast Island */}
+                <div className="rounded-2xl p-4 flex items-center justify-between" style={{ background: TESLA_COLORS.bg }}>
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                      Placa
+                    </p>
+                    <p className="text-xs" style={{ color: TESLA_COLORS.accent }}>
+                      Verifica antes de abordar
+                    </p>
+                  </div>
+                  <div className="px-4 py-2 rounded-xl" style={{ background: TESLA_COLORS.text_primary }}>
+                    <span className="text-2xl font-black tracking-widest" style={{ color: TESLA_COLORS.bg }}>
+                      {confirmedRideData.captain?.vehicle?.number || "---"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* OTP Code - Accent Island */}
+                <div className="mt-3 rounded-2xl p-4 flex items-center justify-between" style={{ background: `${TESLA_COLORS.accent}15` }}>
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.accent }}>
+                      Código de verificación
+                    </p>
+                    <p className="text-xs" style={{ color: TESLA_COLORS.text_secondary }}>
+                      Muéstralo al conductor
+                    </p>
+                  </div>
+                  <div className="px-5 py-3 rounded-xl" style={{ background: TESLA_COLORS.surface_3 }}>
+                    <span className="text-2xl font-black tracking-wider" style={{ color: TESLA_COLORS.text_primary }}>
+                      {confirmedRideData.otp}
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            /* Vehicle Selection View - Before Driver Assigned */
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 mb-4 shadow-lg">
-              <div className="flex justify-center">
-                <img
-                  src={
-                    selectedVehicle === "car"
-                      ? "/Uber-PNG-Photos.png"
-                      : `/${selectedVehicle}.webp`
-                  }
-                  className="h-16 w-auto"
-                  alt="Vehículo"
-                />
-              </div>
-            </div>
-          )}
-          {/* Premium Contact Actions - Glass Theme */}
-          {confirmedRideData?._id && (
-            <div className="flex gap-3 mb-4">
-              <div className="relative flex-1">
-                <Button
-                  type={"link"}
-                  path={`/user/chat/${confirmedRideData?._id}`}
-                  title={"Enviar mensaje"}
-                  icon={<SendHorizontal strokeWidth={2} size={18} />}
-                  classes={BUTTON_CLASSES.message}
-                />
-                {unreadMessages > 0 && (
-                  <MessageBadge count={unreadMessages} className="-top-1 -right-1" />
-                )}
-              </div>
-              <a
-                href={"tel:" + confirmedRideData?.captain?.phone}
-                className={BUTTON_CLASSES.call}
-              >
-                <PhoneCall size={20} strokeWidth={2.5} className="text-white" />
-              </a>
-            </div>
-          )}
-          {/* Premium Route Display - Enhanced glass card */}
-          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl overflow-hidden space-y-3">
-            {/* Pickup */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 p-2 bg-emerald-500/20 backdrop-blur-sm rounded-xl border border-emerald-400/20 shadow-lg shadow-emerald-500/10">
-                <MapPinMinus size={16} className="text-emerald-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Recogida</p>
-                <h1 className="text-sm sm:text-base font-bold text-white leading-tight truncate" style={{ textWrap: 'balance' }}>
-                  {pickupLocation.split(", ")[0]}
-                </h1>
-                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5 line-clamp-1">
-                  {pickupLocation.split(", ").slice(1).join(", ")}
-                </p>
-              </div>
-            </div>
-
-            {/* Separator - Animated dots */}
-            <div className="flex items-center gap-2 py-1 pl-5">
-              <div className="flex flex-col gap-1">
-                <div className="w-1 h-1 rounded-full bg-white/30" />
-                <div className="w-1 h-1 rounded-full bg-white/20" />
-                <div className="w-1 h-1 rounded-full bg-white/10" />
-              </div>
-            </div>
-
-            {/* Destination */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 p-2 bg-red-500/20 backdrop-blur-sm rounded-xl border border-red-400/20 shadow-lg shadow-red-500/10">
-                <MapPinPlus size={16} className="text-red-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] sm:text-xs text-white/40 font-medium mb-0.5">Destino</p>
-                <h1 className="text-sm sm:text-base font-bold text-white leading-tight truncate" style={{ textWrap: 'balance' }}>
-                  {destinationLocation.split(", ")[0]}
-                </h1>
-                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5 line-clamp-1">
-                  {destinationLocation.split(", ").slice(1).join(", ")}
-                </p>
-              </div>
-            </div>
-
-            {/* Fare - Glass divider */}
-            <div className="flex items-center justify-between pt-3 mt-2 border-t border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
-                  <CreditCard size={14} className="text-white/60" />
-                </div>
-                <span className="text-xs sm:text-sm text-white/60 font-medium whitespace-nowrap">Efectivo</span>
-              </div>
-              <h1 className="text-lg sm:text-xl font-bold text-white whitespace-nowrap">
-                COP$ {fare[selectedVehicle]?.toLocaleString('es-CO') || 0}
-              </h1>
-            </div>
-          </div>
-          {/* Premium Action Buttons with Safe Bottom Padding */}
-          <div className="pb-4">
-            {rideCreated || confirmedRideData ? (
-              <Button
-                title={"Cancelar Viaje"}
-                loading={loading}
-                classes={"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 font-bold rounded-xl shadow-lg shadow-red-500/20"}
-                fun={cancelRide}
-              />
-            ) : (
-              <Button 
-                title={"Confirmar Viaje"} 
-                fun={createRide} 
-                loading={loading}
-                classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
-              />
             )}
+
+            {/* Contact Actions - Physics Buttons */}
+            {confirmedRideData?._id && (
+              <div className="flex gap-3 mb-4">
+                <div className="relative flex-1">
+                  <motion.a
+                    href={`/user/chat/${confirmedRideData._id}`}
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                    onTapStart={() => triggerHaptic('medium')}
+                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold"
+                    style={{
+                      background: TESLA_COLORS.surface_2,
+                      color: TESLA_COLORS.text_primary,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                    }}
+                  >
+                    <MessageSquare size={20} strokeWidth={2} />
+                    <span>Mensaje</span>
+                  </motion.a>
+                  {unreadMessages > 0 && <MessageBadge count={unreadMessages} />}
+                </div>
+
+                <motion.a
+                  href={`tel:${confirmedRideData.captain?.phone}`}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                  onTapStart={() => triggerHaptic('medium')}
+                  className="w-14 h-14 flex items-center justify-center rounded-2xl"
+                  style={{
+                    background: TESLA_COLORS.accent,
+                    boxShadow: `0 4px 12px ${TESLA_COLORS.accent}40`,
+                  }}
+                >
+                  <PhoneCall size={22} strokeWidth={2.5} style={{ color: TESLA_COLORS.text_primary }} />
+                </motion.a>
+              </div>
+            )}
+
+            {/* Route Display - Matte Card */}
+            <div className="rounded-3xl p-4 mb-4" style={{ background: TESLA_COLORS.surface_2 }}>
+              {/* Pickup */}
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${TESLA_COLORS.accent}20` }}>
+                  <MapPinMinus size={16} style={{ color: TESLA_COLORS.accent }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                    Recogida
+                  </p>
+                  <p className="text-sm font-semibold truncate" style={{ color: TESLA_COLORS.text_primary }}>
+                    {pickupLocation?.split(", ")[0]}
+                  </p>
+                </div>
+              </div>
+
+              {/* Connector dots */}
+              <div className="flex flex-col gap-1 pl-4 py-2">
+                <div className="w-1 h-1 rounded-full" style={{ background: TESLA_COLORS.divider }} />
+                <div className="w-1 h-1 rounded-full" style={{ background: TESLA_COLORS.divider }} />
+                <div className="w-1 h-1 rounded-full" style={{ background: TESLA_COLORS.divider }} />
+              </div>
+
+              {/* Destination */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: TESLA_COLORS.surface_3 }}>
+                  <MapPinPlus size={16} style={{ color: TESLA_COLORS.text_secondary }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                    Destino
+                  </p>
+                  <p className="text-sm font-semibold truncate" style={{ color: TESLA_COLORS.text_primary }}>
+                    {destinationLocation?.split(", ")[0]}
+                  </p>
+                </div>
+              </div>
+
+              {/* Fare - Monochromatic Divider + Bold Typography */}
+              <div className="flex items-center justify-between pt-4 mt-4" style={{ borderTop: `1px solid ${TESLA_COLORS.divider}` }}>
+                <div className="flex items-center gap-2">
+                  <CreditCard size={18} style={{ color: TESLA_COLORS.text_tertiary }} />
+                  <span className="text-sm font-medium" style={{ color: TESLA_COLORS.text_secondary }}>
+                    Efectivo
+                  </span>
+                </div>
+                <h2 className="text-3xl font-black" style={{ color: TESLA_COLORS.text_primary }}>
+                  {formatCurrency(fare?.[selectedVehicle])}
+                </h2>
+              </div>
+            </div>
+
+            {/* Action Buttons - Physics-based */}
+            <div className="space-y-3">
+              {rideCreated || confirmedRideData ? (
+                <motion.button
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.01 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.99 }}
+                  onTapStart={() => triggerHaptic('heavy')}
+                  onClick={cancelRide}
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+                  style={{
+                    background: '#DC2626',
+                    color: TESLA_COLORS.text_primary,
+                    boxShadow: '0 4px 16px rgba(220, 38, 38, 0.4)',
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                >
+                  {loading ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <AlertCircle size={20} />
+                  )}
+                  <span>Cancelar Viaje</span>
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.01 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.99 }}
+                  onTapStart={() => triggerHaptic('heavy')}
+                  onClick={createRide}
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+                  style={{
+                    background: TESLA_COLORS.accent,
+                    color: TESLA_COLORS.text_primary,
+                    boxShadow: `0 4px 16px ${TESLA_COLORS.accent}40`,
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                >
+                  {loading ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <Navigation size={20} />
+                  )}
+                  <span>Confirmar Viaje</span>
+                </motion.button>
+              )}
+            </div>
           </div>
-            </>
-          )}
-        </div>
+        </motion.div>
       </div>
-    </>
+    </motion.div>
   );
 }
 
