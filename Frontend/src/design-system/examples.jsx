@@ -112,15 +112,14 @@ function ExampleInteractiveButton() {
 }
 
 // Example 6: Responsive design with utility functions
-// Note: Ensure utility functions are imported
-// import { isMobile, isTablet, isDesktop } from './index';
+// Note: Import the utility functions from the design system
+import { isMobile, isTablet, isDesktop } from './index';
 
 function ExampleResponsiveComponent() {
   const getLayoutClass = () => {
-    if (typeof window === 'undefined') return 'flex-col';
-    if (window.innerWidth < 768) return 'flex-col space-y-4';
-    if (window.innerWidth >= 768 && window.innerWidth < 1024) return 'grid grid-cols-2 gap-6';
-    if (window.innerWidth >= 1024) return 'grid grid-cols-3 gap-8';
+    if (isMobile()) return 'flex-col space-y-4';
+    if (isTablet()) return 'grid grid-cols-2 gap-6';
+    if (isDesktop()) return 'grid grid-cols-3 gap-8';
     return 'flex-col';
   };
   
