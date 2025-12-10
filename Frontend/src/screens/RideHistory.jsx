@@ -2,21 +2,19 @@ import { useState, useMemo } from "react";
 import {
   ArrowLeft,
   Calendar,
-  ChevronUp,
-  Clock,
-  CreditCard,
   MapPin,
   Car,
   Bike,
   Star,
   Search,
   Filter,
-  ChevronRight,
   TrendingUp,
   Activity,
+  DollarSign,
+  Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 function RideHistory() {
   const navigation = useNavigate();
@@ -98,46 +96,35 @@ function RideHistory() {
   }, [user.rides]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 relative overflow-x-hidden">
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle, rgb(16 185 129) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }} />
-      </div>
-
-      {/* Premium Header */}
-      <div className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10">
-        <div className="px-4 py-4">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mb-4"
-          >
+    <div className="w-full min-h-screen bg-white dark:bg-black overflow-y-auto">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-20 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800"
+      >
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => navigation(-1)}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all active:scale-95 border border-white/20"
+              className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center"
             >
-              <ArrowLeft strokeWidth={2.5} size={24} className="text-white" />
+              <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
             </button>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Historial
               </h1>
-              <p className="text-sm text-slate-400">{stats.total} viajes realizados</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {stats.total} viajes realizados
+              </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="relative"
-          >
+          <div className="relative mb-4">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
               size={20}
             />
             <input
@@ -145,81 +132,79 @@ function RideHistory() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por origen o destino..."
-              className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-slate-400 text-white backdrop-blur-xl"
+              className="w-full h-12 pl-12 pr-4 bg-gray-100 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl outline-none text-sm placeholder:text-gray-400 text-gray-900 dark:text-white transition-colors"
             />
-          </motion.div>
+          </div>
 
           {/* Stats Cards */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-3 gap-2 mt-3"
-          >
-            <StatsCard
-              icon={<Activity size={16} className="text-blue-400" />}
-              label="Total"
-              value={stats.total}
-              gradient="from-blue-500/20 to-blue-600/20"
-              />
-            <StatsCard
-              icon={<CreditCard size={16} className="text-emerald-400" />}
-              label="Gastado"
-              value={`$${Math.round(stats.totalSpent / 1000)}K`}
-              gradient="from-emerald-500/20 to-green-600/20"
-            />
-            <StatsCard
-              icon={<TrendingUp size={16} className="text-purple-400" />}
-              label="Promedio"
-              value={`$${Math.round(stats.avgFare / 1000)}K`}
-              gradient="from-purple-500/20 to-pink-600/20"
-            />
-          </motion.div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl p-3 border border-blue-200 dark:border-blue-800">
+              <Activity size={16} className="text-blue-500 mb-1" />
+              <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Total</p>
+              <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{stats.total}</p>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl p-3 border border-emerald-200 dark:border-emerald-800">
+              <DollarSign size={16} className="text-emerald-500 mb-1" />
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Gastado</p>
+              <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                ${Math.round(stats.totalSpent / 1000)}K
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl p-3 border border-purple-200 dark:border-purple-800">
+              <TrendingUp size={16} className="text-purple-500 mb-1" />
+              <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Promedio</p>
+              <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                ${Math.round(stats.avgFare / 1000)}K
+              </p>
+            </div>
+          </div>
 
           {/* Filter Toggle */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center gap-2 mt-3"
-          >
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all text-sm font-medium text-white border border-white/20 backdrop-blur-xl"
+              className="flex items-center gap-2 px-4 h-10 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-2xl transition-all text-sm font-medium text-gray-900 dark:text-white"
             >
               <Filter size={16} />
-              Filtros
+              Ordenar
             </button>
-            {showFilters && (
-              <div className="flex gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
-                <button
-                  onClick={() => setSortBy("date")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    sortBy === "date"
-                      ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white"
-                      : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                  }`}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="flex gap-2"
                 >
-                  Fecha
-                </button>
-                <button
-                  onClick={() => setSortBy("price")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    sortBy === "price"
-                      ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white"
-                      : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                  }`}
-                >
-                  Precio
-                </button>
-              </div>
-            )}
-          </motion.div>
+                  <button
+                    onClick={() => setSortBy("date")}
+                    className={`px-4 h-10 rounded-2xl text-sm font-medium transition-all ${
+                      sortBy === "date"
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
+                    }`}
+                  >
+                    Fecha
+                  </button>
+                  <button
+                    onClick={() => setSortBy("price")}
+                    className={`px-4 h-10 rounded-2xl text-sm font-medium transition-all ${
+                      sortBy === "price"
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
+                    }`}
+                  >
+                    Precio
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Rides List */}
-      <div className="px-4 pb-20 pt-4 relative">
+      <div className="px-6 pb-20 pt-6">
         {/* Today Section */}
         <RideSection
           title="Hoy"
@@ -253,13 +238,13 @@ function RideHistory() {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-16"
             >
-              <div className="w-20 h-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar size={32} className="text-slate-400" />
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar size={32} className="text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                 No hay viajes
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {searchQuery
                   ? "No se encontraron resultados para tu búsqueda"
                   : "Aún no has realizado ningún viaje"}
@@ -271,17 +256,6 @@ function RideHistory() {
   );
 }
 
-// Stats Card Component
-const StatsCard = ({ icon, label, value, gradient }) => (
-  <div className={`bg-gradient-to-br ${gradient} backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-lg`}>
-    <div className="flex items-center gap-2 mb-1">
-      {icon}
-      <span className="text-xs text-white/80 font-medium">{label}</span>
-    </div>
-    <p className="text-lg font-bold text-white">{value}</p>
-  </div>
-);
-
 // Ride Section Component
 const RideSection = ({ title, rides, expandedRide, setExpandedRide }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -289,39 +263,49 @@ const RideSection = ({ title, rides, expandedRide, setExpandedRide }) => {
   if (rides.length === 0) return null;
 
   return (
-    <div className="mb-6">
+    <div className="mb-8">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full mb-3 group"
+        className="flex items-center justify-between w-full mb-4"
       >
-        <h2 className="text-lg font-bold text-white">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-400 font-medium">
+          <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             {rides.length} {rides.length === 1 ? "viaje" : "viajes"}
           </span>
-          <ChevronUp
-            size={20}
-            className={`text-slate-400 transition-transform duration-300 ${
-              isOpen ? "rotate-180" : ""
-            }`}
-          />
+          <motion.div
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-gray-400">
+              <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
         </div>
       </button>
 
-      {isOpen && (
-        <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          {rides.map((ride) => (
-            <RideCard
-              key={ride._id}
-              ride={ride}
-              isExpanded={expandedRide === ride._id}
-              onToggle={() =>
-                setExpandedRide(expandedRide === ride._id ? null : ride._id)
-              }
-            />
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3"
+          >
+            {rides.map((ride) => (
+              <RideCard
+                key={ride._id}
+                ride={ride}
+                isExpanded={expandedRide === ride._id}
+                onToggle={() =>
+                  setExpandedRide(expandedRide === ride._id ? null : ride._id)
+                }
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -366,33 +350,36 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
   const hasRating = ride.rating && ride.rating > 0;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onToggle}
-      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4 cursor-pointer hover:bg-white/10 hover:border-emerald-500/50 transition-all duration-200 active:scale-[0.99]"
+      className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-4 cursor-pointer hover:border-gray-300 dark:hover:border-gray-700 transition-all"
     >
       {/* Header Section */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <div className="p-1.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg">
-              <VehicleIcon size={16} className="text-emerald-400" />
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <VehicleIcon size={16} className="text-emerald-500" />
             </div>
-            <span className="text-sm font-semibold text-white capitalize">
+            <span className="text-sm font-semibold text-gray-900 dark:text-white capitalize">
               {ride.vehicleType === "car" ? "Carro" : "Moto"}
             </span>
             {ride.status && (
               <span
                 className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                   ride.status === "completed"
-                    ? "bg-green-500/20 text-green-300 border border-green-500/30"
-                    : "bg-red-500/20 text-red-300 border border-red-500/30"
+                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                    : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                 }`}
               >
                 {ride.status === "completed" ? "Completado" : "Cancelado"}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-slate-400">
+          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
             <span className="flex items-center gap-1">
               <Calendar size={12} />
               {formatDate(ride.createdAt)}
@@ -405,11 +392,11 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
         </div>
 
         <div className="text-right">
-          <p className="text-xl font-bold text-white">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">
             ${ride.fare?.toLocaleString("es-CO") || 0}
           </p>
           {ride.distance && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {(Number(ride.distance.toFixed(2)) / 1000).toFixed(1)} km
             </p>
           )}
@@ -417,82 +404,91 @@ export const RideCard = ({ ride, isExpanded, onToggle }) => {
       </div>
 
       {/* Route Section */}
-      <div className="space-y-2">
-        <div className="flex items-start gap-3">
-          <div className="flex flex-col items-center pt-1">
-            <div className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 ring-2 ring-emerald-500/50"></div>
-            <div className="w-0.5 h-8 bg-gradient-to-b from-emerald-500 via-slate-600 to-red-500 my-0.5"></div>
-            <div className="w-3 h-3 rounded-sm bg-red-500 border-2 border-slate-900 ring-2 ring-red-500/50"></div>
+      <div className="relative pl-6">
+        {/* Route Line */}
+        <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-gradient-to-b from-emerald-500 to-gray-300 dark:to-gray-700"></div>
+        
+        {/* Pickup Dot */}
+        <div className="absolute left-0 top-2 -translate-x-[3px] w-2 h-2 rounded-full bg-emerald-500"></div>
+        
+        {/* Destination Dot */}
+        <div className="absolute left-0 bottom-2 -translate-x-[3px] w-2 h-2 rounded-full bg-gray-400"></div>
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">
+              {ride.pickup?.split(", ")[0] || "Origen"}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+              {ride.pickup?.split(", ").slice(1).join(", ") || ""}
+            </p>
           </div>
-          <div className="flex-1 space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-white line-clamp-1">
-                {ride.pickup?.split(", ")[0] || "Origen"}
-              </p>
-              <p className="text-xs text-slate-400 line-clamp-1">
-                {ride.pickup?.split(", ").slice(1).join(", ") || ""}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white line-clamp-1">
-                {ride.destination?.split(", ")[0] || "Destino"}
-              </p>
-              <p className="text-xs text-slate-400 line-clamp-1">
-                {ride.destination?.split(", ").slice(1).join(", ") || ""}
-              </p>
-            </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">
+              {ride.destination?.split(", ")[0] || "Destino"}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+              {ride.destination?.split(", ").slice(1).join(", ") || ""}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Expanded Details */}
-      {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-white/10 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Rating */}
-          {hasRating && (
-            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 backdrop-blur-xl">
-              <Star size={16} className="fill-amber-400 text-amber-400" />
-              <span className="text-sm font-semibold text-white">
-                Calificación: {ride.rating}/5
-              </span>
-              {ride.ratingComment && (
-                <span className="text-xs text-slate-300 ml-auto">
-                  "{ride.ratingComment}"
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3"
+          >
+            {/* Rating */}
+            {hasRating && (
+              <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-3">
+                <Star size={16} className="fill-amber-400 text-amber-400" />
+                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                  Calificación: {ride.rating}/5
                 </span>
-              )}
-            </div>
-          )}
+                {ride.ratingComment && (
+                  <span className="text-xs text-amber-600 dark:text-amber-400 ml-auto truncate">
+                    "{ride.ratingComment}"
+                  </span>
+                )}
+              </div>
+            )}
 
-          {/* Driver Info - Only show for completed rides */}
-          {ride.status === "completed" && (ride.captain || ride.driver) && (
-            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/5 rounded-lg p-3">
-              <p className="text-xs text-slate-400 mb-1">Conductor</p>
-              <p className="text-sm font-semibold text-white truncate">
-                {ride.captain?.fullname?.firstname || 
-                 ride.captain?.firstname || 
-                 ride.driver?.fullname?.firstname || 
-                 ride.driver?.firstname ||
-                 ride.captain?.name ||
-                 ride.driver?.name}
-              </p>
-              {/* Vehicle Info if available */}
-              {(() => {
-                const vehicle = ride.captain?.vehicle || ride.driver?.vehicle;
-                if (vehicle && (vehicle.make || vehicle.model || vehicle.color)) {
-                  return (
-                    <p className="text-xs text-slate-400 mt-1 truncate">
-                      {vehicle.make || ""} {vehicle.model || ""} 
-                      {vehicle.color && ` - ${vehicle.color}`}
-                    </p>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+            {/* Driver Info */}
+            {ride.status === "completed" && (ride.captain || ride.driver) && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Conductor</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  {ride.captain?.fullname?.firstname || 
+                   ride.captain?.firstname || 
+                   ride.driver?.fullname?.firstname || 
+                   ride.driver?.firstname ||
+                   ride.captain?.name ||
+                   ride.driver?.name}
+                </p>
+                {(() => {
+                  const vehicle = ride.captain?.vehicle || ride.driver?.vehicle;
+                  if (vehicle && (vehicle.make || vehicle.model || vehicle.color)) {
+                    return (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                        {vehicle.make || ""} {vehicle.model || ""} 
+                        {vehicle.color && ` - ${vehicle.color}`}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
