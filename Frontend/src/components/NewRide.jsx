@@ -1,316 +1,411 @@
-import { useState } from "react";
-import {
-  CreditCard,
-  MapPinMinus,
-  MapPinPlus,
-  PhoneCall,
-  SendHorizontal,
+import { useState, useRef } from "react";
+import { motion, useSpring, useTransform, AnimatePresence } from "framer-motion";
+import { 
+  MapPinMinus, 
+  MapPinPlus, 
+  Navigation, 
+  ArrowRight,
   ChevronDown,
-  ChevronUp,
-  GripHorizontal,
-  User,
-  Navigation,
+  X,
+  Zap,
+  Clock,
+  CreditCard,
 } from "lucide-react";
-import Button from "./Button";
-import MessageBadge from "./ui/MessageBadge";
+
+/**
+ * 🏆 TESLA MATTE PREMIUM - NewRide Component
+ * 
+ * Design System: $100K Premium UI
+ * - Floating Island panel (16px detached)
+ * - Matte Black surfaces (NO transparency)
+ * - Bento Grid route display
+ * - Monochromatic palette + emerald accent
+ * - Physics-based drag interactions
+ * - Typography-driven hierarchy
+ * 
+ * Interaction Flow:
+ * 1. Panel floats as island from bottom
+ * 2. Drag handle for swipe-to-dismiss
+ * 3. Route display with pickup/destination
+ * 4. Confirm button with physics feedback
+ */
+
+// Tesla Matte Color System
+const TESLA_COLORS = {
+  bg: '#000000',
+  surface_1: '#0A0A0A',
+  surface_2: '#1C1C1E',
+  surface_3: '#2C2C2E',
+  text_primary: '#FFFFFF',
+  text_secondary: '#8E8E93',
+  text_tertiary: '#636366',
+  accent: '#10B981',
+  divider: '#38383A',
+};
+
+// Physics Spring Configuration
+const SPRING_CONFIG = {
+  type: "spring",
+  stiffness: 400,
+  damping: 30,
+  mass: 0.8,
+};
+
+// Haptic feedback
+const triggerHaptic = (intensity = 'light') => {
+  if (navigator.vibrate) {
+    const patterns = {
+      light: [5],
+      medium: [10],
+      heavy: [15],
+    };
+    navigator.vibrate(patterns[intensity]);
+  }
+};
 
 function NewRide({
-  rideData,
-  otp,
-  setOtp,
-  showBtn,
+  pickup,
+  destination,
   showPanel,
   setShowPanel,
-  showPreviousPanel,
-  loading,
-  acceptRide,
-  endRide,
-  verifyOTP,
-  cancelRide,
-  error,
-  unreadMessages = 0,
+  fare,
+  vehicleType,
+  showNextPanel,
 }) {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   
-  const ignoreRide = () => {
-    setShowPanel(false);
-    showPreviousPanel(true);
+  // Physics spring for drag
+  const springY = useSpring(0, SPRING_CONFIG);
+  const opacity = useTransform(springY, [0, 300], [1, 0]);
+
+  // Check for reduced motion
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return 'COP$ 0';
+    return `COP$ ${amount.toLocaleString('es-CO')}`;
   };
 
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
+  // Estimate time based on vehicle type
+  const getEstimatedTime = () => {
+    if (vehicleType === 'bike') return '8-12 min';
+    return '10-15 min';
+  };
+
+  // Handle confirm ride
+  const handleConfirm = () => {
+    if (isConfirming) return;
+    
+    setIsConfirming(true);
+    triggerHaptic('heavy');
+    
+    setTimeout(() => {
+      setShowPanel(false);
+      showNextPanel(true);
+      setIsConfirming(false);
+    }, 600);
+  };
+
+  // Handle panel close
+  const handleClose = () => {
+    setShowPanel(false);
+    triggerHaptic('light');
   };
 
   return (
-    <>
-      <div
-        className={`${
-          showPanel ? "bottom-0" : "-bottom-full"
-        } ${
-          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
-      >
-        {/* Premium Drag Handle */}
-        <div 
-          onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
+    <AnimatePresence>
+      {showPanel && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50"
         >
-          <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
-            {isMinimized ? (
-              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            ) : (
-              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            )}
-          </div>
-        </div>
-        
-        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleClose}
+            style={{ opacity }}
+            className="absolute inset-0"
+            style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+          />
 
-          {isMinimized ? (
-            /* Minimized View - Premium Summary with User Profile Photo */
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-shrink-0">
-                  {rideData?.user?.profileImage ? (
-                    <img 
-                      src={rideData.user.profileImage} 
-                      alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
-                      className="w-12 h-12 rounded-full object-cover shadow-lg ring-2 ring-emerald-400/30"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
+          {/* Floating Island Container */}
+          <div 
+            className="absolute bottom-0 left-0 right-0"
+            style={{ 
+              padding: '16px',
+              paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+            }}
+          >
+            <motion.div
+              initial={prefersReducedMotion ? {} : { y: '100%', scale: 0.95 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={prefersReducedMotion ? {} : { y: '100%', scale: 0.95 }}
+              transition={SPRING_CONFIG}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              style={{ y: springY }}
+              onDragEnd={(e, { offset, velocity }) => {
+                if (offset.y > 150 || velocity.y > 500) {
+                  handleClose();
+                }
+              }}
+              className="overflow-hidden"
+              style={{
+                background: TESLA_COLORS.surface_1,
+                borderRadius: '32px',
+                boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              {/* Drag Handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <motion.div 
+                  whileHover={{ scale: 1.2 }}
+                  className="w-12 h-1.5 rounded-full"
+                  style={{ background: TESLA_COLORS.divider }}
+                />
+              </div>
+
+              {/* Content */}
+              <div className="px-4 pb-4">
+                {/* Header - Typography Hierarchy */}
+                <div className="mb-6 text-center">
+                  <h2 className="text-2xl font-black mb-1" style={{ color: TESLA_COLORS.text_primary }}>
+                    Confirma tu viaje
+                  </h2>
+                  <p className="text-sm" style={{ color: TESLA_COLORS.text_secondary }}>
+                    Revisa los detalles antes de continuar
+                  </p>
+                </div>
+
+                {/* Route Display - Bento Grid */}
+                <motion.div
+                  initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ ...SPRING_CONFIG, delay: 0.1 }}
+                  className="rounded-3xl p-4 mb-4"
+                  style={{
+                    background: TESLA_COLORS.surface_2,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                  }}
+                >
+                  {/* Pickup Location */}
+                  <div className="flex items-start gap-3 mb-4">
+                    {/* Icon */}
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ 
+                        background: `${TESLA_COLORS.accent}20`,
                       }}
-                    />
-                  ) : null}
+                    >
+                      <MapPinMinus size={20} style={{ color: TESLA_COLORS.accent }} />
+                    </div>
+
+                    {/* Text */}
+                    <div className="flex-1 min-w-0 pt-1">
+                      <div 
+                        className="text-[10px] font-bold tracking-wider uppercase mb-1"
+                        style={{ color: TESLA_COLORS.text_tertiary }}
+                      >
+                        RECOGIDA
+                      </div>
+                      <p 
+                        className="text-sm font-semibold truncate"
+                        style={{ color: TESLA_COLORS.text_primary }}
+                      >
+                        {pickup || "Ubicación actual"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Connector Line */}
+                  <div className="flex items-center justify-center my-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <div 
+                        className="w-1.5 h-1.5 rounded-full" 
+                        style={{ background: TESLA_COLORS.divider }}
+                      />
+                      <div 
+                        className="w-1.5 h-1.5 rounded-full" 
+                        style={{ background: TESLA_COLORS.divider }}
+                      />
+                      <div 
+                        className="w-1.5 h-1.5 rounded-full" 
+                        style={{ background: TESLA_COLORS.divider }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Destination Location */}
+                  <div className="flex items-start gap-3">
+                    {/* Icon */}
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ 
+                        background: TESLA_COLORS.surface_3,
+                      }}
+                    >
+                      <MapPinPlus size={20} style={{ color: TESLA_COLORS.text_secondary }} />
+                    </div>
+
+                    {/* Text */}
+                    <div className="flex-1 min-w-0 pt-1">
+                      <div 
+                        className="text-[10px] font-bold tracking-wider uppercase mb-1"
+                        style={{ color: TESLA_COLORS.text_tertiary }}
+                      >
+                        DESTINO
+                      </div>
+                      <p 
+                        className="text-sm font-semibold truncate"
+                        style={{ color: TESLA_COLORS.text_primary }}
+                      >
+                        {destination || "Seleccionar destino"}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Trip Info Grid - Bento Style */}
+                <motion.div
+                  initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ ...SPRING_CONFIG, delay: 0.2 }}
+                  className="grid grid-cols-2 gap-3 mb-4"
+                >
+                  {/* Estimated Time Card */}
                   <div 
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md ring-2 ring-emerald-400/30 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                    className="rounded-2xl p-3"
+                    style={{
+                      background: TESLA_COLORS.surface_2,
+                      border: `1px solid ${TESLA_COLORS.divider}`,
+                    }}
                   >
-                    <span className="text-base font-bold text-white">
-                      {rideData?.user?.fullname?.firstname?.[0]?.toUpperCase() || ''}
-                      {rideData?.user?.fullname?.lastname?.[0]?.toUpperCase() || ''}
-                    </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock size={16} style={{ color: TESLA_COLORS.text_tertiary }} />
+                      <span 
+                        className="text-[10px] font-bold tracking-wider uppercase"
+                        style={{ color: TESLA_COLORS.text_tertiary }}
+                      >
+                        TIEMPO
+                      </span>
+                    </div>
+                    <p className="text-lg font-black" style={{ color: TESLA_COLORS.text_primary }}>
+                      {getEstimatedTime()}
+                    </p>
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
-                </div>
-                <div>
-                  <h1 className="text-base font-bold text-white">
-                    {rideData?.user?.fullname?.firstname} {rideData?.user?.fullname?.lastname}
-                  </h1>
-                  <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <Navigation size={12} />
-                    {(Number(rideData?.distance?.toFixed(2)) / 1000)?.toFixed(1)} km
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <h1 className="font-bold text-xl text-emerald-400">
-                  ${Math.floor(rideData?.fare / 1000)}K
-                </h1>
-                <p className="text-xs text-slate-400">Toca para más</p>
-              </div>
-            </div>
-          ) : (
-            /* Maximized View - Premium Details */
-            <>
-          {/* Premium User Card - Super-Rounded Ultra-Premium */}
-          <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 mb-5 shadow-2xl overflow-hidden">
-            {/* Top accent glow */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
 
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex items-center gap-4 min-w-0 flex-1">
-                <div className="relative flex-shrink-0">
-                  {rideData?.user?.profileImage ? (
-                    <img
-                      src={rideData.user.profileImage}
-                      alt={`${rideData?.user?.fullname?.firstname} ${rideData?.user?.fullname?.lastname}`}
-                      className="w-16 h-16 rounded-[24px] object-cover shadow-xl ring-2 ring-emerald-400/40"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div
-                    className={`w-16 h-16 rounded-[24px] bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-xl ring-2 ring-emerald-400/40 ${rideData?.user?.profileImage ? 'hidden' : 'flex'}`}
+                  {/* Vehicle Type Card */}
+                  <div 
+                    className="rounded-2xl p-3"
+                    style={{
+                      background: TESLA_COLORS.surface_2,
+                      border: `1px solid ${TESLA_COLORS.divider}`,
+                    }}
                   >
-                    <span className="text-2xl font-black text-white">
-                      {rideData?.user?.fullname?.firstname[0]}
-                      {rideData?.user?.fullname?.lastname[0]}
-                    </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap size={16} style={{ color: TESLA_COLORS.text_tertiary }} />
+                      <span 
+                        className="text-[10px] font-bold tracking-wider uppercase"
+                        style={{ color: TESLA_COLORS.text_tertiary }}
+                      >
+                        VEHÍCULO
+                      </span>
+                    </div>
+                    <p className="text-lg font-black capitalize" style={{ color: TESLA_COLORS.text_primary }}>
+                      {vehicleType === 'bike' ? 'Moto' : 'Carro'}
+                    </p>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full border-2 border-slate-900 shadow-lg shadow-emerald-400/60 animate-pulse" />
-                </div>
+                </motion.div>
 
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-black text-white leading-tight mb-1">
-                    {rideData?.user?.fullname?.firstname}{" "}
-                    {rideData?.user?.fullname?.lastname}
-                  </h1>
-                  <p className="text-sm text-white/50 font-medium truncate">
-                    {rideData?.user?.phone || rideData?.user?.email}
-                  </p>
-                </div>
-              </div>
+                {/* Fare Display - Prominent */}
+                <motion.div
+                  initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ ...SPRING_CONFIG, delay: 0.3 }}
+                  className="rounded-3xl p-4 mb-6"
+                  style={{
+                    background: TESLA_COLORS.surface_2,
+                    border: `1px solid ${TESLA_COLORS.divider}`,
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                        style={{ background: TESLA_COLORS.surface_3 }}
+                      >
+                        <CreditCard size={20} style={{ color: TESLA_COLORS.text_secondary }} />
+                      </div>
+                      <div>
+                        <div 
+                          className="text-[10px] font-bold tracking-wider uppercase mb-0.5"
+                          style={{ color: TESLA_COLORS.text_tertiary }}
+                        >
+                          TARIFA
+                        </div>
+                        <p className="text-sm font-semibold" style={{ color: TESLA_COLORS.text_secondary }}>
+                          Efectivo
+                        </p>
+                      </div>
+                    </div>
 
-              <div className="text-right flex-shrink-0">
-                <p className="text-xs text-white/40 font-bold uppercase tracking-wide mb-1">Tarifa</p>
-                <h1 className="font-black text-3xl text-emerald-400 leading-tight whitespace-nowrap">
-                  ${Math.floor(rideData?.fare / 1000)}K
-                </h1>
-                <p className="text-xs text-white/40 font-medium mt-1 flex items-center gap-1 justify-end whitespace-nowrap">
-                  <Navigation size={14} />
-                  {(Number(rideData?.distance?.toFixed(2)) / 1000)?.toFixed(1)} km
-                </p>
+                    <div className="text-right">
+                      <h2 className="text-3xl font-black" style={{ color: TESLA_COLORS.text_primary }}>
+                        {formatCurrency(fare?.[vehicleType])}
+                      </h2>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Confirm Button - Physics Interaction */}
+                <motion.button
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...SPRING_CONFIG, delay: 0.4 }}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.01 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.99 }}
+                  onTapStart={() => triggerHaptic('heavy')}
+                  onClick={handleConfirm}
+                  disabled={isConfirming}
+                  className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-base transition-opacity disabled:opacity-60"
+                  style={{
+                    background: TESLA_COLORS.accent,
+                    color: TESLA_COLORS.text_primary,
+                    boxShadow: `0 8px 24px ${TESLA_COLORS.accent}40, 0 0 0 1px ${TESLA_COLORS.accent}`,
+                  }}
+                >
+                  {isConfirming ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Navigation size={20} />
+                      </motion.div>
+                      Confirmando...
+                    </>
+                  ) : (
+                    <>
+                      <Navigation size={20} />
+                      Confirmar Viaje
+                      <ArrowRight size={20} />
+                    </>
+                  )}
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           </div>
-
-          {/* Premium Actions - Pill Buttons */}
-          {showBtn !== "accept" && (
-            <div className="flex gap-3 mb-5">
-              <div className="relative flex-1">
-                <Button
-                  type={"link"}
-                  path={`/captain/chat/${rideData?._id}`}
-                  title={"Mensaje"}
-                  icon={<SendHorizontal strokeWidth={2.5} size={20} />}
-                  classes={"bg-white/10 hover:bg-white/20 backdrop-blur-xl font-bold text-base text-white shadow-lg border border-white/20"}
-                />
-                {unreadMessages > 0 && (
-                  <MessageBadge count={unreadMessages} className="-top-1 -right-1" />
-                )}
-              </div>
-              <a 
-                href={"tel:" + rideData?.user?.phone}
-                className="flex items-center justify-center w-16 h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 active:scale-95 transition-all shadow-lg hover:shadow-xl"
-              >
-                <PhoneCall size={22} strokeWidth={2.5} className="text-white" />
-              </a>
-            </div>
-          )}
-
-          {/* Premium Route Display - Super-Rounded with Extra Padding */}
-          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 mb-5 shadow-2xl overflow-hidden space-y-4">
-            {/* Pickup */}
-            <div className="flex items-start gap-4">
-              <div className="mt-1 p-3 bg-emerald-500/20 backdrop-blur-sm rounded-[20px] border border-emerald-400/30 shadow-lg shadow-emerald-500/20">
-                <MapPinMinus size={20} className="text-emerald-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-white/40 font-bold uppercase tracking-wide mb-2">Recogida</p>
-                <h1 className="text-base font-black text-white leading-tight mb-1" style={{ textWrap: 'balance' }}>
-                  {rideData.pickup.split(", ")[0]}
-                </h1>
-                <p className="text-xs text-white/40 line-clamp-2">
-                  {rideData.pickup.split(", ").slice(1).join(", ")}
-                </p>
-              </div>
-            </div>
-
-            {/* Separator - Larger dots */}
-            <div className="flex items-center gap-2 py-2 pl-7">
-              <div className="flex flex-col gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-              </div>
-            </div>
-
-            {/* Destination */}
-            <div className="flex items-start gap-4">
-              <div className="mt-1 p-3 bg-red-500/20 backdrop-blur-sm rounded-[20px] border border-red-400/30 shadow-lg shadow-red-500/20">
-                <MapPinPlus size={20} className="text-red-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-white/40 font-bold uppercase tracking-wide mb-2">Destino</p>
-                <h1 className="text-base font-black text-white leading-tight mb-1" style={{ textWrap: 'balance' }}>
-                  {rideData.destination.split(", ")[0]}
-                </h1>
-                <p className="text-xs text-white/40 line-clamp-2">
-                  {rideData.destination.split(", ").slice(1).join(", ")}
-                </p>
-              </div>
-            </div>
-
-            {/* Fare - Pill divider */}
-            <div className="flex items-center justify-between pt-4 mt-3 border-t border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-[16px] border border-white/10">
-                  <CreditCard size={18} className="text-white/60" />
-                </div>
-                <span className="text-sm text-white/60 font-bold whitespace-nowrap">Efectivo</span>
-              </div>
-              <h1 className="text-2xl font-black text-white whitespace-nowrap">
-                COP$ {rideData.fare?.toLocaleString('es-CO') || 0}
-              </h1>
-            </div>
-          </div>
-
-          {/* Premium Action Buttons with Safe Bottom Padding */}
-          <div className="pb-4">
-            {showBtn === "accept" ? (
-              <div className="flex gap-3">
-                <Button
-                  title={"Ignorar"}
-                  loading={loading}
-                  fun={ignoreRide}
-                  classes={"bg-white/10 text-white border-2 border-white/20 hover:border-white/30 backdrop-blur-xl font-semibold rounded-xl shadow-sm"}
-                />
-                <Button 
-                  title={"Aceptar Viaje"} 
-                  fun={acceptRide} 
-                  loading={loading}
-                  classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
-                />
-              </div>
-            ) : showBtn === "otp" ? (
-              <>
-                <input
-                  type="number"
-                  minLength={6}
-                  maxLength={6}
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder={"Código OTP de 6 dígitos"}
-                  className="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-emerald-400 px-4 py-4 rounded-xl outline-none text-base font-semibold text-center tracking-widest mb-3 transition-colors text-white placeholder:text-slate-400"
-                />
-                {error && (
-                  <p className="text-red-400 text-sm mb-3 text-center font-medium bg-red-500/20 backdrop-blur-sm py-2 rounded-lg border border-red-400/30">{error}</p>
-                )}
-                <Button 
-                  title={"Verificar OTP"} 
-                  loading={loading} 
-                  fun={verifyOTP}
-                  classes={"bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 font-bold rounded-xl shadow-lg mb-3"}
-                />
-                <Button 
-                  title={"Cancelar Viaje"} 
-                  loading={loading} 
-                  fun={cancelRide}
-                  classes={"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 font-bold rounded-xl shadow-lg shadow-red-500/30"}
-                />
-              </>
-            ) : (
-              <Button
-                title={"Finalizar Viaje"}
-                fun={endRide}
-                loading={loading}
-                classes={"bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 font-bold rounded-xl shadow-lg shadow-emerald-500/30"}
-              />
-            )}
-          </div>
-            </>
-          )}
-        </div>
-      </div>
-    </>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
