@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { useCaptain } from "../contexts/CaptainContext";
 import { SocketDataContext } from "../contexts/SocketContext";
 import { NewRide, Sidebar } from "../components";
-import DriverStatsPill from "../components/DriverStatsPill";
 import MapboxStaticMap from "../components/maps/MapboxStaticMap";
 import MessageNotificationBanner from "../components/ui/MessageNotificationBanner";
 import { showRideRequestToast } from "../components/notifications/RideRequestToast";
@@ -13,8 +12,20 @@ import { useNavigate } from "react-router-dom";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Menu,
+  Plus,
+  Minus,
+  Compass,
+  TrendingUp,
+  DollarSign,
+  Activity,
+  Clock,
+  Star
+} from "lucide-react";
 
-// Coordenadas de San Antonio del Táchira, Colombia (frontera)
+// Coordenadas de San Antonio del Táchira
 const DEFAULT_LOCATION = {
   lat: 7.8146,
   lng: -72.4430
@@ -28,7 +39,6 @@ const NOTIFICATION_SOUNDS = {
   newMessage: "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"
 };
 
-// Función para reproducir sonido
 const playSound = (soundUrl) => {
   try {
     const audio = new Audio(soundUrl);
@@ -39,7 +49,6 @@ const playSound = (soundUrl) => {
   }
 };
 
-// Función para vibrar
 const vibrate = (pattern = [200, 100, 200]) => {
   if (navigator.vibrate) {
     navigator.vibrate(pattern);
@@ -68,7 +77,6 @@ const defaultRideData = {
 
 function CaptainHomeScreen() {
   const token = localStorage.getItem("token");
-
   const { captain, setCaptain } = useCaptain();
   const { socket } = useContext(SocketDataContext);
   const navigate = useNavigate();
@@ -112,12 +120,9 @@ function CaptainHomeScreen() {
   const [currentRideStatus, setCurrentRideStatus] = useState("pending");
   const locationUpdateInterval = useRef(null);
   
-  // Track active ride request toasts for dismissing when rides are taken
-  const activeRideToastsRef = useRef(new Map()); // Map<rideId, toastId>
+  const activeRideToastsRef = useRef(new Map());
 
-  // Paneles
   const [showCaptainDetailsPanel, setShowCaptainDetailsPanel] = useState(true);
-  // Removed isPanelExpanded - Driver panel is now always compact (no expand functionality)
   const [showNewRidePanel, setShowNewRidePanel] = useState(
     JSON.parse(localStorage.getItem("showPanel")) || false
   );
@@ -125,13 +130,19 @@ function CaptainHomeScreen() {
     JSON.parse(localStorage.getItem("showBtn")) || "accept"
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mapZoom, setMapZoom] = useState(14);
+  const [isLocating, setIsLocating] = useState(false);
 
-  // Handle sidebar toggle - hide all panels when sidebar opens
+  // Check for reduced motion preference
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
   const handleSidebarToggle = (isOpen) => {
     setIsSidebarOpen(isOpen);
   };
 
-  // Función para refrescar datos del conductor
   const refreshCaptainData = async () => {
     try {
       const response = await axios.get(
@@ -167,13 +178,11 @@ function CaptainHomeScreen() {
         );
         setLoading(false);
         setShowBtn("otp");
-        setCurrentRideStatus("accepted"); // Driver on the way to pickup
+        setCurrentRideStatus("accepted");
         
-        // Vibrar y reproducir sonido al aceptar
         vibrate([200, 100, 200]);
         playSound(NOTIFICATION_SOUNDS.rideAccepted);
         
-        // Update map center to driver's location
         setMapCenter({
           lat: riderLocation.lat,
           lng: riderLocation.lng
@@ -202,13 +211,12 @@ function CaptainHomeScreen() {
             },
           }
         );
-        // Update map center to current location
         setMapCenter({
           lat: riderLocation.lat,
           lng: riderLocation.lng
         });
         setShowBtn("end-ride");
-        setCurrentRideStatus("ongoing"); // Ride in progress
+        setCurrentRideStatus("ongoing");
         setLoading(false);
         Console.log(response);
       }
@@ -235,7 +243,6 @@ function CaptainHomeScreen() {
           }
         );
         
-        // Guardar datos del viaje completado
         setCompletedRideData({
           fare: newRide.fare,
           pickup: newRide.pickup,
@@ -243,14 +250,11 @@ function CaptainHomeScreen() {
           distance: newRide.distance
         });
         
-        // Vibrar y reproducir sonido
         vibrate([300, 150, 300, 150, 300]);
         playSound(NOTIFICATION_SOUNDS.rideEnded);
         
-        // Mostrar pantalla de viaje completado
         setShowRideCompleted(true);
         
-        // Reset map to current location
         setMapCenter({
           lat: riderLocation.lat,
           lng: riderLocation.lng
@@ -265,7 +269,6 @@ function CaptainHomeScreen() {
         localStorage.removeItem("showPanel");
         localStorage.removeItem("messages");
         
-        // Refrescar datos del conductor para actualizar ganancias
         await refreshCaptainData();
       }
     } catch (err) {
@@ -293,7 +296,6 @@ function CaptainHomeScreen() {
         setLoading(false);
         showAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente', 'success');
         
-        // Reset to initial state
         clearRideData();
       }
     } catch (err) {
@@ -336,7 +338,6 @@ function CaptainHomeScreen() {
         },
         (error) => {
           console.error("Error obteniendo posición:", error);
-          // Usar ubicación por defecto
           setMapCenter({
             lat: DEFAULT_LOCATION.lat,
             lng: DEFAULT_LOCATION.lng
@@ -357,7 +358,6 @@ function CaptainHomeScreen() {
     localStorage.removeItem("showPanel");
   };
 
-  // Debounced localStorage save functions to avoid excessive writes
   const saveMessagesDebounced = useMemo(
     () => debounce((messages) => {
       localStorage.setItem("messages", JSON.stringify(messages));
@@ -390,14 +390,11 @@ function CaptainHomeScreen() {
 
       updateLocation();
       
-      // Actualizar ubicación cada 30 segundos
       const locationInterval = setInterval(updateLocation, 30000);
       
-      // Real-time location tracking for active rides
       let activeRideLocationInterval = null;
       
       if (showBtn === "start" || showBtn === "end-ride") {
-        // During active ride, send location every 5 seconds
         activeRideLocationInterval = setInterval(() => {
           if (navigator.geolocation && newRide._id) {
             navigator.geolocation.getCurrentPosition(
@@ -407,7 +404,6 @@ function CaptainHomeScreen() {
                   lng: position.coords.longitude,
                 };
                 
-                // Send location update via socket
                 socket.emit("driver:locationUpdate", {
                   driverId: captain._id,
                   location,
@@ -421,45 +417,36 @@ function CaptainHomeScreen() {
               }
             );
           }
-        }, 5000); // Update every 5 seconds
+        }, 5000);
       }
       
-      // Handler para nuevos viajes
       const handleNewRide = (data) => {
         Console.log("Nuevo viaje disponible:", data);
         vibrate([500, 200, 500, 200, 500]);
         playSound(NOTIFICATION_SOUNDS.newRide);
         
-        // No need for auto-minimize logic - panel is always compact now
-        
         setShowBtn("accept");
         setNewRide(data);
         setShowNewRidePanel(true);
         
-        // Show premium toast notification
         const toastId = showRideRequestToast(
           data,
           () => {
-            // Accept handler
             acceptRide();
             activeRideToastsRef.current.delete(data._id);
           },
           () => {
-            // Reject handler
             Console.log("Viaje rechazado por el conductor");
             activeRideToastsRef.current.delete(data._id);
           }
         );
         
-        // Track this toast so we can dismiss it if ride is taken
         activeRideToastsRef.current.set(data._id, toastId);
       };
 
-      // Handler para viajes cancelados
       const handleRideCancelled = (data) => {
         Console.log("Viaje cancelado", data);
         
-        // Dismiss toast if it's still showing
         const toastId = activeRideToastsRef.current.get(data.rideId);
         if (toastId) {
           toast.dismiss(toastId);
@@ -470,18 +457,15 @@ function CaptainHomeScreen() {
         clearRideData();
       };
       
-      // Handler for ride taken by another driver (race condition)
       const handleRideTaken = (data) => {
         Console.log("Viaje tomado por otro conductor", data);
         
-        // Immediately dismiss the toast for this ride
         const toastId = activeRideToastsRef.current.get(data.rideId);
         if (toastId) {
           toast.dismiss(toastId);
           activeRideToastsRef.current.delete(data.rideId);
         }
         
-        // If this was the currently displayed ride, clear it
         if (newRide?._id === data.rideId) {
           clearRideData();
         }
@@ -501,20 +485,17 @@ function CaptainHomeScreen() {
         socket.off("ride-taken", handleRideTaken);
       };
     }
-  }, [captain?._id, socket, showBtn, newRide._id]); // Removed isPanelExpanded from dependencies
+  }, [captain?._id, socket, showBtn, newRide._id]);
 
-  // Guardar mensajes en localStorage (debounced)
   useEffect(() => {
     saveMessagesDebounced(messages);
   }, [messages, saveMessagesDebounced]);
 
-  // Socket de mensajes - room handling
   useEffect(() => {
     if (socket && newRide._id && newRide._id !== "123456789012345678901234") {
       socket.emit("join-room", newRide._id);
 
       const handleReceiveMessage = (data) => {
-        // Fix: data is an object {msg, by, time}, not a string
         const messageText = typeof data === 'string' ? data : (data?.msg || '');
         const messageBy = typeof data === 'string' ? 'other' : (data?.by || 'other');
         const messageTime = typeof data === 'string' ? '' : (data?.time || '');
@@ -522,16 +503,12 @@ function CaptainHomeScreen() {
         setMessages((prev) => [...prev, { msg: messageText, by: messageBy, time: messageTime }]);
         setUnreadMessages((prev) => prev + 1);
         
-        // Set message info for banner - use msg property
         setLastMessage({
           sender: newRide?.user?.fullname?.firstname || "Pasajero",
           text: messageText
         });
         
-        // Show notification banner
         setShowMessageBanner(true);
-        
-        // Play sound and vibrate
         playSound(NOTIFICATION_SOUNDS.newMessage);
         vibrate([200, 100, 200]);
       };
@@ -544,12 +521,10 @@ function CaptainHomeScreen() {
     }
   }, [newRide._id, socket]);
 
-  // Guardar detalles del viaje (debounced)
   useEffect(() => {
     saveRideDetailsDebounced(newRide);
   }, [newRide, saveRideDetailsDebounced]);
 
-  // Guardar estado de paneles (debounced)
   useEffect(() => {
     savePanelStateDebounced(showNewRidePanel, showBtn);
   }, [showNewRidePanel, showBtn, savePanelStateDebounced]);
@@ -599,14 +574,12 @@ function CaptainHomeScreen() {
     }
   }, [captain?.rides]);
 
-  // Debug socket
   useEffect(() => {
     if (socket?.id) {
       Console.log("socket id:", socket.id);
     }
   }, [socket?.id]);
 
-  // Safe captain data with defaults
   const captainData = captain || {
     fullname: { firstname: "Cargando", lastname: "" },
     _id: null,
@@ -614,7 +587,7 @@ function CaptainHomeScreen() {
   };
 
   return (
-    <div className="relative w-full h-dvh overflow-hidden">
+    <div className="relative w-full h-dvh overflow-hidden bg-white dark:bg-black">
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -624,12 +597,12 @@ function CaptainHomeScreen() {
       />
       <Sidebar onToggle={handleSidebarToggle} />
       
-      {/* Map Container - Full Height */}
+      {/* Map Container */}
       <div className="absolute inset-0 z-0">
         <MapboxStaticMap
           latitude={mapCenter.lat}
           longitude={mapCenter.lng}
-          zoom={13}
+          zoom={mapZoom}
           interactive={true}
           showMarker={true}
           markerColor="#05A357"
@@ -637,50 +610,145 @@ function CaptainHomeScreen() {
         />
       </div>
 
-      {/* Modal de viaje completado */}
-      {showRideCompleted && completedRideData && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl transform animate-scale-in">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Viaje Completado!</h2>
-              <p className="text-gray-600 mb-4">Has finalizado el viaje exitosamente</p>
-              
-              <div className="bg-green-50 rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-600">Ganancia del viaje</p>
-                <p className="text-3xl font-bold text-green-600">COP$ {completedRideData.fare?.toLocaleString('es-CO')}</p>
-              </div>
-              
-              <div className="text-left bg-gray-50 rounded-xl p-3 mb-4 text-sm">
-                <p className="text-gray-500">Distancia: {Math.round((completedRideData.distance || 0) / 1000)} km</p>
-              </div>
-              
-              <button
-                onClick={closeRideCompleted}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition-colors"
+      {/* Swiss Minimalist UI Layer */}
+      {!isSidebarOpen && !showNewRidePanel && (
+        <>
+          {/* Top Bar - Captain Profile + Stats */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-6 left-6 right-6 z-20"
+          >
+            <div className="flex items-start justify-between gap-3">
+              {/* Captain Profile Pill */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsSidebarOpen(true)}
+                className="flex items-center gap-3 pl-2 pr-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800"
               >
-                Continuar
-              </button>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+                  {captainData?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {captainData?.fullname?.firstname}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Disponible</p>
+                  </div>
+                </div>
+              </motion.button>
+
+              {/* Menu Button */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsSidebarOpen(true)}
+                className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+              >
+                <Menu size={20} className="text-gray-900 dark:text-white" />
+              </motion.button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+
+          {/* Map Controls - Right Side */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="absolute right-6 top-24 z-20 flex flex-col gap-3"
+          >
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMapZoom(prev => Math.min(prev + 1, 20))}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Plus size={20} className="text-gray-900 dark:text-white" />
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMapZoom(prev => Math.max(prev - 1, 1))}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Minus size={20} className="text-gray-900 dark:text-white" />
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                setIsLocating(true);
+                updateLocation();
+                setTimeout(() => setIsLocating(false), 1500);
+              }}
+              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            >
+              <Compass size={20} className={`text-gray-900 dark:text-white ${isLocating ? 'animate-spin' : ''}`} />
+            </motion.button>
+          </motion.div>
+
+          {/* Bottom Stats Dashboard */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-8 left-6 right-6 z-20"
+          >
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 p-6">
+              {/* Today's Earnings - Hero Stat */}
+              <div className="mb-6 text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Hoy ganaste</p>
+                <p className="text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                  ${Math.round(earnings.today / 1000)}K
+                </p>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-3">
+                {/* Total Earnings */}
+                <div className="text-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
+                  <DollarSign size={18} className="mx-auto mb-1 text-emerald-500" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    ${Math.round(earnings.total / 1000)}K
+                  </p>
+                </div>
+
+                {/* Rides Today */}
+                <div className="text-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
+                  <Activity size={18} className="mx-auto mb-1 text-blue-500" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Viajes</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    {rides.accepted}
+                  </p>
+                </div>
+
+                {/* Distance */}
+                <div className="text-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
+                  <TrendingUp size={18} className="mx-auto mb-1 text-purple-500" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Distancia</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    {rides.distanceTravelled}km
+                  </p>
+                </div>
+              </div>
+
+              {/* Rating if available */}
+              {captain?.rating && (
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-2">
+                  <Star size={16} className="fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {captain.rating.average.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    ({captain.rating.count} calificaciones)
+                  </span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </>
       )}
 
-      {/* Captain Dashboard - Compact Floating Glass Dock (Always Visible, No Expand) */}
-      {showCaptainDetailsPanel && !isSidebarOpen && (
-        <DriverStatsPill
-          captain={captainData}
-          vehicle={captainData?.vehicle}
-          earnings={earnings}
-          rides={rides}
-        />
-      )}
-
-      {/* New ride panel - Hidden when sidebar is open */}
+      {/* New Ride Panel */}
       {!isSidebarOpen && (
         <NewRide
           rideData={newRide}
@@ -699,6 +767,70 @@ function CaptainHomeScreen() {
           unreadMessages={unreadMessages}
         />
       )}
+
+      {/* Ride Completed Modal */}
+      <AnimatePresence>
+        {showRideCompleted && completedRideData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-3xl p-8 w-full max-w-sm shadow-2xl"
+            >
+              {/* Success Icon */}
+              <motion.div
+                initial={prefersReducedMotion ? {} : { scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center"
+              >
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </motion.div>
+
+              <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                ¡Viaje completado!
+              </h2>
+              <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
+                Has finalizado el viaje exitosamente
+              </p>
+              
+              {/* Earnings Display */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl p-6 mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
+                  Ganancia del viaje
+                </p>
+                <p className="text-4xl font-black text-center text-emerald-600 dark:text-emerald-400">
+                  ${completedRideData.fare?.toLocaleString('es-CO') || 0}
+                </p>
+              </div>
+              
+              {/* Distance */}
+              <div className="text-center mb-6">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Distancia: {Math.round((completedRideData.distance || 0) / 1000)} km
+                </p>
+              </div>
+              
+              {/* Continue Button */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={closeRideCompleted}
+                className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-2xl shadow-lg transition-all"
+              >
+                Continuar
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Message Notification Banner */}
       <MessageNotificationBanner
