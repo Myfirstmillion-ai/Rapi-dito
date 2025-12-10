@@ -1,239 +1,408 @@
-import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Power, TrendingUp, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Home, 
+  Map, 
+  User, 
+  Settings,
+  MessageSquare,
+  Bell,
+  History,
+  Plus,
+  X,
+} from "lucide-react";
+import { useState } from "react";
 
 /**
- * CommandDock - Tesla-Inspired Floating Command Bar for Drivers
+ * 🏆 TESLA MATTE PREMIUM - CommandDock Component
  * 
- * Design Philosophy: Tesla Dashboard meets iOS Dynamic Island
- * Core Principle: Minimal Distraction, Maximum Information Density
+ * Design System: $100K Premium UI
+ * - Floating dock detached from bottom (16px)
+ * - Matte Black pill shape (NO transparency)
+ * - Monochromatic icons + emerald accent
+ * - Physics-based hover/tap interactions
+ * - Expandable quick actions
+ * - Haptic feedback on interactions
  * 
- * Structure:
- * └── The Dock (fixed bottom, floating bar)
- *     ├── Left: Captain Avatar + Status Ring (Pulsing when online)
- *     ├── Center: GO ONLINE Button (massive, industrial)
- *     └── Right: Earnings Display (metric typography)
+ * Usage: Primary navigation dock for app
  */
 
-const CAPTAIN_COLORS = {
-  background: '#000000',
-  surface: '#1A1A1A',
-  elevated: '#2A2A2A',
-  online: '#10B981',
-  offline: '#6B7280',
-  busy: '#F59E0B',
-  warning: '#EF4444',
-  glass: 'rgba(0, 0, 0, 0.8)',
-  glassBorder: 'rgba(255, 255, 255, 0.1)',
+// Tesla Matte Color System
+const TESLA_COLORS = {
+  bg: '#000000',
+  surface_1: '#0A0A0A',
+  surface_2: '#1C1C1E',
+  surface_3: '#2C2C2E',
+  text_primary: '#FFFFFF',
+  text_secondary: '#8E8E93',
+  text_tertiary: '#636366',
+  accent: '#10B981',
+  divider: '#38383A',
 };
 
-function CommandDock({ 
-  captain, 
-  earnings = { today: 0 }, 
-  rides = { accepted: 0 },
-  isOnline,
-  onToggleOnline,
-  isBusy = false 
-}) {
-  // Check for reduced motion preference
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
+// Physics Spring Configuration
+const SPRING_CONFIG = {
+  type: "spring",
+  stiffness: 400,
+  damping: 30,
+  mass: 0.8,
+};
 
-  // Spring animation config for Tesla-smooth feel
-  const springConfig = {
-    type: "spring",
-    damping: 30,
-    stiffness: 300
+// Haptic feedback
+const triggerHaptic = (intensity = 'light') => {
+  if (navigator.vibrate) {
+    const patterns = {
+      light: [5],
+      medium: [10],
+      heavy: [15],
+    };
+    navigator.vibrate(patterns[intensity]);
+  }
+};
+
+// Main navigation items
+const mainNavItems = [
+  { id: 'home', icon: Home, label: 'Inicio' },
+  { id: 'map', icon: Map, label: 'Mapa' },
+  { id: 'messages', icon: MessageSquare, label: 'Mensajes', badge: 3 },
+  { id: 'profile', icon: User, label: 'Perfil' },
+];
+
+// Quick action items (expandable menu)
+const quickActions = [
+  { id: 'history', icon: History, label: 'Historial' },
+  { id: 'notifications', icon: Bell, label: 'Notificaciones', badge: 5 },
+  { id: 'settings', icon: Settings, label: 'Ajustes' },
+];
+
+function CommandDock({ 
+  activeTab = 'home', 
+  onTabChange,
+  onQuickAction,
+  hideLabels = false,
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
+
+  // Check for reduced motion
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
+  const handleTabChange = (tabId) => {
+    triggerHaptic('medium');
+    onTabChange?.(tabId);
   };
 
-  // Get captain initials
-  const captainInitials = useMemo(() => {
-    const first = captain?.fullname?.firstname?.[0] || '';
-    const last = captain?.fullname?.lastname?.[0] || '';
-    return (first + last).toUpperCase() || 'C';
-  }, [captain]);
+  const handleQuickAction = (actionId) => {
+    triggerHaptic('heavy');
+    onQuickAction?.(actionId);
+    setIsExpanded(false);
+  };
 
-  // Format earnings for display
-  const formattedEarnings = useMemo(() => {
-    const amount = earnings?.today || 0;
-    if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
-    }
-    if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(1)}K`;
-    }
-    return amount.toLocaleString('es-CO', { maximumFractionDigits: 0 });
-  }, [earnings]);
-
-  // Get status color
-  const statusColor = isBusy ? CAPTAIN_COLORS.busy : (isOnline ? CAPTAIN_COLORS.online : CAPTAIN_COLORS.offline);
+  const toggleExpanded = () => {
+    triggerHaptic(isExpanded ? 'light' : 'heavy');
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <motion.div
-      initial={prefersReducedMotion ? {} : { y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ ...springConfig, delay: 0.2 }}
-      className="fixed bottom-0 left-0 right-0 z-30"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-    >
-      {/* The Command Dock - Tesla Industrial Design */}
-      <div 
-        className="mx-4 mb-4 rounded-[28px] overflow-hidden"
+    <>
+      {/* Expanded Quick Actions Overlay */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40"
+          >
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={toggleExpanded}
+              className="absolute inset-0"
+              style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+            />
+
+            {/* Quick Actions Menu - Floating above dock */}
+            <div className="absolute bottom-32 left-0 right-0 flex justify-center px-4">
+              <motion.div
+                initial={prefersReducedMotion ? {} : { scale: 0.8, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={prefersReducedMotion ? {} : { scale: 0.8, y: 20, opacity: 0 }}
+                transition={SPRING_CONFIG}
+                className="rounded-3xl p-4"
+                style={{
+                  background: TESLA_COLORS.surface_1,
+                  border: `1px solid ${TESLA_COLORS.divider}`,
+                  boxShadow: '0 16px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+                  maxWidth: '320px',
+                }}
+              >
+                {/* Quick Actions Grid */}
+                <div className="grid grid-cols-3 gap-3">
+                  {quickActions.map((action, index) => (
+                    <QuickActionButton
+                      key={action.id}
+                      action={action}
+                      onClick={() => handleQuickAction(action.id)}
+                      delay={index * 0.05}
+                      prefersReducedMotion={prefersReducedMotion}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Command Dock - Floating Island */}
+      <motion.div
+        initial={prefersReducedMotion ? {} : { y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={SPRING_CONFIG}
+        className="fixed bottom-4 left-4 right-4 z-50 flex justify-center"
         style={{
-          background: CAPTAIN_COLORS.glass,
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          border: `1px solid ${CAPTAIN_COLORS.glassBorder}`,
-          boxShadow: '0 -4px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          paddingBottom: 'max(0px, env(safe-area-inset-bottom))',
         }}
       >
-        {/* Subtle top glow accent */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div
+          className="rounded-[32px] px-6 py-4 flex items-center gap-2"
+          style={{
+            background: TESLA_COLORS.surface_1,
+            border: `1px solid ${TESLA_COLORS.divider}`,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+          }}
+        >
+          {/* Main Navigation Items */}
+          {mainNavItems.map((item) => (
+            <NavButton
+              key={item.id}
+              item={item}
+              isActive={activeTab === item.id}
+              isHovered={hoveredItem === item.id}
+              onClick={() => handleTabChange(item.id)}
+              onHoverStart={() => setHoveredItem(item.id)}
+              onHoverEnd={() => setHoveredItem(null)}
+              hideLabel={hideLabels}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+          ))}
 
-        <div className="px-5 py-4">
-          <div className="flex items-center justify-between gap-4">
-            
-            {/* LEFT: Captain Avatar with Status Ring */}
-            <div className="relative flex-shrink-0">
-              {/* Pulsing ring when online */}
-              <AnimatePresence>
-                {isOnline && !isBusy && (
-                  <motion.div
-                    initial={prefersReducedMotion ? {} : { scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={prefersReducedMotion ? {} : { scale: 0.8, opacity: 0 }}
-                    className="absolute -inset-1.5 rounded-full"
-                    style={{
-                      border: `2px solid ${CAPTAIN_COLORS.online}`,
-                      animation: prefersReducedMotion ? 'none' : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                    }}
-                  />
-                )}
-              </AnimatePresence>
+          {/* Divider */}
+          <div 
+            className="w-px h-10 mx-1"
+            style={{ background: TESLA_COLORS.divider }}
+          />
 
-              {/* Avatar */}
-              {captain?.profileImage ? (
-                <img
-                  src={captain.profileImage}
-                  alt={captain?.fullname?.firstname || 'Captain'}
-                  className="w-14 h-14 rounded-full object-cover border-2 shadow-lg"
-                  style={{ borderColor: statusColor }}
-                />
-              ) : (
-                <div 
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg border-2"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${CAPTAIN_COLORS.elevated} 0%, ${CAPTAIN_COLORS.surface} 100%)`,
-                    borderColor: statusColor
-                  }}
+          {/* Expand Button (Plus/X) */}
+          <motion.button
+            whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+            whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+            onTapStart={() => triggerHaptic('medium')}
+            onClick={toggleExpanded}
+            className="relative w-12 h-12 rounded-2xl flex items-center justify-center"
+            style={{
+              background: isExpanded ? TESLA_COLORS.accent : TESLA_COLORS.surface_2,
+              boxShadow: isExpanded 
+                ? `0 4px 16px ${TESLA_COLORS.accent}40, 0 0 0 1px ${TESLA_COLORS.accent}`
+                : 'none',
+            }}
+          >
+            <AnimatePresence mode="wait">
+              {isExpanded ? (
+                <motion.div
+                  key="close"
+                  initial={prefersReducedMotion ? {} : { rotate: -90, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  exit={prefersReducedMotion ? {} : { rotate: 90, scale: 0 }}
+                  transition={SPRING_CONFIG}
                 >
-                  {captainInitials}
-                </div>
+                  <X size={20} style={{ color: TESLA_COLORS.text_primary }} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="plus"
+                  initial={prefersReducedMotion ? {} : { rotate: 90, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  exit={prefersReducedMotion ? {} : { rotate: -90, scale: 0 }}
+                  transition={SPRING_CONFIG}
+                >
+                  <Plus size={20} style={{ color: TESLA_COLORS.text_secondary }} />
+                </motion.div>
               )}
+            </AnimatePresence>
 
-              {/* Status dot */}
+            {/* Pulse indicator when not expanded */}
+            {!isExpanded && (
               <motion.div
-                animate={isOnline && !isBusy ? { scale: [1, 1.2, 1] } : {}}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2"
+                className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
                 style={{ 
-                  backgroundColor: statusColor,
-                  borderColor: CAPTAIN_COLORS.background,
-                  boxShadow: `0 0 8px ${statusColor}`
+                  background: TESLA_COLORS.accent,
+                  boxShadow: `0 0 8px ${TESLA_COLORS.accent}80`,
+                }}
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [1, 0.6, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
                 }}
               />
-            </div>
-
-            {/* CENTER: GO ONLINE Button - Massive Industrial Toggle */}
-            <div className="flex-1 flex justify-center">
-              <motion.button
-                whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
-                whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                onClick={onToggleOnline}
-                disabled={isBusy}
-                className={`
-                  relative px-8 py-3 rounded-full font-bold text-base uppercase tracking-wider
-                  transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
-                  flex items-center gap-2
-                `}
-                style={{
-                  background: isOnline 
-                    ? `linear-gradient(135deg, ${CAPTAIN_COLORS.online} 0%, #059669 100%)`
-                    : `linear-gradient(135deg, ${CAPTAIN_COLORS.elevated} 0%, ${CAPTAIN_COLORS.surface} 100%)`,
-                  color: isOnline ? '#FFFFFF' : '#9CA3AF',
-                  boxShadow: isOnline 
-                    ? `0 4px 20px ${CAPTAIN_COLORS.online}50, inset 0 1px 0 rgba(255, 255, 255, 0.2)`
-                    : '0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                  border: `1px solid ${isOnline ? CAPTAIN_COLORS.online : CAPTAIN_COLORS.glassBorder}`
-                }}
-              >
-                <Power className="w-5 h-5" />
-                <span>{isBusy ? 'EN VIAJE' : (isOnline ? 'ONLINE' : 'OFFLINE')}</span>
-                {isOnline && !isBusy && (
-                  <motion.div
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="w-2 h-2 rounded-full bg-white"
-                  />
-                )}
-              </motion.button>
-            </div>
-
-            {/* RIGHT: Earnings Display - Metric Typography */}
-            <div className="flex-shrink-0 text-right">
-              <p 
-                className="text-[10px] font-medium uppercase tracking-wider mb-0.5"
-                style={{ color: 'rgba(255, 255, 255, 0.4)' }}
-              >
-                <Zap className="w-3 h-3 inline mr-1" style={{ color: CAPTAIN_COLORS.online }} />
-                HOY
-              </p>
-              <div className="flex items-baseline gap-0.5 justify-end">
-                <span className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>$</span>
-                <motion.span
-                  key={formattedEarnings}
-                  initial={prefersReducedMotion ? {} : { scale: 1.1, color: CAPTAIN_COLORS.online }}
-                  animate={{ scale: 1, color: '#FFFFFF' }}
-                  transition={{ duration: 0.3 }}
-                  className="text-2xl font-bold tracking-tight"
-                  style={{
-                    textShadow: `0 0 20px ${CAPTAIN_COLORS.online}30`
-                  }}
-                >
-                  {formattedEarnings}
-                </motion.span>
-              </div>
-              <div className="flex items-center justify-end gap-1 mt-0.5">
-                <TrendingUp className="w-3 h-3" style={{ color: CAPTAIN_COLORS.online }} />
-                <span className="text-[10px] font-medium" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                  {rides?.accepted || 0} viajes
-                </span>
-              </div>
-            </div>
-          </div>
+            )}
+          </motion.button>
         </div>
+      </motion.div>
+    </>
+  );
+}
+
+/**
+ * NavButton - Individual navigation button
+ */
+function NavButton({ 
+  item, 
+  isActive, 
+  isHovered,
+  onClick, 
+  onHoverStart,
+  onHoverEnd,
+  hideLabel,
+  prefersReducedMotion,
+}) {
+  const Icon = item.icon;
+
+  return (
+    <motion.button
+      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+      onHoverStart={onHoverStart}
+      onHoverEnd={onHoverEnd}
+      onTapStart={() => triggerHaptic('light')}
+      onClick={onClick}
+      className="relative flex flex-col items-center justify-center gap-1 min-w-[56px] py-2 px-3 rounded-2xl transition-colors"
+      style={{
+        background: isActive 
+          ? `linear-gradient(135deg, ${TESLA_COLORS.accent}15, ${TESLA_COLORS.accent}08)` 
+          : isHovered 
+          ? TESLA_COLORS.surface_2 
+          : 'transparent',
+      }}
+    >
+      {/* Icon Container */}
+      <div className="relative">
+        <Icon 
+          size={22} 
+          strokeWidth={isActive ? 2.5 : 2}
+          style={{ 
+            color: isActive ? TESLA_COLORS.accent : TESLA_COLORS.text_secondary 
+          }} 
+        />
+        
+        {/* Badge for notifications/messages */}
+        {item.badge && (
+          <motion.div
+            initial={prefersReducedMotion ? {} : { scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1"
+            style={{
+              background: TESLA_COLORS.accent,
+              boxShadow: `0 2px 8px ${TESLA_COLORS.accent}60`,
+            }}
+          >
+            <span className="text-[10px] font-black" style={{ color: TESLA_COLORS.text_primary }}>
+              {item.badge > 9 ? '9+' : item.badge}
+            </span>
+          </motion.div>
+        )}
       </div>
 
-      {/* CSS for pulse ring animation */}
-      <style>{`
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 0.5;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-      `}</style>
-    </motion.div>
+      {/* Label (optional) */}
+      {!hideLabel && (
+        <motion.span
+          initial={prefersReducedMotion ? {} : { opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-[10px] font-bold tracking-wide"
+          style={{ 
+            color: isActive ? TESLA_COLORS.accent : TESLA_COLORS.text_tertiary 
+          }}
+        >
+          {item.label}
+        </motion.span>
+      )}
+
+      {/* Active indicator line */}
+      {isActive && (
+        <motion.div
+          layoutId="activeTab"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full"
+          style={{ background: TESLA_COLORS.accent }}
+          transition={SPRING_CONFIG}
+        />
+      )}
+    </motion.button>
+  );
+}
+
+/**
+ * QuickActionButton - Button in expanded menu
+ */
+function QuickActionButton({ action, onClick, delay, prefersReducedMotion }) {
+  const Icon = action.icon;
+
+  return (
+    <motion.button
+      initial={prefersReducedMotion ? {} : { scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={prefersReducedMotion ? {} : { scale: 0, opacity: 0 }}
+      transition={{ ...SPRING_CONFIG, delay }}
+      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+      onTapStart={() => triggerHaptic('medium')}
+      onClick={onClick}
+      className="relative flex flex-col items-center justify-center gap-2 py-4 rounded-2xl"
+      style={{
+        background: TESLA_COLORS.surface_2,
+        border: `1px solid ${TESLA_COLORS.divider}`,
+      }}
+    >
+      {/* Icon */}
+      <div 
+        className="w-12 h-12 rounded-2xl flex items-center justify-center"
+        style={{ background: TESLA_COLORS.surface_3 }}
+      >
+        <Icon size={20} style={{ color: TESLA_COLORS.text_secondary }} />
+      </div>
+
+      {/* Label */}
+      <span 
+        className="text-[10px] font-bold tracking-wide px-2 text-center"
+        style={{ color: TESLA_COLORS.text_secondary }}
+      >
+        {action.label}
+      </span>
+
+      {/* Badge */}
+      {action.badge && (
+        <motion.div
+          initial={prefersReducedMotion ? {} : { scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute top-2 right-2 min-w-[20px] h-[20px] rounded-full flex items-center justify-center px-1.5"
+          style={{
+            background: TESLA_COLORS.accent,
+            boxShadow: `0 2px 8px ${TESLA_COLORS.accent}60`,
+          }}
+        >
+          <span className="text-[10px] font-black" style={{ color: TESLA_COLORS.text_primary }}>
+            {action.badge > 9 ? '9+' : action.badge}
+          </span>
+        </motion.div>
+      )}
+    </motion.button>
   );
 }
 
