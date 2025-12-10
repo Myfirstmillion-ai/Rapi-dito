@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Loader2, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 /**
- * LookingForDriver - Minimal Overlay with Pulsing Pin
- * Native iOS Apple Maps inspired design
+ * LookingForDriver - Swiss Minimalist Radar Pulse Overlay
+ * Premium Native iOS Apple Maps inspired design
  * 
  * Features:
- * - Sonar wave effect (3 concentric pulsing rings)
- * - Floating glassmorphism status card
+ * - Clean sonar wave effect (3 concentric pulsing rings) centered on map
+ * - Minimal floating "Connecting..." pill at bottom
+ * - No glassmorphism - solid backgrounds only
  * - Spring physics animations
  */
 function LookingForDriver({ isVisible = false, onCancel }) {
@@ -29,144 +30,112 @@ function LookingForDriver({ isVisible = false, onCancel }) {
 
   return (
     <div className="absolute inset-0 z-30 pointer-events-none">
-      {/* Pulsing Location Pin - Centered on map */}
+      {/* Premium Radar Pulse - Centered on user's location pin */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-        {/* Sonar Wave Effect - 3 Concentric Rings */}
-        <div className="relative w-32 h-32 flex items-center justify-center">
-          {/* Outer ring - slowest */}
+        <div className="relative w-40 h-40 flex items-center justify-center">
+          {/* Outer ring - slowest, largest */}
           <div 
-            className="absolute inset-0 rounded-full border-2 border-emerald-500/60"
+            className="absolute inset-0 rounded-full border-2 border-emerald-500/50"
             style={{
               animation: prefersReducedMotion 
                 ? 'none' 
-                : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                : 'radar-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               animationDelay: '0s'
             }}
           />
           
           {/* Middle ring */}
           <div 
-            className="absolute inset-4 rounded-full border-2 border-emerald-500/70"
+            className="absolute inset-6 rounded-full border-2 border-emerald-500/60"
             style={{
               animation: prefersReducedMotion 
                 ? 'none' 
-                : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              animationDelay: '0.5s'
+                : 'radar-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              animationDelay: '0.6s'
             }}
           />
           
           {/* Inner ring - fastest */}
           <div 
-            className="absolute inset-8 rounded-full border-2 border-emerald-500/80"
+            className="absolute inset-12 rounded-full border-2 border-emerald-500/70"
             style={{
               animation: prefersReducedMotion 
                 ? 'none' 
-                : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              animationDelay: '1s'
+                : 'radar-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              animationDelay: '1.2s'
             }}
           />
           
-          {/* Center Pin Icon */}
+          {/* Center Pin - Solid, premium design */}
           <motion.div
             initial={prefersReducedMotion ? {} : { scale: 0 }}
             animate={{ scale: 1 }}
             transition={springConfig}
-            className="relative z-10 w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-500/50"
+            className="relative z-10 w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center"
+            style={{
+              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.2)'
+            }}
           >
-            <MapPin className="w-6 h-6 text-white" fill="white" />
+            <MapPin className="w-7 h-7 text-white" fill="white" />
           </motion.div>
         </div>
       </div>
 
-      {/* Floating Status Card - Bottom Center */}
+      {/* Minimal Floating Pill - Bottom Center */}
       <motion.div
-        initial={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
+        initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
+        exit={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
         transition={springConfig}
-        className="absolute bottom-6 left-6 right-6 pointer-events-auto"
+        className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-auto"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div 
-          className="mx-auto max-w-md rounded-3xl shadow-2xl overflow-hidden"
+          className="flex items-center gap-3 px-6 py-4 rounded-full bg-slate-900 shadow-2xl"
           style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)'
           }}
         >
-          <div className="px-6 py-5">
-            <div className="flex items-center gap-4">
-              {/* Spinning Loader Icon */}
-              <motion.div
-                animate={prefersReducedMotion ? {} : { rotate: 360 }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-                className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg"
-              >
-                <Loader2 className="w-6 h-6 text-white" />
-              </motion.div>
-              
-              {/* Status Text */}
-              <div className="flex-1">
-                <motion.h2
-                  animate={prefersReducedMotion ? {} : { opacity: [1, 0.7, 1] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="text-lg font-bold text-gray-900"
-                >
-                  Conectando...
-                </motion.h2>
-                <p className="text-sm text-gray-500">
-                  Buscando conductor cercano
-                </p>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full"
-                initial={{ x: '-100%' }}
-                animate={{ x: '100%' }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                style={{ width: '50%' }}
-              />
-            </div>
-
-            {/* Cancel Button */}
-            {onCancel && (
-              <button
-                onClick={onCancel}
-                className="mt-4 w-full py-3 rounded-2xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                Cancelar búsqueda
-              </button>
-            )}
+          {/* Pulsing dot indicator */}
+          <div className="relative flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="absolute w-3 h-3 rounded-full bg-emerald-500 animate-ping opacity-75" />
           </div>
+          
+          {/* Status Text */}
+          <motion.span
+            animate={prefersReducedMotion ? {} : { opacity: [1, 0.7, 1] }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="text-base font-semibold text-white"
+          >
+            Conectando...
+          </motion.span>
+
+          {/* Cancel Button - Subtle, integrated */}
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="ml-2 px-3 py-1.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              Cancelar
+            </button>
+          )}
         </div>
       </motion.div>
 
-      {/* CSS for pulse-ring animation */}
+      {/* CSS for radar-pulse animation */}
       <style>{`
-        @keyframes pulse-ring {
+        @keyframes radar-pulse {
           0% {
-            transform: scale(0.5);
+            transform: scale(0.6);
             opacity: 1;
           }
           100% {
-            transform: scale(2.5);
+            transform: scale(2.2);
             opacity: 0;
           }
         }

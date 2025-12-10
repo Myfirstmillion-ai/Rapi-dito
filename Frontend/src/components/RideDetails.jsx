@@ -82,47 +82,6 @@ function RideDetails({
             </button>
           )}
           
-          {/* Searching Animation - Premium Radar Pulse Effect */}
-          {rideCreated && !confirmedRideData && !isMinimized && (
-            <div className="mb-4 relative bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 backdrop-blur-xl border border-emerald-400/20 rounded-[28px] p-6 overflow-hidden">
-              {/* Animated gradient background pulse */}
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 animate-pulse" />
-
-              <div className="relative flex flex-col items-center gap-4">
-                {/* Enhanced Radar Pulse Animation - Multiple Ripples */}
-                <div className="relative w-20 h-20 flex items-center justify-center">
-                  {/* Outer ripple - slowest */}
-                  <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping" style={{ animationDuration: '2s' }} />
-                  {/* Middle ripple - medium */}
-                  <div className="absolute inset-3 rounded-full bg-emerald-400/30 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.3s' }} />
-                  {/* Inner ripple - fastest */}
-                  <div className="absolute inset-6 rounded-full bg-emerald-400/40 animate-ping" style={{ animationDuration: '1s', animationDelay: '0.6s' }} />
-                  {/* Center dot with glow */}
-                  <div className="absolute inset-0 m-auto w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 shadow-lg shadow-emerald-500/50 animate-pulse" />
-                </div>
-
-                {/* Text with breathing effect */}
-                <div className="text-center space-y-2">
-                  <h1 className="text-base sm:text-lg font-bold text-white animate-pulse" style={{ textWrap: 'balance', animationDuration: '2s' }}>
-                    Conectando con conductores cercanos...
-                  </h1>
-                  <p className="text-sm text-white/60 font-medium" style={{ textWrap: 'balance' }}>
-                    Esto puede tomar unos segundos
-                  </p>
-                </div>
-
-                {/* Enhanced Progress bar with shimmer and gradient */}
-                <div className="w-full overflow-hidden rounded-full h-2 bg-white/10 shadow-inner">
-                  <div 
-                    className="h-full w-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-[length:200%_100%]" 
-                    style={{
-                      animation: 'shimmer 1.5s ease-in-out infinite'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
           {isMinimized ? (
             /* Minimized View - Premium Summary with Profile Photo */
             <div className="flex justify-between items-center">
