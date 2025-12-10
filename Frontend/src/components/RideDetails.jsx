@@ -22,6 +22,9 @@ import MessageBadge from "./ui/MessageBadge";
  * - Minimalist solid background with deep shadows
  */
 
+// Slide to cancel handle width constant (w-12 = 48px + padding = 56px total)
+const SLIDE_HANDLE_WIDTH = 56;
+
 function RideDetails({
   pickupLocation,
   destinationLocation,
@@ -54,7 +57,7 @@ function RideDetails({
         ? moveEvent.touches[0].clientX 
         : moveEvent.clientX;
       const diff = currentX - startX;
-      const progress = Math.max(0, Math.min(1, diff / (trackWidth - 56)));
+      const progress = Math.max(0, Math.min(1, diff / (trackWidth - SLIDE_HANDLE_WIDTH)));
       setSlideProgress(progress);
       
       if (progress >= 0.9) {
@@ -318,7 +321,7 @@ function RideDetails({
                     onTouchStart={handleSlideStart}
                     className="absolute top-1 bottom-1 left-1 w-12 bg-red-500 rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg transition-transform"
                     style={{ 
-                      transform: `translateX(${slideProgress * (sliderTrackRef.current?.offsetWidth - 56 || 0)}px)`,
+                      transform: `translateX(${slideProgress * (sliderTrackRef.current?.offsetWidth - SLIDE_HANDLE_WIDTH || 0)}px)`,
                     }}
                   >
                     <X className="w-5 h-5 text-white" />

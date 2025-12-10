@@ -20,6 +20,7 @@ const vehicles = [
     type: "car",
     image: "/Uber-PNG-Photos.png",
     capacity: "4 personas",
+    capacityNum: 4,
     eta: "3-5 min",
     color: "emerald"
   },
@@ -30,6 +31,7 @@ const vehicles = [
     type: "bike",
     image: "/bike.webp",
     capacity: "1 persona",
+    capacityNum: 1,
     eta: "2-4 min",
     color: "blue"
   },
@@ -106,10 +108,12 @@ function SelectVehicle({
         {/* Horizontal Carousel */}
         <div 
           ref={scrollRef}
-          className="flex gap-4 px-6 pb-6 overflow-x-auto scrollbar-hide"
+          className="flex gap-4 px-6 pb-6 overflow-x-auto"
           style={{ 
             scrollSnapType: 'x mandatory',
-            WebkitOverflowScrolling: 'touch'
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
           }}
         >
           {vehicles.map((vehicle) => (
@@ -230,7 +234,7 @@ const VehicleCard = ({ vehicle, fare, isSelected, onSelect }) => {
           isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
         }`}>
           <Users className="w-3 h-3" />
-          <span>{vehicle.capacity.split(' ')[0]}</span>
+          <span>{vehicle.capacityNum}</span>
         </div>
       </div>
 
