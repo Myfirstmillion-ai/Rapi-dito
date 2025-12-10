@@ -247,9 +247,16 @@ function SearchingState({ prefersReducedMotion }) {
 /**
  * DriverCard - Premium driver information display
  */
-function DriverCard({ driver, otp, rideId, unreadMessages, prefersReducedMotion }) {
-  const driverName = `${driver?.fullname?.firstname || ''} ${driver?.fullname?.lastname || ''}`.trim();
-  const driverInitials = `${driver?.fullname?.firstname?.[0] || ''}${driver?.fullname?.lastname?.[0] || ''}`.toUpperCase();
+function DriverCard({ driver, otp, rideId, unreadMessages }) {
+  // Memoize derived values to avoid recalculation on every render
+  const driverName = useMemo(() => 
+    `${driver?.fullname?.firstname || ''} ${driver?.fullname?.lastname || ''}`.trim(),
+    [driver?.fullname?.firstname, driver?.fullname?.lastname]
+  );
+  const driverInitials = useMemo(() => 
+    `${driver?.fullname?.firstname?.[0] || ''}${driver?.fullname?.lastname?.[0] || ''}`.toUpperCase(),
+    [driver?.fullname?.firstname, driver?.fullname?.lastname]
+  );
   
   return (
     <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
@@ -373,10 +380,22 @@ function VehiclePreview({ vehicleType, prefersReducedMotion }) {
  * RouteCard - Pickup and destination display
  */
 function RouteCard({ pickup, destination }) {
-  const pickupMain = pickup?.split(", ")[0] || '';
-  const pickupSecondary = pickup?.split(", ").slice(1).join(", ") || '';
-  const destMain = destination?.split(", ")[0] || '';
-  const destSecondary = destination?.split(", ").slice(1).join(", ") || '';
+  // Memoize parsed location strings to avoid redundant string processing
+  const { pickupMain, pickupSecondary } = useMemo(() => {
+    const parts = pickup?.split(", ") || [''];
+    return {
+      pickupMain: parts[0] || '',
+      pickupSecondary: parts.slice(1).join(", ") || ''
+    };
+  }, [pickup]);
+  
+  const { destMain, destSecondary } = useMemo(() => {
+    const parts = destination?.split(", ") || [''];
+    return {
+      destMain: parts[0] || '',
+      destSecondary: parts.slice(1).join(", ") || ''
+    };
+  }, [destination]);
   
   return (
     <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">

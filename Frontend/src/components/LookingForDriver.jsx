@@ -37,6 +37,7 @@ function LookingForDriver({ isVisible = false, onCancel }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+            role="presentation"
             aria-hidden="true"
           />
 
@@ -47,6 +48,9 @@ function LookingForDriver({ isVisible = false, onCancel }) {
             exit={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 }}
             transition={springConfig}
             className="fixed inset-0 z-50 flex items-center justify-center p-6 pointer-events-none"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Buscando conductor"
           >
             {/* Main Card */}
             <div 
