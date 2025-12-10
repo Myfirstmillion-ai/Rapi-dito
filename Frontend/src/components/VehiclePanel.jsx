@@ -1,41 +1,37 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Clock, Users, Check, ChevronLeft } from "lucide-react";
 
 /**
- * VehiclePanel - Horizontal Vehicle Carousel
- * Native iOS Apple Maps inspired vehicle selection
+ * VehiclePanel - Swiss Minimalist Luxury Vehicle Selection
+ * Bottom Sheet with horizontal carousel matching LocationSearchPanel
  * 
- * Features:
- * - Bottom sheet with spring physics
- * - Horizontal scrolling carousel
- * - Spotlight effect on selected vehicle
- * - Massive price typography (text-4xl)
+ * Design Philosophy:
+ * - Clean white/dark adaptive backgrounds
+ * - Premium rounded corners (3xl)
+ * - Horizontal scroll snap carousel
+ * - Elegant confirm button
  */
 
-// Vehicle data with emojis
+// Vehicle data
 const vehicles = [
   {
     id: 1,
     name: "Rapidito",
     description: "Económico",
     type: "car",
-    emoji: "🚗",
     image: "/Uber-PNG-Photos.png",
     capacity: "4 personas",
     eta: "3 min",
-    color: "from-emerald-500 to-emerald-600"
   },
   {
     id: 2,
     name: "Moto",
     description: "Súper rápido",
     type: "bike",
-    emoji: "🏍️",
     image: "/bike.webp",
     capacity: "1 persona",
     eta: "2 min",
-    color: "from-blue-500 to-blue-600"
   }
 ];
 
@@ -51,7 +47,6 @@ function VehiclePanel({
   loading = false
 }) {
   const [selected, setSelected] = useState(selectedVehicleType || 'car');
-  const scrollRef = useRef(null);
 
   // Check for reduced motion preference
   const prefersReducedMotion = useMemo(() => {
@@ -66,7 +61,7 @@ function VehiclePanel({
     }
   }, [selectedVehicleType]);
 
-  // Spring animation config
+  // Spring animation config matching LocationSearchPanel
   const springConfig = {
     type: "spring",
     damping: 30,
@@ -80,13 +75,6 @@ function VehiclePanel({
 
   const handleConfirm = () => {
     onConfirm?.(selected);
-  };
-
-  // Format price for display
-  const formatPrice = (price) => {
-    if (!price) return '$0';
-    const thousands = Math.floor(price / 1000);
-    return `$${thousands}K`;
   };
 
   return (
@@ -152,8 +140,7 @@ function VehiclePanel({
 
             {/* Vehicle Carousel */}
             <div 
-              ref={scrollRef}
-              className="flex gap-4 px-6 pb-6 overflow-x-auto scrollbar-hide"
+              className="flex gap-4 px-5 pb-6 overflow-x-auto scrollbar-hide"
               style={{ 
                 scrollSnapType: 'x mandatory',
                 WebkitOverflowScrolling: 'touch'
@@ -174,14 +161,14 @@ function VehiclePanel({
             {/* Confirm Button */}
             <div className="px-5 pb-6">
               <motion.button
-                whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+                whileHover={prefersReducedMotion ? {} : { scale: 1.01 }}
                 whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                 onClick={handleConfirm}
                 disabled={loading}
-                className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-lg shadow-2xl shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:shadow-xl"
+                className="w-full h-14 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold text-base shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
               >
                 {loading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <span>Confirmar Viaje</span>
@@ -198,84 +185,90 @@ function VehiclePanel({
 }
 
 /**
- * VehicleCard - Individual vehicle option with spotlight effect
+ * VehicleCard - Premium vehicle selection card for carousel
  */
 function VehicleCard({ vehicle, isSelected, onClick, price, prefersReducedMotion }) {
   return (
     <motion.div
-      whileHover={prefersReducedMotion ? {} : { y: -4 }}
+      whileHover={prefersReducedMotion ? {} : { y: -2 }}
       whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
       onClick={onClick}
       className={`
-        relative flex-shrink-0 w-40 rounded-3xl p-4 cursor-pointer transition-all duration-300
+        relative flex-shrink-0 w-44 rounded-2xl p-4 cursor-pointer transition-all duration-200
         ${isSelected 
-          ? `bg-gradient-to-br ${vehicle.color} ring-4 ring-emerald-400 shadow-2xl` 
+          ? 'bg-emerald-50 dark:bg-emerald-900/30 ring-2 ring-emerald-500 shadow-lg' 
           : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
         }
       `}
-      style={{ 
-        scrollSnapAlign: 'start',
-        ...(isSelected && {
-          boxShadow: '0 0 40px rgba(16, 185, 129, 0.4)'
-        })
-      }}
+      style={{ scrollSnapAlign: 'start' }}
     >
       {/* Selected Checkmark */}
       {isSelected && (
         <motion.div
           initial={prefersReducedMotion ? {} : { scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-lg"
+          className="absolute top-3 right-3 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-md"
         >
-          <Check className="w-4 h-4 text-emerald-600" strokeWidth={3} />
+          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
         </motion.div>
       )}
 
-      {/* Glow Effect when Selected */}
-      {isSelected && (
-        <div 
-          className="absolute inset-0 rounded-3xl blur-xl opacity-50 -z-10"
-          style={{
-            background: `radial-gradient(circle at center, rgba(16, 185, 129, 0.6) 0%, transparent 70%)`
-          }}
+      {/* Vehicle Image */}
+      <div className={`
+        w-full h-20 rounded-xl flex items-center justify-center mb-3 transition-colors
+        ${isSelected ? 'bg-emerald-100/50 dark:bg-emerald-800/30' : 'bg-gray-100 dark:bg-gray-700'}
+      `}>
+        <img 
+          src={vehicle.image} 
+          alt={vehicle.name}
+          className={`h-14 w-auto object-contain transition-transform duration-200 ${
+            isSelected ? 'scale-105' : 'scale-100'
+          }`}
         />
-      )}
-
-      {/* Emoji Icon */}
-      <div className="text-5xl mb-3 text-center">
-        {vehicle.emoji}
       </div>
 
       {/* Vehicle Name */}
-      <h3 className={`text-base font-bold mb-0.5 ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+      <h3 className={`text-base font-bold mb-0.5 ${
+        isSelected ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-900 dark:text-white'
+      }`}>
         {vehicle.name}
       </h3>
       
       {/* Description */}
-      <p className={`text-xs mb-3 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+      <p className={`text-xs mb-3 ${
+        isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'
+      }`}>
         {vehicle.description}
       </p>
 
       {/* Meta Info */}
       <div className="space-y-1.5 mb-3">
-        <div className={`flex items-center gap-1.5 text-xs ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+        <div className={`flex items-center gap-1.5 text-xs ${
+          isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'
+        }`}>
           <Users className="w-3 h-3" />
           <span>{vehicle.capacity}</span>
         </div>
-        <div className={`flex items-center gap-1.5 text-xs ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+        <div className={`flex items-center gap-1.5 text-xs ${
+          isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'
+        }`}>
           <Clock className="w-3 h-3" />
           <span>{vehicle.eta}</span>
         </div>
       </div>
 
-      {/* Price - MASSIVE */}
-      <div className={`text-4xl font-black ${isSelected ? 'text-white' : 'text-emerald-500'}`}>
+      {/* Price */}
+      <div className={`text-2xl font-bold ${
+        isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'
+      }`}>
         {price > 0 ? `$${Math.floor(price / 1000)}K` : '$—'}
       </div>
       
       {/* Full price in COP */}
       {price > 0 && (
-        <p className={`text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-gray-400'}`}>
+        <p className={`text-xs mt-0.5 ${
+          isSelected ? 'text-emerald-500 dark:text-emerald-500' : 'text-gray-400 dark:text-gray-500'
+        }`}>
           COP$ {price.toLocaleString('es-CO')}
         </p>
       )}

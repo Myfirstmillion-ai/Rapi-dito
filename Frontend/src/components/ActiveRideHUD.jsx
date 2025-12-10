@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Navigation, 
@@ -6,37 +6,21 @@ import {
   Phone, 
   MessageSquare, 
   X, 
-  ChevronUp, 
-  ChevronDown,
-  User,
-  DollarSign,
+  ChevronUp,
   Shield,
   CheckCircle2
 } from 'lucide-react';
 
 /**
- * ActiveRideHUD - Minimal Heads-Up Display for Active Rides
+ * ActiveRideHUD - Swiss Minimalist Luxury Heads-Up Display
+ * Bottom sheet for captain's active ride management
  * 
- * Design Philosophy: Aviation HUD meets Tesla Dashboard
- * Core Principle: Critical info at a glance, minimal distraction
- * 
- * States:
- * - NAVIGATING_TO_PICKUP: Show route to pickup, OTP input
- * - WAITING_FOR_PASSENGER: OTP verification
- * - IN_RIDE: Show route to destination, End Ride button
+ * Design Philosophy:
+ * - Clean dark glass aesthetic
+ * - Clear information hierarchy
+ * - Elegant action buttons
+ * - Minimal distraction
  */
-
-const CAPTAIN_COLORS = {
-  background: '#000000',
-  surface: '#1A1A1A',
-  elevated: '#2A2A2A',
-  online: '#10B981',
-  offline: '#6B7280',
-  busy: '#F59E0B',
-  warning: '#EF4444',
-  glass: 'rgba(0, 0, 0, 0.9)',
-  glassBorder: 'rgba(255, 255, 255, 0.1)',
-};
 
 const RIDE_STATUS = {
   NAVIGATING_TO_PICKUP: 'navigating_to_pickup',
@@ -80,12 +64,6 @@ function ActiveRideHUD({
     return (first + last).toUpperCase() || 'U';
   }, [rideData]);
 
-  // Format fare
-  const formattedFare = useMemo(() => {
-    const fare = rideData?.fare || 0;
-    return `COP$ ${fare.toLocaleString('es-CO')}`;
-  }, [rideData]);
-
   // Get status-specific content
   const getStatusContent = () => {
     switch (rideStatus) {
@@ -94,37 +72,58 @@ function ActiveRideHUD({
           title: 'Hacia el pasajero',
           subtitle: rideData?.pickup?.split(',')[0] || 'Recogida',
           icon: Navigation,
-          color: CAPTAIN_COLORS.online,
-          action: null
+          color: 'emerald'
         };
       case RIDE_STATUS.WAITING_FOR_OTP:
         return {
           title: 'Verificar código',
           subtitle: 'Solicita el código al pasajero',
           icon: Shield,
-          color: CAPTAIN_COLORS.busy,
-          action: 'otp'
+          color: 'amber'
         };
       case RIDE_STATUS.IN_RIDE:
         return {
           title: 'En viaje',
           subtitle: rideData?.destination?.split(',')[0] || 'Destino',
           icon: MapPin,
-          color: '#60A5FA',
-          action: 'end'
+          color: 'blue'
         };
       default:
         return {
           title: 'Viaje activo',
           subtitle: '',
           icon: Navigation,
-          color: CAPTAIN_COLORS.online,
-          action: null
+          color: 'emerald'
         };
     }
   };
 
   const statusContent = getStatusContent();
+  const StatusIcon = statusContent.icon;
+
+  // Color classes based on status
+  const colorClasses = {
+    emerald: {
+      bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+      text: 'text-emerald-600 dark:text-emerald-400',
+      bar: 'bg-emerald-500',
+      button: 'from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-500/25'
+    },
+    amber: {
+      bg: 'bg-amber-500/10 dark:bg-amber-500/20',
+      text: 'text-amber-600 dark:text-amber-400',
+      bar: 'bg-amber-500',
+      button: 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-amber-500/25'
+    },
+    blue: {
+      bg: 'bg-blue-500/10 dark:bg-blue-500/20',
+      text: 'text-blue-600 dark:text-blue-400',
+      bar: 'bg-blue-500',
+      button: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-500/25'
+    }
+  };
+
+  const colors = colorClasses[statusContent.color];
 
   return (
     <motion.div
@@ -135,51 +134,36 @@ function ActiveRideHUD({
       className="fixed bottom-0 left-0 right-0 z-40"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      {/* Main HUD Container */}
-      <div 
-        className="mx-3 mb-3 rounded-[24px] overflow-hidden"
-        style={{
-          background: CAPTAIN_COLORS.glass,
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          border: `1px solid ${CAPTAIN_COLORS.glassBorder}`,
-          boxShadow: '0 -4px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-        }}
-      >
+      {/* Main Container */}
+      <div className="mx-3 mb-3 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden">
+        
         {/* Status indicator bar at top */}
-        <div 
-          className="h-1"
-          style={{ background: `linear-gradient(90deg, ${statusContent.color}, ${statusContent.color}80)` }}
-        />
+        <div className={`h-1 ${colors.bar}`} />
 
         {/* Compact Header - Always visible */}
         <div 
-          className="px-4 py-3 flex items-center justify-between cursor-pointer"
+          className="px-5 py-4 flex items-center justify-between cursor-pointer"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center gap-3">
             {/* Status Icon */}
-            <div 
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: `${statusContent.color}20` }}
-            >
-              <statusContent.icon className="w-5 h-5" style={{ color: statusContent.color }} />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors.bg}`}>
+              <StatusIcon className={`w-5 h-5 ${colors.text}`} />
             </div>
 
             {/* Status Text */}
             <div>
-              <p className="text-white font-bold">{statusContent.title}</p>
-              <p className="text-white/50 text-sm truncate max-w-[180px]">{statusContent.subtitle}</p>
+              <p className="text-base font-bold text-gray-900 dark:text-white">{statusContent.title}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">{statusContent.subtitle}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             {/* Fare Badge */}
-            <div 
-              className="px-3 py-1.5 rounded-full"
-              style={{ background: CAPTAIN_COLORS.surface }}
-            >
-              <span className="text-white font-bold text-sm">${Math.floor(rideData?.fare / 1000)}K</span>
+            <div className="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
+              <span className="text-sm font-bold text-gray-900 dark:text-white">
+                ${Math.floor((rideData?.fare || 0) / 1000)}K
+              </span>
             </div>
 
             {/* Expand/Collapse Icon */}
@@ -187,7 +171,7 @@ function ActiveRideHUD({
               animate={{ rotate: isExpanded ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronUp className="w-5 h-5 text-white/50" />
+              <ChevronUp className="w-5 h-5 text-gray-400" />
             </motion.div>
           </div>
         </div>
@@ -202,12 +186,10 @@ function ActiveRideHUD({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-4">
+              <div className="px-5 pb-5">
+                
                 {/* Passenger Info Card */}
-                <div 
-                  className="rounded-2xl p-4 mb-3"
-                  style={{ background: CAPTAIN_COLORS.surface }}
-                >
+                <div className="rounded-2xl p-4 bg-gray-50 dark:bg-gray-800 mb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {/* Passenger Avatar */}
@@ -218,22 +200,19 @@ function ActiveRideHUD({
                           className="w-12 h-12 rounded-xl object-cover"
                         />
                       ) : (
-                        <div 
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold"
-                          style={{ background: `linear-gradient(135deg, ${CAPTAIN_COLORS.online}, #059669)` }}
-                        >
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold bg-gradient-to-br from-emerald-500 to-emerald-600">
                           {userInitials}
                         </div>
                       )}
 
                       <div>
-                        <p className="text-white font-bold">
+                        <p className="text-base font-bold text-gray-900 dark:text-white">
                           {rideData?.user?.fullname?.firstname} {rideData?.user?.fullname?.lastname?.[0]}.
                         </p>
                         {rideData?.user?.rating && (
                           <div className="flex items-center gap-1">
-                            <span className="text-yellow-400 text-sm">★</span>
-                            <span className="text-white/60 text-sm">{rideData.user.rating.toFixed(1)}</span>
+                            <span className="text-yellow-500 text-sm">★</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{rideData.user.rating.toFixed(1)}</span>
                           </div>
                         )}
                       </div>
@@ -244,15 +223,11 @@ function ActiveRideHUD({
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => onMessage?.(rideData?._id)}
-                        className="relative w-11 h-11 rounded-xl flex items-center justify-center"
-                        style={{ background: CAPTAIN_COLORS.elevated }}
+                        className="relative w-11 h-11 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
-                        <MessageSquare className="w-5 h-5 text-white" />
+                        <MessageSquare className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                         {unreadMessages > 0 && (
-                          <span 
-                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                            style={{ background: CAPTAIN_COLORS.warning }}
-                          >
+                          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-red-500">
                             {unreadMessages}
                           </span>
                         )}
@@ -261,8 +236,7 @@ function ActiveRideHUD({
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => onCall?.(rideData?.user?.phone)}
-                        className="w-11 h-11 rounded-xl flex items-center justify-center"
-                        style={{ background: CAPTAIN_COLORS.online }}
+                        className="w-11 h-11 rounded-xl flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 transition-colors"
                       >
                         <Phone className="w-5 h-5 text-white" />
                       </motion.button>
@@ -272,23 +246,20 @@ function ActiveRideHUD({
 
                 {/* OTP Input Section */}
                 {rideStatus === RIDE_STATUS.WAITING_FOR_OTP && (
-                  <div className="mb-3">
-                    <p className="text-white/50 text-sm mb-2 text-center">Ingresa el código de 6 dígitos</p>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center">Ingresa el código de 6 dígitos</p>
                     <input
                       type="number"
                       value={otp}
                       onChange={(e) => onOtpChange?.(e.target.value)}
                       placeholder="• • • • • •"
                       maxLength={6}
-                      className="w-full py-4 px-4 rounded-2xl text-center text-2xl font-bold tracking-[0.5em] text-white outline-none transition-all"
-                      style={{ 
-                        background: CAPTAIN_COLORS.elevated,
-                        border: `2px solid ${error ? CAPTAIN_COLORS.warning : CAPTAIN_COLORS.glassBorder}`,
-                        caretColor: CAPTAIN_COLORS.online
-                      }}
+                      className={`w-full py-4 px-4 rounded-2xl text-center text-2xl font-bold tracking-[0.5em] bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-all border-2 ${
+                        error ? 'border-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-amber-500'
+                      }`}
                     />
                     {error && (
-                      <p className="text-center mt-2 text-sm font-medium" style={{ color: CAPTAIN_COLORS.warning }}>
+                      <p className="text-center mt-2 text-sm font-medium text-red-500">
                         {error}
                       </p>
                     )}
@@ -296,22 +267,19 @@ function ActiveRideHUD({
                 )}
 
                 {/* Route Display */}
-                <div 
-                  className="rounded-2xl p-3 mb-3"
-                  style={{ background: CAPTAIN_COLORS.elevated }}
-                >
+                <div className="rounded-2xl p-3 bg-gray-50 dark:bg-gray-800 mb-4">
                   {/* Pickup */}
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: CAPTAIN_COLORS.online }} />
-                    <p className="text-white/70 text-sm flex-1 truncate">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-300 flex-1 truncate">
                       {rideData?.pickup?.split(',')[0]}
                     </p>
                   </div>
 
                   {/* Destination */}
                   <div className="flex items-center gap-3">
-                    <MapPin className="w-3 h-3" style={{ color: CAPTAIN_COLORS.warning }} />
-                    <p className="text-white text-sm font-medium flex-1 truncate">
+                    <MapPin className="w-3 h-3 text-red-500" />
+                    <p className="text-sm font-medium text-gray-900 dark:text-white flex-1 truncate">
                       {rideData?.destination?.split(',')[0]}
                     </p>
                   </div>
@@ -323,8 +291,7 @@ function ActiveRideHUD({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={onCancelRide}
-                    className="flex-1 py-3.5 rounded-2xl font-bold text-white/70 flex items-center justify-center gap-2 transition-colors"
-                    style={{ background: CAPTAIN_COLORS.elevated }}
+                    className="flex-1 py-3.5 rounded-2xl font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   >
                     <X className="w-5 h-5" />
                     <span>Cancelar</span>
@@ -336,11 +303,7 @@ function ActiveRideHUD({
                       whileTap={{ scale: 0.98 }}
                       onClick={onVerifyOtp}
                       disabled={loading || !otp || otp.length < 6}
-                      className="flex-[2] py-3.5 rounded-2xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                      style={{ 
-                        background: `linear-gradient(135deg, ${CAPTAIN_COLORS.busy}, #D97706)`,
-                        boxShadow: `0 4px 20px ${CAPTAIN_COLORS.busy}40`
-                      }}
+                      className={`flex-[2] py-3.5 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-r ${colors.button} shadow-lg transition-all`}
                     >
                       {loading ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -356,11 +319,7 @@ function ActiveRideHUD({
                       whileTap={{ scale: 0.98 }}
                       onClick={onEndRide}
                       disabled={loading}
-                      className="flex-[2] py-3.5 rounded-2xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                      style={{ 
-                        background: `linear-gradient(135deg, ${CAPTAIN_COLORS.online}, #059669)`,
-                        boxShadow: `0 4px 20px ${CAPTAIN_COLORS.online}40`
-                      }}
+                      className={`flex-[2] py-3.5 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-r ${colors.button} shadow-lg transition-all`}
                     >
                       {loading ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

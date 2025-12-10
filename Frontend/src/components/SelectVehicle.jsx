@@ -1,24 +1,36 @@
-import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, GripHorizontal, Check, Clock, Users } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Clock, Users, Check, Car, Bike } from "lucide-react";
+
+/**
+ * SelectVehicle - Swiss Minimalist Luxury Vehicle Selection
+ * Bottom Sheet with spring physics matching LocationSearchPanel
+ * 
+ * Design Philosophy:
+ * - Clean white/dark adaptive backgrounds
+ * - Premium rounded corners (3xl)
+ * - Subtle shadows and borders
+ * - Clear typography hierarchy
+ */
 
 const vehicles = [
   {
     id: 1,
-    name: "Carro",
-    description: "Viajes cómodos y seguros",
+    name: "Rapidito",
+    description: "Viaje cómodo y seguro",
     type: "car",
     image: "/Uber-PNG-Photos.png",
-    price: 0,
+    icon: Car,
     capacity: "4 personas",
     eta: "3-5 min",
   },
   {
     id: 2,
     name: "Moto",
-    description: "Viajes rápidos y económicos",
+    description: "Rápido y económico",
     type: "bike",
     image: "/bike.webp",
-    price: 0,
+    icon: Bike,
     capacity: "1 persona",
     eta: "2-4 min",
   },
@@ -32,12 +44,19 @@ function SelectVehicle({
   showNextPanel,
   fare,
 }) {
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [hoveredVehicle, setHoveredVehicle] = useState(null);
   const [currentlySelected, setCurrentlySelected] = useState(null);
 
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
+  // Check for reduced motion preference
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  // Spring animation config matching LocationSearchPanel
+  const springConfig = {
+    type: "spring",
+    damping: 30,
+    stiffness: 300
   };
 
   // Reset selection when panel closes
@@ -47,90 +66,12 @@ function SelectVehicle({
     }
   }, [showPanel]);
 
-  return (
-    <>
-      <div
-        className={`${showPanel ? "bottom-0" : "-bottom-full"} ${
-          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
-      >
-        {/* Premium Drag Handle */}
-        <div 
-          onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
-        >
-          <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
-            {isMinimized ? (
-              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            ) : (
-              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            )}
-          </div>
-        </div>
+  const handleClose = () => {
+    setShowPanel(false);
+    showPreviousPanel?.(true);
+  };
 
-        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
-
-        {isMinimized ? (
-          /* Minimized View - Premium */
-          <div className="text-center">
-            <h2 className="text-base font-bold text-white">
-              Selecciona tu vehículo
-            </h2>
-            <p className="text-sm text-slate-400">Toca para ver opciones</p>
-          </div>
-        ) : (
-          /* Maximized View - Premium */
-          <>
-            <div className="mb-5">
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ textWrap: 'balance' }}>
-                Elige tu viaje
-              </h2>
-              <p className="text-sm text-white/50" style={{ textWrap: 'balance' }}>
-                Selecciona el vehículo que prefieras
-              </p>
-            </div>
-            <div className="space-y-3 pb-2">
-              {vehicles.map((vehicle) => (
-                <Vehicle
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  fare={fare}
-                  selectedVehicle={selectedVehicle}
-                  setShowPanel={setShowPanel}
-                  showNextPanel={showNextPanel}
-                  isHovered={hoveredVehicle === vehicle.id}
-                  onHover={() => setHoveredVehicle(vehicle.id)}
-                  onLeave={() => setHoveredVehicle(null)}
-                  currentlySelected={currentlySelected}
-                  setCurrentlySelected={setCurrentlySelected}
-                />
-              ))}
-            </div>
-          </>
-        )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-const Vehicle = ({
-  vehicle,
-  selectedVehicle,
-  fare,
-  setShowPanel,
-  showNextPanel,
-  isHovered,
-  onHover,
-  onLeave,
-  currentlySelected,
-  setCurrentlySelected,
-}) => {
-  const isSelected = currentlySelected === vehicle.id;
-
-  const handleSelect = () => {
+  const handleSelect = (vehicle) => {
     setCurrentlySelected(vehicle.id);
     setTimeout(() => {
       selectedVehicle(vehicle.type);
@@ -140,96 +81,166 @@ const Vehicle = ({
   };
 
   return (
-    <div
-      onClick={handleSelect}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
+    <AnimatePresence>
+      {showPanel && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={handleClose}
+            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+            aria-hidden="true"
+          />
+
+          {/* Bottom Sheet */}
+          <motion.div
+            initial={prefersReducedMotion ? {} : { y: '100%' }}
+            animate={{ y: 0 }}
+            exit={prefersReducedMotion ? {} : { y: '100%' }}
+            transition={springConfig}
+            className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+          >
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Elige tu viaje
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  Selecciona el vehículo que prefieras
+                </p>
+              </div>
+              <button
+                onClick={handleClose}
+                className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Cerrar panel"
+              >
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+
+            {/* Vehicle Options */}
+            <div className="px-5 pb-6 space-y-3">
+              {vehicles.map((vehicle) => (
+                <VehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  fare={fare}
+                  isSelected={currentlySelected === vehicle.id}
+                  onClick={() => handleSelect(vehicle)}
+                  prefersReducedMotion={prefersReducedMotion}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/**
+ * VehicleCard - Premium selectable vehicle option
+ */
+function VehicleCard({ vehicle, fare, isSelected, onClick, prefersReducedMotion }) {
+  const IconComponent = vehicle.icon;
+  
+  return (
+    <motion.div
+      whileHover={prefersReducedMotion ? {} : { scale: 1.01 }}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+      onClick={onClick}
       className={`
-        cursor-pointer group relative flex items-center rounded-2xl overflow-hidden
-        transition-all duration-300 ease-out
-        active:scale-[0.97]
-        ${isSelected
-          ? "bg-gradient-to-r from-emerald-500/90 to-cyan-500/90 ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900 shadow-[0_0_30px_rgba(52,211,153,0.4)] scale-[1.02]"
-          : isHovered
-          ? "bg-gradient-to-r from-white/15 to-white/10 border border-emerald-400/50 backdrop-blur-xl shadow-[0_8px_24px_rgba(52,211,153,0.15)]"
-          : "bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 shadow-lg"
+        relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-200
+        ${isSelected 
+          ? 'bg-emerald-50 dark:bg-emerald-900/30 ring-2 ring-emerald-500' 
+          : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
         }
       `}
     >
-      {/* Vehicle Image Section - Floating effect */}
-      <div className="relative p-3 flex items-center justify-center w-28 sm:w-32">
-        <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-l-2xl ${isSelected ? 'from-white/10' : ''}`} />
+      {/* Vehicle Image */}
+      <div className={`
+        relative w-20 h-16 rounded-xl flex items-center justify-center overflow-hidden
+        ${isSelected ? 'bg-emerald-100 dark:bg-emerald-800/50' : 'bg-gray-100 dark:bg-gray-700'}
+      `}>
         <img
           src={vehicle.image}
-          className={`w-24 sm:w-28 h-auto relative z-10 drop-shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            isHovered || isSelected ? "scale-110 -translate-y-1" : "scale-100"
+          className={`w-16 h-auto object-contain transition-transform duration-300 ${
+            isSelected ? 'scale-110' : 'scale-100'
           }`}
           alt={vehicle.name}
         />
+        
+        {/* Selected Checkmark */}
         {isSelected && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 animate-scale-in">
-              <Check size={22} className="text-emerald-600" strokeWidth={3} />
-            </div>
-          </div>
+          <motion.div
+            initial={prefersReducedMotion ? {} : { scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg"
+          >
+            <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+          </motion.div>
         )}
       </div>
 
-      {/* Vehicle Info Section - Fixed text wrapping */}
-      <div className="flex-1 pr-3 py-4 min-w-0">
-        <div className="mb-2">
-          <h1 className="text-base sm:text-lg font-bold text-white transition-colors whitespace-nowrap leading-tight">
-            {vehicle.name}
-          </h1>
-          <p className={`text-xs sm:text-sm transition-colors leading-relaxed ${
-            isSelected ? "text-emerald-100" : "text-white/60"
-          }`} style={{ textWrap: 'balance' }}>
-            {vehicle.description}
-          </p>
-        </div>
-
-        {/* Vehicle Details - Pill badges */}
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
-            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
-          }`}>
-            <Clock size={12} />
-            <span className="whitespace-nowrap">{vehicle.eta}</span>
-          </div>
-          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
-            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
-          }`}>
-            <Users size={12} />
-            <span className="whitespace-nowrap">{vehicle.capacity}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Price Section - Enhanced hierarchy */}
-      <div className="pr-3 sm:pr-4 py-4 text-right flex-shrink-0">
-        <p className={`text-[10px] sm:text-xs font-medium mb-0.5 ${
-          isSelected ? "text-white/80" : "text-white/40"
+      {/* Vehicle Info */}
+      <div className="flex-1 min-w-0">
+        <h3 className={`text-base font-bold ${
+          isSelected ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-900 dark:text-white'
         }`}>
-          Tarifa
-        </p>
-        <h3 className={`text-lg sm:text-xl font-bold transition-colors whitespace-nowrap ${
-          isSelected ? "text-white" : "text-emerald-400"
-        }`}>
-          ${Math.floor(fare[vehicle.type] / 1000)}K
+          {vehicle.name}
         </h3>
-        <p className={`text-[10px] sm:text-xs mt-0.5 whitespace-nowrap ${
-          isSelected ? "text-white/70" : "text-white/40"
+        <p className={`text-sm ${
+          isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'
         }`}>
-          COP$ {fare[vehicle.type]?.toLocaleString('es-CO') || 0}
+          {vehicle.description}
         </p>
+        
+        {/* Meta Info Badges */}
+        <div className="flex items-center gap-2 mt-2">
+          <div className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
+            isSelected 
+              ? 'bg-emerald-200/50 dark:bg-emerald-700/50 text-emerald-700 dark:text-emerald-200' 
+              : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
+          }`}>
+            <Clock className="w-3 h-3" />
+            <span>{vehicle.eta}</span>
+          </div>
+          <div className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
+            isSelected 
+              ? 'bg-emerald-200/50 dark:bg-emerald-700/50 text-emerald-700 dark:text-emerald-200' 
+              : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
+          }`}>
+            <Users className="w-3 h-3" />
+            <span>{vehicle.capacity}</span>
+          </div>
+        </div>
       </div>
 
-      {/* Glow accent line at bottom when selected */}
-      {isSelected && (
-        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400" />
-      )}
-    </div>
+      {/* Price */}
+      <div className="text-right flex-shrink-0">
+        <p className={`text-2xl font-bold ${
+          isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'
+        }`}>
+          ${Math.floor((fare?.[vehicle.type] || 0) / 1000)}K
+        </p>
+        <p className={`text-xs ${
+          isSelected ? 'text-emerald-500 dark:text-emerald-500' : 'text-gray-400 dark:text-gray-500'
+        }`}>
+          COP$ {(fare?.[vehicle.type] || 0).toLocaleString('es-CO')}
+        </p>
+      </div>
+    </motion.div>
   );
-};
+}
 
 export default SelectVehicle;
