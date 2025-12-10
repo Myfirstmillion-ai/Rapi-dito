@@ -1,26 +1,37 @@
-import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, GripHorizontal, Check, Clock, Users } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, Check, Clock, Users, ArrowRight } from "lucide-react";
+
+/**
+ * SelectVehicle - Swiss Minimalist Luxury Vehicle Selector
+ * 
+ * Features:
+ * - Floating Sheet at bottom (solid, no blur)
+ * - Horizontal 3D Carousel
+ * - "Pop Out" effect on selection (scale-110 + deep shadow)
+ * - MASSIVE price typography (text-4xl)
+ * - Pill-shaped gradient "Confirmar" button
+ */
 
 const vehicles = [
   {
     id: 1,
-    name: "Carro",
-    description: "Viajes cómodos y seguros",
+    name: "Rapidito",
+    description: "Cómodo y seguro",
     type: "car",
     image: "/Uber-PNG-Photos.png",
-    price: 0,
     capacity: "4 personas",
     eta: "3-5 min",
+    color: "emerald"
   },
   {
     id: 2,
     name: "Moto",
-    description: "Viajes rápidos y económicos",
+    description: "Súper rápido",
     type: "bike",
     image: "/bike.webp",
-    price: 0,
     capacity: "1 persona",
     eta: "2-4 min",
+    color: "blue"
   },
 ];
 
@@ -32,202 +43,205 @@ function SelectVehicle({
   showNextPanel,
   fare,
 }) {
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [hoveredVehicle, setHoveredVehicle] = useState(null);
-  const [currentlySelected, setCurrentlySelected] = useState(null);
-
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
-  };
+  const [currentlySelected, setCurrentlySelected] = useState(vehicles[0].id);
+  const scrollRef = useRef(null);
 
   // Reset selection when panel closes
   useEffect(() => {
     if (!showPanel) {
-      setCurrentlySelected(null);
+      setCurrentlySelected(vehicles[0].id);
     }
   }, [showPanel]);
 
-  return (
-    <>
-      <div
-        className={`${showPanel ? "bottom-0" : "-bottom-full"} ${
-          isMinimized ? "max-h-[25dvh]" : "max-h-[65dvh]"
-        } transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] fixed left-0 right-0 bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-white/10 z-10 overflow-hidden`}
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
-      >
-        {/* Premium Drag Handle */}
-        <div 
-          onClick={toggleMinimize}
-          className="flex justify-center py-2.5 cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors group"
-        >
-          <div className="flex flex-col items-center gap-1.5">
-            <GripHorizontal size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
-            {isMinimized ? (
-              <ChevronUp size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            ) : (
-              <ChevronDown size={18} className="text-white/40 group-hover:text-white/70 transition-colors" />
-            )}
-          </div>
-        </div>
-
-        <div className="px-4 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', maxHeight: 'calc(65dvh - 60px - max(env(safe-area-inset-bottom, 0px), 20px))' }}>
-
-        {isMinimized ? (
-          /* Minimized View - Premium */
-          <div className="text-center">
-            <h2 className="text-base font-bold text-white">
-              Selecciona tu vehículo
-            </h2>
-            <p className="text-sm text-slate-400">Toca para ver opciones</p>
-          </div>
-        ) : (
-          /* Maximized View - Premium */
-          <>
-            <div className="mb-5">
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ textWrap: 'balance' }}>
-                Elige tu viaje
-              </h2>
-              <p className="text-sm text-white/50" style={{ textWrap: 'balance' }}>
-                Selecciona el vehículo que prefieras
-              </p>
-            </div>
-            <div className="space-y-3 pb-2">
-              {vehicles.map((vehicle) => (
-                <Vehicle
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  fare={fare}
-                  selectedVehicle={selectedVehicle}
-                  setShowPanel={setShowPanel}
-                  showNextPanel={showNextPanel}
-                  isHovered={hoveredVehicle === vehicle.id}
-                  onHover={() => setHoveredVehicle(vehicle.id)}
-                  onLeave={() => setHoveredVehicle(null)}
-                  currentlySelected={currentlySelected}
-                  setCurrentlySelected={setCurrentlySelected}
-                />
-              ))}
-            </div>
-          </>
-        )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-const Vehicle = ({
-  vehicle,
-  selectedVehicle,
-  fare,
-  setShowPanel,
-  showNextPanel,
-  isHovered,
-  onHover,
-  onLeave,
-  currentlySelected,
-  setCurrentlySelected,
-}) => {
-  const isSelected = currentlySelected === vehicle.id;
-
-  const handleSelect = () => {
-    setCurrentlySelected(vehicle.id);
-    setTimeout(() => {
-      selectedVehicle(vehicle.type);
+  const handleConfirm = () => {
+    const selectedVehicleData = vehicles.find(v => v.id === currentlySelected);
+    if (selectedVehicleData) {
+      selectedVehicle(selectedVehicleData.type);
       setShowPanel(false);
       showNextPanel(true);
-    }, 200);
+    }
   };
+
+  const handleBack = () => {
+    setShowPanel(false);
+    showPreviousPanel(true);
+  };
+
+  const selectedVehicleData = vehicles.find(v => v.id === currentlySelected);
+  const currentFare = selectedVehicleData ? fare[selectedVehicleData.type] : 0;
 
   return (
     <div
-      onClick={handleSelect}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      className={`
-        cursor-pointer group relative flex items-center rounded-2xl overflow-hidden
-        transition-all duration-300 ease-out
-        active:scale-[0.97]
-        ${isSelected
-          ? "bg-gradient-to-r from-emerald-500/90 to-cyan-500/90 ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900 shadow-[0_0_30px_rgba(52,211,153,0.4)] scale-[1.02]"
-          : isHovered
-          ? "bg-gradient-to-r from-white/15 to-white/10 border border-emerald-400/50 backdrop-blur-xl shadow-[0_8px_24px_rgba(52,211,153,0.15)]"
-          : "bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 shadow-lg"
-        }
-      `}
+      className={`${showPanel ? "translate-y-0" : "translate-y-full"} 
+        transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] 
+        fixed bottom-0 left-0 right-0 z-10`}
     >
-      {/* Vehicle Image Section - Floating effect */}
-      <div className="relative p-3 flex items-center justify-center w-28 sm:w-32">
-        <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-l-2xl ${isSelected ? 'from-white/10' : ''}`} />
-        <img
-          src={vehicle.image}
-          className={`w-24 sm:w-28 h-auto relative z-10 drop-shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            isHovered || isSelected ? "scale-110 -translate-y-1" : "scale-100"
-          }`}
-          alt={vehicle.name}
-        />
-        {isSelected && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/30 animate-scale-in">
-              <Check size={22} className="text-emerald-600" strokeWidth={3} />
+      {/* Floating Sheet - Solid background, no blur */}
+      <div 
+        className="bg-slate-900 rounded-t-[32px] shadow-2xl"
+        style={{ 
+          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)',
+          boxShadow: '0 -8px 40px rgba(0, 0, 0, 0.4)'
+        }}
+      >
+        {/* Drag Handle */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+        </div>
+
+        {/* Header with Back Button */}
+        <div className="px-6 pb-4 flex items-center justify-between">
+          <button 
+            onClick={handleBack}
+            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/15 active:scale-95 transition-all"
+          >
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </button>
+          <div className="text-center flex-1">
+            <h2 className="text-xl font-bold text-white">Elige tu viaje</h2>
+          </div>
+          <div className="w-10" /> {/* Spacer for symmetry */}
+        </div>
+
+        {/* Horizontal Carousel */}
+        <div 
+          ref={scrollRef}
+          className="flex gap-4 px-6 pb-6 overflow-x-auto scrollbar-hide"
+          style={{ 
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {vehicles.map((vehicle) => (
+            <VehicleCard
+              key={vehicle.id}
+              vehicle={vehicle}
+              fare={fare[vehicle.type] || 0}
+              isSelected={currentlySelected === vehicle.id}
+              onSelect={() => setCurrentlySelected(vehicle.id)}
+            />
+          ))}
+        </div>
+
+        {/* Selected Vehicle Summary + Price */}
+        <div className="px-6 pb-4">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="text-white/50 text-sm font-medium mb-1">Total estimado</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-black text-white">
+                  ${Math.floor(currentFare / 1000)}K
+                </span>
+                <span className="text-lg text-white/40 font-medium">COP</span>
+              </div>
+              <p className="text-white/40 text-sm mt-1">
+                ${currentFare?.toLocaleString('es-CO') || 0} pesos
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-white/50 text-sm font-medium mb-1">Tiempo</p>
+              <p className="text-xl font-bold text-emerald-400">
+                {selectedVehicleData?.eta || '3-5 min'}
+              </p>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Vehicle Info Section - Fixed text wrapping */}
-      <div className="flex-1 pr-3 py-4 min-w-0">
-        <div className="mb-2">
-          <h1 className="text-base sm:text-lg font-bold text-white transition-colors whitespace-nowrap leading-tight">
-            {vehicle.name}
-          </h1>
-          <p className={`text-xs sm:text-sm transition-colors leading-relaxed ${
-            isSelected ? "text-emerald-100" : "text-white/60"
-          }`} style={{ textWrap: 'balance' }}>
-            {vehicle.description}
-          </p>
-        </div>
-
-        {/* Vehicle Details - Pill badges */}
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
-            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
-          }`}>
-            <Clock size={12} />
-            <span className="whitespace-nowrap">{vehicle.eta}</span>
-          </div>
-          <div className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full ${
-            isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
-          }`}>
-            <Users size={12} />
-            <span className="whitespace-nowrap">{vehicle.capacity}</span>
-          </div>
+          {/* Confirm Button - Huge Pill with Gradient */}
+          <button
+            onClick={handleConfirm}
+            className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 
+              hover:from-emerald-400 hover:to-emerald-500 
+              active:scale-[0.98] transition-all duration-200
+              flex items-center justify-center gap-3
+              shadow-xl shadow-emerald-500/30"
+          >
+            <span className="text-lg font-bold text-white">Confirmar Viaje</span>
+            <ArrowRight className="w-6 h-6 text-white" />
+          </button>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Price Section - Enhanced hierarchy */}
-      <div className="pr-3 sm:pr-4 py-4 text-right flex-shrink-0">
-        <p className={`text-[10px] sm:text-xs font-medium mb-0.5 ${
-          isSelected ? "text-white/80" : "text-white/40"
-        }`}>
-          Tarifa
-        </p>
-        <h3 className={`text-lg sm:text-xl font-bold transition-colors whitespace-nowrap ${
-          isSelected ? "text-white" : "text-emerald-400"
-        }`}>
-          ${Math.floor(fare[vehicle.type] / 1000)}K
-        </h3>
-        <p className={`text-[10px] sm:text-xs mt-0.5 whitespace-nowrap ${
-          isSelected ? "text-white/70" : "text-white/40"
-        }`}>
-          COP$ {fare[vehicle.type]?.toLocaleString('es-CO') || 0}
-        </p>
-      </div>
-
-      {/* Glow accent line at bottom when selected */}
+/**
+ * VehicleCard - Individual vehicle option with 3D "Pop Out" effect
+ */
+const VehicleCard = ({ vehicle, fare, isSelected, onSelect }) => {
+  return (
+    <div
+      onClick={onSelect}
+      className={`
+        relative flex-shrink-0 w-44 rounded-3xl p-4 cursor-pointer 
+        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+        ${isSelected 
+          ? 'bg-emerald-500 scale-110 shadow-2xl shadow-emerald-500/40 -translate-y-2' 
+          : 'bg-white/5 hover:bg-white/10'
+        }
+      `}
+      style={{ 
+        scrollSnapAlign: 'center',
+        ...(isSelected && {
+          boxShadow: '0 20px 40px rgba(16, 185, 129, 0.4), 0 0 0 2px rgba(16, 185, 129, 0.3)'
+        })
+      }}
+    >
+      {/* Selected Checkmark */}
       {isSelected && (
-        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400" />
+        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-lg animate-scale-in">
+          <Check className="w-4 h-4 text-emerald-600" strokeWidth={3} />
+        </div>
       )}
+
+      {/* Vehicle Image */}
+      <div className="flex justify-center mb-3">
+        <img
+          src={vehicle.image}
+          alt={vehicle.name}
+          className={`h-20 w-auto drop-shadow-xl transition-transform duration-300 ${
+            isSelected ? 'scale-110' : ''
+          }`}
+        />
+      </div>
+
+      {/* Vehicle Name */}
+      <h3 className={`text-lg font-bold text-center mb-1 ${
+        isSelected ? 'text-white' : 'text-white'
+      }`}>
+        {vehicle.name}
+      </h3>
+      
+      {/* Description */}
+      <p className={`text-xs text-center mb-3 ${
+        isSelected ? 'text-white/80' : 'text-white/50'
+      }`}>
+        {vehicle.description}
+      </p>
+
+      {/* Meta Info Pills */}
+      <div className="flex justify-center gap-2 mb-4">
+        <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+          isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+        }`}>
+          <Clock className="w-3 h-3" />
+          <span>{vehicle.eta}</span>
+        </div>
+        <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+          isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+        }`}>
+          <Users className="w-3 h-3" />
+          <span>{vehicle.capacity.split(' ')[0]}</span>
+        </div>
+      </div>
+
+      {/* Price - MASSIVE */}
+      <div className="text-center">
+        <span className={`text-3xl font-black ${
+          isSelected ? 'text-white' : 'text-emerald-400'
+        }`}>
+          ${Math.floor(fare / 1000)}K
+        </span>
+      </div>
     </div>
   );
 };
