@@ -7,6 +7,19 @@ export default {
         sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
         poppins: ['Poppins', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
+        // Luxury Design System Typography
+        luxury: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+        'luxury-display': ['SF Pro Display', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
+      },
+      letterSpacing: {
+        'luxury-tight': '-0.02em',
+        'luxury-normal': '-0.01em',
+        'luxury-wide': '0.02em',
+      },
+      lineHeight: {
+        'luxury-tight': '1.2',
+        'luxury-normal': '1.4',
+        'luxury-relaxed': '1.6',
       },
       colors: {
         // Existing primary (green) - keep for backward compatibility
@@ -39,6 +52,27 @@ export default {
             600: '#545454',
             700: '#333333',
           }
+        },
+        // Luxury Design System Colors - Mobile-First Premium
+        luxury: {
+          black: '#000000',
+          'surface-1': '#0A0A0A',
+          'surface-2': '#141414',
+          'surface-3': '#1E1E1E',
+          white: '#FFFFFF',
+          'accent-primary': '#10B981',
+          'accent-secondary': '#3B82F6',
+          'accent-tertiary': '#8B5CF6',
+        },
+        // Glass transparency tokens
+        glass: {
+          light: 'rgba(255, 255, 255, 0.1)',
+          'light-medium': 'rgba(255, 255, 255, 0.2)',
+          medium: 'rgba(255, 255, 255, 0.3)',
+          'medium-strong': 'rgba(255, 255, 255, 0.4)',
+          dark: 'rgba(0, 0, 0, 0.3)',
+          'dark-medium': 'rgba(0, 0, 0, 0.5)',
+          'dark-strong': 'rgba(0, 0, 0, 0.7)',
         }
       },
       boxShadow: {
@@ -49,6 +83,13 @@ export default {
         'uber-md': '0 4px 6px rgba(0,0,0,0.08)',
         'uber-lg': '0 10px 15px rgba(0,0,0,0.1)',
         'uber-xl': '0 20px 25px rgba(0,0,0,0.12)',
+        // Luxury Design System shadows
+        'luxury-glow': '0 0 40px rgba(16, 185, 129, 0.4), 0 0 80px rgba(16, 185, 129, 0.2)',
+        'luxury-inner': 'inset 0 2px 8px rgba(0, 0, 0, 0.3)',
+        'luxury-sm': '0 2px 8px rgba(0, 0, 0, 0.12)',
+        'luxury-md': '0 4px 16px rgba(0, 0, 0, 0.16)',
+        'luxury-lg': '0 8px 32px rgba(0, 0, 0, 0.24)',
+        'luxury-xl': '0 16px 64px rgba(0, 0, 0, 0.32)',
       },
       borderRadius: {
         '4xl': '2rem',
@@ -57,6 +98,13 @@ export default {
         'uber-md': '12px',
         'uber-lg': '16px',
         'uber-xl': '24px',
+        // Luxury Design System border radius
+        'luxury-sm': '8px',
+        'luxury-md': '12px',
+        'luxury-lg': '16px',
+        'luxury-xl': '24px',
+        'luxury-2xl': '32px',
+        'luxury-pill': '9999px',
       },
       // Premium transition timing functions
       transitionTimingFunction: {
@@ -81,6 +129,13 @@ export default {
         'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-in-left': 'slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         'card-reveal': 'cardReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+        // Luxury Design System Animations
+        'luxury-fade-in': 'luxuryFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        'luxury-slide-up': 'luxurySlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        'luxury-slide-down': 'luxurySlideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        'luxury-scale-in': 'luxuryScaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        'luxury-pulse-glow': 'luxuryPulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'luxury-float': 'luxuryFloat 3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -117,6 +172,31 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(100px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // Luxury Design System Keyframes
+        luxuryFadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        luxurySlideUp: {
+          '0%': { opacity: '0', transform: 'translateY(32px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        luxurySlideDown: {
+          '0%': { opacity: '0', transform: 'translateY(-32px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        luxuryScaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.92)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        luxuryPulseGlow: {
+          '0%, 100%': { opacity: '1', boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)' },
+          '50%': { opacity: '0.8', boxShadow: '0 0 40px rgba(16, 185, 129, 0.6)' },
+        },
+        luxuryFloat: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
       },
       minHeight: {
         'touch': '44px', // Minimum touch target
@@ -152,6 +232,13 @@ export default {
         'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
         'safe-left': 'env(safe-area-inset-left, 0px)',
         'safe-right': 'env(safe-area-inset-right, 0px)',
+        // Luxury spacing system
+        'luxury-xs': '0.5rem',
+        'luxury-sm': '1rem',
+        'luxury-md': '1.5rem',
+        'luxury-lg': '2rem',
+        'luxury-xl': '3rem',
+        'luxury-2xl': '4rem',
       },
       margin: {
         'safe': 'env(safe-area-inset-bottom, 0px)',
@@ -159,6 +246,21 @@ export default {
         'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
         'safe-left': 'env(safe-area-inset-left, 0px)',
         'safe-right': 'env(safe-area-inset-right, 0px)',
+        // Luxury spacing system
+        'luxury-xs': '0.5rem',
+        'luxury-sm': '1rem',
+        'luxury-md': '1.5rem',
+        'luxury-lg': '2rem',
+        'luxury-xl': '3rem',
+        'luxury-2xl': '4rem',
+      },
+      backdropBlur: {
+        'luxury-xs': '4px',
+        'luxury-sm': '8px',
+        'luxury-md': '12px',
+        'luxury-lg': '16px',
+        'luxury-xl': '24px',
+        'luxury-2xl': '40px',
       },
     },
   },

@@ -19,7 +19,71 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+
+  /* ===== LUXURY DESIGN SYSTEM BASE STYLES ===== */
+  /* Mobile-First Luxury - Premium Foundation */
+  
+  /* Set luxury background and text colors */
+  body.luxury-theme {
+    background-color: #000000; /* luxury-black */
+    color: #FFFFFF; /* luxury-white */
+  }
+
+  /* Prevent zoom on iOS inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Custom focus-visible ring using accent color */
+  *:focus-visible {
+    outline: 2px solid #10B981;
+    outline-offset: 2px;
+  }
 }
+
+/* ===== LUXURY UTILITY CLASSES ===== */
+
+/* Glass Panel - Premium Glassmorphism */
+@layer utilities {
+  .glass-panel {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Safe Area Inset Utility */
+  .safe-area-inset {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  /* Custom Scrollbar Styles - Hide but keep functional */
+  .luxury-scrollbar::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+
+  .luxury-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  /* Prevent overscroll behavior */
+  .no-overscroll {
+    overscroll-behavior: none;
+  }
+}
+
 
 /* ===== PREMIUM KEYFRAME ANIMATIONS ===== */
 /* Swiss Minimalist Luxury - Core Motion System */
