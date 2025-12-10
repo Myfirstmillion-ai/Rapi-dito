@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { Button, Heading, Input } from "../components";
 import axios from "axios";
 import { useUser } from "../contexts/UserContext";
-import { ArrowLeft, Camera, Upload, X } from "lucide-react";
+import { ArrowLeft, Camera, Upload, X, Loader2, User, Mail, Phone } from "lucide-react";
 import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
 import StarRating from "../components/ui/StarRating";
+import { motion } from "framer-motion";
 
 function UserEditProfile() {
   const token = localStorage.getItem("token");
@@ -27,21 +27,18 @@ function UserEditProfile() {
   } = useForm();
 
   const { user, setUser } = useUser();
-
   const navigation = useNavigate();
 
   // Handle image selection
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type)) {
         showAlert('Formato no válido', 'Solo se permiten imágenes (JPEG, JPG, PNG, WEBP)', 'failure');
         return;
       }
 
-      // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
         showAlert('Archivo muy grande', 'La imagen no debe superar 5MB', 'failure');
         return;
@@ -49,7 +46,6 @@ function UserEditProfile() {
 
       setSelectedFile(file);
       
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -78,7 +74,6 @@ function UserEditProfile() {
         }
       );
 
-      // Update user context with new image
       setUser({
         ...user,
         profileImage: response.data.profileImage
@@ -162,7 +157,6 @@ function UserEditProfile() {
       }, 3000)
     } catch (error) {
       showAlert('Ocurrió un error', error.response?.data?.[0]?.msg || 'Error al actualizar', 'failure');
-
       Console.log(error.response);
     } finally {
       setLoading(false);
@@ -176,15 +170,7 @@ function UserEditProfile() {
   }, [responseError]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 overflow-y-auto overflow-x-hidden pb-safe">
-      {/* Animated Grid Background */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 2px 2px, rgb(16 185 129) 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
-        }}></div>
-      </div>
-
+    <div className="min-h-screen bg-white dark:bg-black overflow-y-auto">
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -193,27 +179,38 @@ function UserEditProfile() {
         type={alert.type}
       />
       
-      <div className="relative p-4 pt-6">
-        <div className="flex items-center gap-3 mb-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-20 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800"
+      >
+        <div className="px-6 py-4 flex items-center gap-4">
           <button
             onClick={() => navigation(-1)}
-            className="p-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/20 transition-all"
+            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center"
           >
-            <ArrowLeft size={24} className="text-white" strokeWidth={3} />
+            <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            Editar Perfil
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Editar perfil
           </h1>
         </div>
+      </motion.div>
 
+      {/* Content */}
+      <div className="px-6 py-8 max-w-2xl mx-auto">
         {/* Profile Image Section */}
-        <div className="mb-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Foto de perfil</h3>
-          
-          <div className="flex flex-col items-center gap-4">
-            {/* Image Preview Circle */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-4 border-white/20 shadow-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-12"
+        >
+          <div className="flex flex-col items-center">
+            {/* Image Container */}
+            <div className="relative mb-4">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-4 border-gray-200 dark:border-gray-800">
                 {imagePreview || user?.profileImage ? (
                   <img 
                     src={imagePreview || user?.profileImage} 
@@ -221,28 +218,26 @@ function UserEditProfile() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-500 to-cyan-500">
-                    <span className="text-5xl font-black text-white">
-                      {user?.fullname?.firstname?.[0]?.toUpperCase() || 'U'}
-                    </span>
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600">
+                    <User size={48} className="text-white" />
                   </div>
                 )}
               </div>
               
-              {/* Camera Icon Button */}
+              {/* Camera Button */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-emerald-500/50 active:scale-95 transition-all duration-150"
+                className="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
                 disabled={uploadingImage}
               >
-                <Camera size={22} className="text-white" />
+                <Camera size={20} className="text-white" />
               </button>
             </div>
             
-            {/* Rating Display Below Profile Image */}
+            {/* Rating Display */}
             {user?.rating && (
-              <div className="mt-1">
+              <div className="mb-4">
                 <StarRating 
                   average={user.rating.average} 
                   count={user.rating.count}
@@ -266,7 +261,7 @@ function UserEditProfile() {
                 <button
                   type="button"
                   onClick={handleCancelSelection}
-                  className="flex-1 py-3 px-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-medium hover:bg-white/20 active:scale-98 transition-all duration-150"
+                  className="flex-1 h-12 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white font-medium rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
                   disabled={uploadingImage}
                 >
                   Cancelar
@@ -274,11 +269,11 @@ function UserEditProfile() {
                 <button
                   type="button"
                   onClick={handleImageUpload}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-emerald-500/50 active:scale-98 transition-all duration-150 flex items-center justify-center gap-2"
+                  className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center gap-2"
                   disabled={uploadingImage}
                 >
                   {uploadingImage ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <Loader2 size={18} className="animate-spin" />
                   ) : (
                     <>
                       <Upload size={18} />
@@ -294,14 +289,14 @@ function UserEditProfile() {
               <button
                 type="button"
                 onClick={handleImageDelete}
-                className="py-2 px-4 text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-2 active:scale-95 transition-all duration-150"
+                className="mt-2 text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium flex items-center gap-2 transition-colors"
                 disabled={uploadingImage}
               >
                 {uploadingImage ? (
-                  <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                  <Loader2 size={14} className="animate-spin" />
                 ) : (
                   <>
-                    <X size={16} />
+                    <X size={14} />
                     Eliminar foto
                   </>
                 )}
@@ -309,62 +304,124 @@ function UserEditProfile() {
             )}
 
             {/* Helper Text */}
-            <p className="text-xs text-slate-400 text-center max-w-xs">
-              Formatos: JPEG, JPG, PNG, WEBP • Tamaño máximo: 5MB
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 max-w-xs">
+              JPEG, JPG, PNG o WEBP • Máx. 5MB
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Form Fields */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Información personal</h3>
-        
-        <Input
-          label={"Correo electrónico"}
-          type={"email"}
-          name={"email"}
-          register={register}
-          error={errors.email}
-          defaultValue={user.email}
-          disabled={true}
-        />
-        <form onSubmit={handleSubmit(updateUserProfile)}>
-          <Input
-            label={"Nombre"}
-            name={"firstname"}
-            register={register}
-            error={errors.firstname}
-            defaultValue={user.fullname.firstname}
-          />
-          <Input
-            label={"Apellido"}
-            name={"lastname"}
-            register={register}
-            error={errors.lastname}
-            defaultValue={user.fullname.lastname}
-          />
-          <Input
-            label={"Número de teléfono"}
-            type={"number"}
-            name={"phone"}
-            register={register}
-            error={errors.phone}
-            defaultValue={user.phone}
-          />
-          {responseError && (
-            <p className="text-sm text-center mb-4 text-red-500">
-              {responseError}
-            </p>
-          )}
-          <Button
-            title={"Actualizar Perfil"}
-            loading={loading}
-            type="submit"
-            classes={"mt-4"}
-          />
-        </form>
-        </div>
+        {/* Form Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <form onSubmit={handleSubmit(updateUserProfile)} className="space-y-8">
+            {/* Email - Read Only */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  defaultValue={user.email}
+                  disabled={true}
+                  className="w-full h-14 pl-12 pr-4 bg-gray-100 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-2xl text-gray-500 dark:text-gray-400 outline-none cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            {/* First Name */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Nombre
+              </label>
+              <div className="relative">
+                <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  {...register("firstname", { required: true })}
+                  defaultValue={user.fullname.firstname}
+                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl text-gray-900 dark:text-white outline-none transition-colors"
+                  placeholder="Tu nombre"
+                />
+              </div>
+              {errors.firstname && (
+                <p className="mt-2 text-sm text-red-500">El nombre es requerido</p>
+              )}
+            </div>
+
+            {/* Last Name */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Apellido
+              </label>
+              <div className="relative">
+                <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  {...register("lastname", { required: true })}
+                  defaultValue={user.fullname.lastname}
+                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl text-gray-900 dark:text-white outline-none transition-colors"
+                  placeholder="Tu apellido"
+                />
+              </div>
+              {errors.lastname && (
+                <p className="mt-2 text-sm text-red-500">El apellido es requerido</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Teléfono
+              </label>
+              <div className="relative">
+                <Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  {...register("phone", { required: true })}
+                  defaultValue={user.phone}
+                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl text-gray-900 dark:text-white outline-none transition-colors"
+                  placeholder="+58 276 123 4567"
+                />
+              </div>
+              {errors.phone && (
+                <p className="mt-2 text-sm text-red-500">El teléfono es requerido</p>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {responseError && (
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-600 dark:text-red-400 text-sm">
+                {responseError}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileTap={{ scale: 0.98 }}
+              className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Actualizando...</span>
+                </>
+              ) : (
+                'Guardar cambios'
+              )}
+            </motion.button>
+          </form>
+        </motion.div>
       </div>
+
+      {/* Bottom Safe Area */}
+      <div className="h-20" />
     </div>
   );
 }
