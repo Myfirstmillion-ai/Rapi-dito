@@ -91,9 +91,11 @@ export function getGlowShadow(): string {
 /**
  * Trigger haptic feedback on supported devices
  * @param style - The type of haptic feedback (light, medium, heavy)
+ * Note: Primarily supported on Android Chrome. iOS Safari does not support the vibration API.
+ * For iOS haptic feedback, consider using a native bridge or PWA capabilities.
  */
 export function triggerHaptic(style: 'light' | 'medium' | 'heavy' = 'medium'): void {
-  // Check if the Haptic API is available (iOS Safari, Android Chrome)
+  // Check if the Vibration API is available (primarily Android Chrome)
   if ('vibrate' in navigator) {
     const patterns = {
       light: [10],
@@ -102,9 +104,6 @@ export function triggerHaptic(style: 'light' | 'medium' | 'heavy' = 'medium'): v
     };
     navigator.vibrate(patterns[style]);
   }
-
-  // Check for iOS Haptic Engine (not directly accessible via web, but this is a placeholder)
-  // In a real implementation, you might use a native bridge or PWA API
 }
 
 // ===== SPRING CONFIGURATION UTILITIES =====

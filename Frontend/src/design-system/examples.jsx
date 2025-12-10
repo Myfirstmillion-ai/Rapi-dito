@@ -7,14 +7,16 @@
 
 // ===== IMPORT EXAMPLES =====
 
-// Import specific tokens
-import { COLORS, SPACING, TYPOGRAPHY } from '@/design-system';
+// Import specific tokens (adjust path as needed for your setup)
+// With path alias: import { COLORS, SPACING, TYPOGRAPHY } from '@/design-system';
+// Or use relative path:
+import { COLORS, SPACING, TYPOGRAPHY } from './index';
 
 // Import utility functions
-import { getGlassStyles, getSpringConfig, triggerHaptic } from '@/design-system';
+import { getGlassStyles, getSpringConfig, triggerHaptic } from './index';
 
 // Import everything
-import * as DesignSystem from '@/design-system';
+import * as DesignSystem from './index';
 
 // ===== USAGE IN REACT COMPONENTS =====
 
@@ -46,11 +48,14 @@ function ExampleCard() {
 }
 
 // Example 3: Using with Framer Motion
-import { motion } from 'framer-motion';
+// Note: Ensure framer-motion is imported
+// import { motion } from 'framer-motion';
 
 function ExampleAnimatedPanel() {
   const springConfig = getSpringConfig('gentle');
   
+  // Uncomment when using in a real component:
+  /*
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -61,6 +66,14 @@ function ExampleAnimatedPanel() {
       <h3>Animated Panel</h3>
       <p>This uses spring animations from the design system</p>
     </motion.div>
+  );
+  */
+  
+  return (
+    <div className="bg-luxury-surface-2 p-luxury-md rounded-luxury-xl">
+      <h3>Animated Panel</h3>
+      <p>This uses spring animations from the design system</p>
+    </div>
   );
 }
 
@@ -99,13 +112,15 @@ function ExampleInteractiveButton() {
 }
 
 // Example 6: Responsive design with utility functions
-import { isMobile, isTablet, isDesktop } from '@/design-system';
+// Note: Ensure utility functions are imported
+// import { isMobile, isTablet, isDesktop } from './index';
 
 function ExampleResponsiveComponent() {
   const getLayoutClass = () => {
-    if (isMobile()) return 'flex-col space-y-4';
-    if (isTablet()) return 'grid grid-cols-2 gap-6';
-    if (isDesktop()) return 'grid grid-cols-3 gap-8';
+    if (typeof window === 'undefined') return 'flex-col';
+    if (window.innerWidth < 768) return 'flex-col space-y-4';
+    if (window.innerWidth >= 768 && window.innerWidth < 1024) return 'grid grid-cols-2 gap-6';
+    if (window.innerWidth >= 1024) return 'grid grid-cols-3 gap-8';
     return 'flex-col';
   };
   
@@ -117,13 +132,16 @@ function ExampleResponsiveComponent() {
 }
 
 // Example 7: Using shadows
-import { getShadow } from '@/design-system';
+// Note: Ensure utility functions are imported
+// import { getShadow } from './index';
 
 function ExampleShadowCard() {
+  const shadowLg = '0 8px 32px rgba(0, 0, 0, 0.24)'; // Or use getShadow('lg')
+  
   return (
     <div
       style={{
-        boxShadow: getShadow('lg'),
+        boxShadow: shadowLg,
         backgroundColor: COLORS.luxury.surface1,
         padding: SPACING.lg,
         borderRadius: '16px',
