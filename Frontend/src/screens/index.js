@@ -23,8 +23,6 @@ import ProfileScreen from "./shared/ProfileScreen";
 import UserProtectedWrapper from "./UserProtectedWrapper";
 import CaptainProtectedWrapper from "./CaptainProtectedWrapper";
 
-import RideHistory from "./RideHistory";
-
 import UserEditProfile from "./UserEditProfile";
 import CaptainEditProfile from "./CaptainEditProfile";
 
@@ -61,7 +59,6 @@ export {
   // Old screens (backward compatibility)
   UserProtectedWrapper,
   CaptainProtectedWrapper,
-  RideHistory,
   UserEditProfile,
   CaptainEditProfile,
   Error,
