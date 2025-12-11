@@ -9,7 +9,7 @@ import {
   CaptainProtectedWrapper,
   UserSignup,
   CaptainSignup,
-  RideHistory,
+  RideHistoryScreen,
   UserEditProfile,
   CaptainEditProfile,
   Error,
@@ -119,7 +119,7 @@ function AnimatedRoutes() {
             path="/user/rides"
             element={
               <UserProtectedWrapper>
-                <RideHistory />
+                <RideHistoryScreen />
               </UserProtectedWrapper>
             }
           />
@@ -146,7 +146,7 @@ function AnimatedRoutes() {
             path="/captain/rides"
             element={
               <CaptainProtectedWrapper>
-                <RideHistory />
+                <RideHistoryScreen />
               </CaptainProtectedWrapper>
             }
           />
