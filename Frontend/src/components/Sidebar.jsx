@@ -1,48 +1,81 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, CircleUserRound, History, KeyRound, Menu, X, HelpCircle, LogOut, BarChart3 } from "lucide-react";
+import {
+  ChevronRight,
+  CircleUserRound,
+  History,
+  KeyRound,
+  X,
+  HelpCircle,
+  LogOut,
+  BarChart3,
+  Star,
+  Moon,
+  Sun,
+} from "lucide-react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Console from "../utils/console";
+import { SPRING, triggerHaptic, prefersReducedMotion } from "../styles/swissLuxury";
 
 /**
- * Swiss Minimalist Premium Sidebar Component
- * 
- * Optimizations Applied:
- * - Uses .glass-panel-intense for profile card
- * - Uses .badge-success for online indicator
- * - Uses .divider-horizontal between sections
- * - Premium gradient rings for profile photo
- * - Optimized animations with spring physics
- * - Dark mode full support
+ * Sidebar - Swiss Luxury Minimalist iOS Style
+ *
+ * Premium navigation sidebar with:
+ * - Light/Dark mode support + toggle
+ * - Floating island design
+ * - Premium profile card
+ * - Smooth animations
+ * - Physics-based interactions
  */
+
 function Sidebar({ onToggle }) {
   const token = localStorage.getItem("token");
   const [showSidebar, setShowSidebar] = useState(false);
   const [newUser, setNewUser] = useState({});
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
-  // Check for reduced motion preference
-  const prefersReducedMotion = typeof window !== 'undefined' 
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
-    : false;
+  const reducedMotion = useMemo(() => prefersReducedMotion(), []);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     setNewUser(userData);
   }, []);
 
+  // Update theme class
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
+
   const navigate = useNavigate();
 
   const toggleSidebar = () => {
     const newState = !showSidebar;
     setShowSidebar(newState);
+    triggerHaptic("light");
     if (onToggle) {
       onToggle(newState);
     }
   };
 
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    triggerHaptic("medium");
+  };
+
   const logout = async () => {
     try {
+      triggerHaptic("heavy");
       await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/${newUser.type}/logout`,
         {
@@ -66,33 +99,45 @@ function Sidebar({ onToggle }) {
   };
 
   const menuItems = [
-    { to: `/${newUser?.type}/edit-profile`, icon: CircleUserRound, label: "Editar Perfil" },
-    { to: `/${newUser?.type}/rides`, icon: History, label: "Historial de Viajes" },
-    ...(newUser?.type === 'captain' ? [
-      { to: `/captain/statistics`, icon: BarChart3, label: "📊 Estadísticas" }
-    ] : []),
-    { to: `/${newUser?.type}/reset-password?token=${token}`, icon: KeyRound, label: "Cambiar Contraseña" },
+    {
+      to: `/${newUser?.type}/edit-profile`,
+      icon: CircleUserRound,
+      label: "Editar Perfil",
+    },
+    {
+      to: `/${newUser?.type}/rides`,
+      icon: History,
+      label: "Historial de Viajes",
+    },
+    ...(newUser?.type === "captain"
+      ? [{ to: `/captain/statistics`, icon: BarChart3, label: "Estadísticas" }]
+      : []),
+    {
+      to: `/${newUser?.type}/reset-password?token=${token}`,
+      icon: KeyRound,
+      label: "Cambiar Contraseña",
+    },
     { to: "/help", icon: HelpCircle, label: "Centro de Ayuda" },
   ];
-  
+
   return (
     <>
-      {/* Hamburger Menu Button - Premium Glass Style */}
-      <motion.div
-        whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-        whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+      {/* Hamburger Menu Button */}
+      <motion.button
+        whileTap={reducedMotion ? {} : { scale: 0.9 }}
         style={{ zIndex: 9999 }}
-        className="m-4 mt-5 absolute left-0 top-0 cursor-pointer rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 glass-panel"
+        className="fixed left-4 top-5 w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center cursor-pointer transition-all hover:shadow-xl"
         onClick={toggleSidebar}
       >
-        <div className="p-3.5">
-          {showSidebar ? (
-            <X size={24} className="text-gray-700 dark:text-white" />
-          ) : (
-            <Menu size={24} className="text-gray-700 dark:text-white" />
-          )}
-        </div>
-      </motion.div>
+        {showSidebar ? (
+          <X size={20} className="text-gray-900 dark:text-white" />
+        ) : (
+          <div className="flex flex-col gap-1">
+            <div className="w-4 h-0.5 bg-gray-900 dark:bg-white rounded-full" />
+            <div className="w-3 h-0.5 bg-gray-900 dark:bg-white rounded-full" />
+          </div>
+        )}
+      </motion.button>
 
       <AnimatePresence>
         {showSidebar && (
@@ -103,139 +148,186 @@ function Sidebar({ onToggle }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/70 to-emerald-950/80 backdrop-blur-sm z-100"
+              className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-[100]"
               onClick={toggleSidebar}
             />
 
             {/* Sidebar Panel */}
             <motion.div
-              initial={prefersReducedMotion ? {} : { x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={prefersReducedMotion ? {} : { x: "-100%" }}
-              transition={{ 
-                type: "spring", 
-                damping: 25, 
-                stiffness: 200 
+              initial={reducedMotion ? { opacity: 0 } : { x: "-100%" }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={reducedMotion ? { opacity: 0 } : { x: "-100%" }}
+              transition={SPRING.smooth}
+              className="fixed w-full max-w-sm h-dvh top-0 left-0 z-[200] bg-white dark:bg-[#0A0A0A] border-r border-gray-200 dark:border-gray-800"
+              style={{
+                paddingBottom: "env(safe-area-inset-bottom)",
               }}
-              className="fixed w-full max-w-sm h-dvh top-0 left-0 z-200 pb-safe glass-panel-dark"
             >
               {/* Content */}
               <div className="relative h-full flex flex-col p-6 overflow-y-auto">
-                {/* Premium Profile Card - Using .glass-panel-intense */}
+                {/* Close Button */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleSidebar}
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
+                >
+                  <X size={18} className="text-gray-500 dark:text-gray-400" />
+                </motion.button>
+
+                {/* Profile Card */}
                 <motion.div
-                  initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
+                  initial={reducedMotion ? {} : { opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="mb-8 glass-panel-intense rounded-3xl p-6 shadow-2xl relative overflow-hidden"
+                  className="mt-8 mb-8 p-6 rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700"
                 >
-                  {/* Profile Photo with Premium Gradient Ring */}
-                  <div className="relative w-24 h-24 mx-auto mb-5">
-                    {/* Animated gradient ring */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-500 via-emerald-400 to-cyan-500 p-1 animate-pulse">
+                  {/* Avatar */}
+                  <div className="relative w-20 h-20 mx-auto mb-4">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 p-0.5">
                       {newUser?.data?.profileImage ? (
-                        <img 
-                          src={newUser.data.profileImage} 
-                          alt="Profile" 
-                          className="w-full h-full rounded-full object-cover ring-2 ring-white/20 dark:ring-white/30"
+                        <img
+                          src={newUser.data.profileImage}
+                          alt="Profile"
+                          className="w-full h-full rounded-full object-cover border-2 border-white dark:border-gray-900"
                         />
                       ) : (
-                        <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
-                          <span className="text-4xl text-white font-black">
-                            {newUser?.data?.fullname?.firstname?.[0] || 'U'}
-                            {newUser?.data?.fullname?.lastname?.[0] || ''}
+                        <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center border-2 border-white dark:border-gray-900">
+                          <span className="text-2xl text-white font-bold">
+                            {newUser?.data?.fullname?.firstname?.[0] || "U"}
+                            {newUser?.data?.fullname?.lastname?.[0] || ""}
                           </span>
                         </div>
                       )}
                     </div>
-                    {/* Online Indicator - Using badge pattern */}
-                    <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-400 rounded-full border-4 border-slate-900 shadow-lg shadow-emerald-400/50 badge-success" />
+                    {/* Online Indicator */}
+                    <div className="absolute bottom-0 right-0 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white dark:border-gray-900" />
                   </div>
 
-                  {/* Name & Email */}
-                  <h1 className="text-center font-bold text-xl text-white mb-1.5 whitespace-nowrap">
+                  {/* Name */}
+                  <h2 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-1">
                     {newUser?.data?.fullname?.firstname}{" "}
                     {newUser?.data?.fullname?.lastname}
-                  </h1>
-                  
-                  {/* Star Rating - Under Profile */}
+                  </h2>
+
+                  {/* Rating */}
                   {(newUser?.data?.rating?.average || newUser?.data?.rating) && (
                     <div className="flex items-center justify-center gap-1.5 mb-2">
-                      <span className="text-yellow-400 text-lg">⭐</span>
-                      <span className="text-base font-bold text-yellow-400">
-                        {(newUser?.data?.rating?.average || newUser?.data?.rating || 0).toFixed(1)}
+                      <Star
+                        size={14}
+                        className="fill-yellow-400 text-yellow-400"
+                      />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {(
+                          newUser?.data?.rating?.average ||
+                          newUser?.data?.rating ||
+                          0
+                        ).toFixed(1)}
                       </span>
                       {newUser?.data?.rating?.count > 0 && (
-                        <span className="text-xs text-white/50">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           ({newUser.data.rating.count})
                         </span>
                       )}
                     </div>
                   )}
-                  
-                  <p className="text-center text-emerald-300 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis px-2">
+
+                  {/* Email */}
+                  <p className="text-sm text-center text-gray-500 dark:text-gray-400 truncate">
                     {newUser?.data?.email}
                   </p>
 
                   {/* Role Badge */}
-                  <div className="flex items-center justify-center gap-2 mt-3 bg-white/5 rounded-lg py-2 px-3 border border-white/10">
-                    <span className="text-xs text-white/70 font-semibold uppercase tracking-wide whitespace-nowrap">
-                      {newUser?.type === 'captain' ? '🚗 Conductor' : '👤 Pasajero'}
+                  <div className="flex items-center justify-center mt-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
+                      {newUser?.type === "captain" ? "Conductor" : "Pasajero"}
                     </span>
                   </div>
                 </motion.div>
 
-                {/* Divider - Using .divider-horizontal */}
-                <div className="divider-horizontal mb-6" />
+                {/* Theme Toggle */}
+                <motion.div
+                  initial={reducedMotion ? {} : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                  className="mb-6 p-4 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {isDark ? (
+                        <Moon size={18} className="text-gray-500 dark:text-gray-400" />
+                      ) : (
+                        <Sun size={18} className="text-gray-500" />
+                      )}
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {isDark ? "Modo oscuro" : "Modo claro"}
+                      </span>
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={toggleTheme}
+                      className={`w-12 h-7 rounded-full p-1 transition-colors ${
+                        isDark ? "bg-emerald-500" : "bg-gray-300"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow-sm"
+                        style={{
+                          marginLeft: isDark ? "auto" : "0",
+                        }}
+                      />
+                    </motion.button>
+                  </div>
+                </motion.div>
 
                 {/* Navigation Links */}
-                <motion.div
-                  initial={prefersReducedMotion ? {} : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex-1 space-y-3"
-                >
+                <div className="flex-1 space-y-2">
                   {menuItems.map((item, index) => (
                     <motion.div
                       key={item.to}
-                      initial={prefersReducedMotion ? {} : { opacity: 0, x: -20 }}
+                      initial={reducedMotion ? {} : { opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + index * 0.05 }}
+                      transition={{ delay: 0.2 + index * 0.05 }}
                     >
                       <Link
                         to={item.to}
-                        className="relative flex items-center justify-between py-4 px-4 cursor-pointer glass-panel hover:bg-white/10 dark:hover:bg-white/10 border border-white/10 hover:border-emerald-500/50 rounded-xl transition-all duration-200 group overflow-hidden"
                         onClick={toggleSidebar}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all group"
                       >
-                        {/* Active indicator - vertical glow bar */}
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-l-xl" />
-                        
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-lg group-hover:from-emerald-500/30 group-hover:to-cyan-500/30 transition-all">
-                            <item.icon size={20} className="text-emerald-400" />
+                          <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors">
+                            <item.icon
+                              size={18}
+                              className="text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
+                            />
                           </div>
-                          <span className="text-white font-medium whitespace-nowrap">{item.label}</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                            {item.label}
+                          </span>
                         </div>
-                        <ChevronRight size={20} className="text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                        <ChevronRight
+                          size={18}
+                          className="text-gray-400 dark:text-gray-600 group-hover:text-emerald-500 transition-colors"
+                        />
                       </Link>
                     </motion.div>
                   ))}
-                </motion.div>
-
-                {/* Divider before logout */}
-                <div className="divider-horizontal my-6" />
+                </div>
 
                 {/* Logout Button */}
                 <motion.button
-                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                  initial={reducedMotion ? {} : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                  transition={{ delay: 0.4 }}
+                  whileTap={reducedMotion ? {} : { scale: 0.98 }}
                   onClick={logout}
-                  className="w-full py-4 px-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full mt-6 py-4 px-6 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2"
+                  style={{
+                    boxShadow: "0 4px 16px rgba(239, 68, 68, 0.3)",
+                  }}
                 >
-                  <LogOut size={20} />
-                  Cerrar Sesión
+                  <LogOut size={18} />
+                  <span>Cerrar Sesión</span>
                 </motion.button>
               </div>
             </motion.div>

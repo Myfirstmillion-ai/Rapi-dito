@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Home, 
-  Map, 
-  User, 
+import {
+  Home,
+  Map,
+  User,
   Settings,
   MessageSquare,
   Bell,
@@ -10,97 +10,58 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { SPRING, triggerHaptic, prefersReducedMotion } from "../styles/swissLuxury";
 
 /**
- * 🏆 TESLA MATTE PREMIUM - CommandDock Component
- * 
- * Design System: $100K Premium UI
- * - Floating dock detached from bottom (16px)
- * - Matte Black pill shape (NO transparency)
- * - Monochromatic icons + emerald accent
- * - Physics-based hover/tap interactions
+ * CommandDock - Swiss Luxury Minimalist iOS Style
+ *
+ * Premium navigation dock with:
+ * - Floating island design
+ * - Light/Dark mode support
  * - Expandable quick actions
- * - Haptic feedback on interactions
- * 
- * Usage: Primary navigation dock for app
+ * - Physics-based animations
+ * - Haptic feedback
  */
-
-// Tesla Matte Color System
-const TESLA_COLORS = {
-  bg: '#000000',
-  surface_1: '#0A0A0A',
-  surface_2: '#1C1C1E',
-  surface_3: '#2C2C2E',
-  text_primary: '#FFFFFF',
-  text_secondary: '#8E8E93',
-  text_tertiary: '#636366',
-  accent: '#10B981',
-  divider: '#38383A',
-};
-
-// Physics Spring Configuration
-const SPRING_CONFIG = {
-  type: "spring",
-  stiffness: 400,
-  damping: 30,
-  mass: 0.8,
-};
-
-// Haptic feedback
-const triggerHaptic = (intensity = 'light') => {
-  if (navigator.vibrate) {
-    const patterns = {
-      light: [5],
-      medium: [10],
-      heavy: [15],
-    };
-    navigator.vibrate(patterns[intensity]);
-  }
-};
 
 // Main navigation items
 const mainNavItems = [
-  { id: 'home', icon: Home, label: 'Inicio' },
-  { id: 'map', icon: Map, label: 'Mapa' },
-  { id: 'messages', icon: MessageSquare, label: 'Mensajes', badge: 3 },
-  { id: 'profile', icon: User, label: 'Perfil' },
+  { id: "home", icon: Home, label: "Inicio" },
+  { id: "map", icon: Map, label: "Mapa" },
+  { id: "messages", icon: MessageSquare, label: "Mensajes", badge: 3 },
+  { id: "profile", icon: User, label: "Perfil" },
 ];
 
 // Quick action items (expandable menu)
 const quickActions = [
-  { id: 'history', icon: History, label: 'Historial' },
-  { id: 'notifications', icon: Bell, label: 'Notificaciones', badge: 5 },
-  { id: 'settings', icon: Settings, label: 'Ajustes' },
+  { id: "history", icon: History, label: "Historial" },
+  { id: "notifications", icon: Bell, label: "Alertas", badge: 5 },
+  { id: "settings", icon: Settings, label: "Ajustes" },
 ];
 
-function CommandDock({ 
-  activeTab = 'home', 
+function CommandDock({
+  activeTab = "home",
   onTabChange,
   onQuickAction,
   hideLabels = false,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
-
-  // Check for reduced motion
-  const prefersReducedMotion = typeof window !== 'undefined' 
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
-    : false;
+  const reducedMotion = useMemo(() => prefersReducedMotion(), []);
 
   const handleTabChange = (tabId) => {
-    triggerHaptic('medium');
+    triggerHaptic("medium");
     onTabChange?.(tabId);
   };
 
   const handleQuickAction = (actionId) => {
-    triggerHaptic('heavy');
+    triggerHaptic("heavy");
     onQuickAction?.(actionId);
     setIsExpanded(false);
   };
 
   const toggleExpanded = () => {
-    triggerHaptic(isExpanded ? 'light' : 'heavy');
+    triggerHaptic(isExpanded ? "light" : "heavy");
     setIsExpanded(!isExpanded);
   };
 
@@ -121,23 +82,21 @@ function CommandDock({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={toggleExpanded}
-              className="absolute inset-0"
-              style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+              className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
             />
 
-            {/* Quick Actions Menu - Floating above dock */}
+            {/* Quick Actions Menu */}
             <div className="absolute bottom-32 left-0 right-0 flex justify-center px-4">
               <motion.div
-                initial={prefersReducedMotion ? {} : { scale: 0.8, y: 20, opacity: 0 }}
+                initial={reducedMotion ? {} : { scale: 0.8, y: 20, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
-                exit={prefersReducedMotion ? {} : { scale: 0.8, y: 20, opacity: 0 }}
-                transition={SPRING_CONFIG}
-                className="rounded-3xl p-4"
+                exit={reducedMotion ? {} : { scale: 0.8, y: 20, opacity: 0 }}
+                transition={SPRING.snappy}
+                className="rounded-3xl p-4 bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-gray-800"
                 style={{
-                  background: TESLA_COLORS.surface_1,
-                  border: `1px solid ${TESLA_COLORS.divider}`,
-                  boxShadow: '0 16px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
-                  maxWidth: '320px',
+                  boxShadow:
+                    "0 16px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                  maxWidth: "320px",
                 }}
               >
                 {/* Quick Actions Grid */}
@@ -148,7 +107,7 @@ function CommandDock({
                       action={action}
                       onClick={() => handleQuickAction(action.id)}
                       delay={index * 0.05}
-                      prefersReducedMotion={prefersReducedMotion}
+                      reducedMotion={reducedMotion}
                     />
                   ))}
                 </div>
@@ -160,20 +119,19 @@ function CommandDock({
 
       {/* Main Command Dock - Floating Island */}
       <motion.div
-        initial={prefersReducedMotion ? {} : { y: 100, opacity: 0 }}
+        initial={reducedMotion ? {} : { y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={SPRING_CONFIG}
+        transition={SPRING.snappy}
         className="fixed bottom-4 left-4 right-4 z-50 flex justify-center"
         style={{
-          paddingBottom: 'max(0px, env(safe-area-inset-bottom))',
+          paddingBottom: "max(0px, env(safe-area-inset-bottom))",
         }}
       >
         <div
-          className="rounded-[32px] px-6 py-4 flex items-center gap-2"
+          className="rounded-[28px] px-4 py-3 flex items-center gap-1 bg-white dark:bg-[#1C1C1E] border border-gray-200 dark:border-gray-800"
           style={{
-            background: TESLA_COLORS.surface_1,
-            border: `1px solid ${TESLA_COLORS.divider}`,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+            boxShadow:
+              "0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05)",
           }}
         >
           {/* Main Navigation Items */}
@@ -187,62 +145,57 @@ function CommandDock({
               onHoverStart={() => setHoveredItem(item.id)}
               onHoverEnd={() => setHoveredItem(null)}
               hideLabel={hideLabels}
-              prefersReducedMotion={prefersReducedMotion}
+              reducedMotion={reducedMotion}
             />
           ))}
 
           {/* Divider */}
-          <div 
-            className="w-px h-10 mx-1"
-            style={{ background: TESLA_COLORS.divider }}
-          />
+          <div className="w-px h-10 mx-1 bg-gray-200 dark:bg-gray-700" />
 
-          {/* Expand Button (Plus/X) */}
+          {/* Expand Button */}
           <motion.button
-            whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-            onTapStart={() => triggerHaptic('medium')}
+            whileHover={reducedMotion ? {} : { scale: 1.1 }}
+            whileTap={reducedMotion ? {} : { scale: 0.9 }}
             onClick={toggleExpanded}
-            className="relative w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{
-              background: isExpanded ? TESLA_COLORS.accent : TESLA_COLORS.surface_2,
-              boxShadow: isExpanded 
-                ? `0 4px 16px ${TESLA_COLORS.accent}40, 0 0 0 1px ${TESLA_COLORS.accent}`
-                : 'none',
-            }}
+            className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+              isExpanded
+                ? "bg-emerald-500"
+                : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+            style={
+              isExpanded
+                ? { boxShadow: "0 4px 16px rgba(16, 185, 129, 0.35)" }
+                : {}
+            }
           >
             <AnimatePresence mode="wait">
               {isExpanded ? (
                 <motion.div
                   key="close"
-                  initial={prefersReducedMotion ? {} : { rotate: -90, scale: 0 }}
+                  initial={reducedMotion ? {} : { rotate: -90, scale: 0 }}
                   animate={{ rotate: 0, scale: 1 }}
-                  exit={prefersReducedMotion ? {} : { rotate: 90, scale: 0 }}
-                  transition={SPRING_CONFIG}
+                  exit={reducedMotion ? {} : { rotate: 90, scale: 0 }}
+                  transition={SPRING.snappy}
                 >
-                  <X size={20} style={{ color: TESLA_COLORS.text_primary }} />
+                  <X size={18} className="text-white" />
                 </motion.div>
               ) : (
                 <motion.div
                   key="plus"
-                  initial={prefersReducedMotion ? {} : { rotate: 90, scale: 0 }}
+                  initial={reducedMotion ? {} : { rotate: 90, scale: 0 }}
                   animate={{ rotate: 0, scale: 1 }}
-                  exit={prefersReducedMotion ? {} : { rotate: -90, scale: 0 }}
-                  transition={SPRING_CONFIG}
+                  exit={reducedMotion ? {} : { rotate: -90, scale: 0 }}
+                  transition={SPRING.snappy}
                 >
-                  <Plus size={20} style={{ color: TESLA_COLORS.text_secondary }} />
+                  <Plus size={18} className="text-gray-600 dark:text-gray-400" />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Pulse indicator when not expanded */}
+            {/* Pulse indicator */}
             {!isExpanded && (
               <motion.div
-                className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
-                style={{ 
-                  background: TESLA_COLORS.accent,
-                  boxShadow: `0 0 8px ${TESLA_COLORS.accent}80`,
-                }}
+                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500"
                 animate={{
                   scale: [1, 1.3, 1],
                   opacity: [1, 0.6, 1],
@@ -252,6 +205,7 @@ function CommandDock({
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
+                style={{ boxShadow: "0 0 8px rgba(16, 185, 129, 0.6)" }}
               />
             )}
           </motion.button>
@@ -264,84 +218,79 @@ function CommandDock({
 /**
  * NavButton - Individual navigation button
  */
-function NavButton({ 
-  item, 
-  isActive, 
+function NavButton({
+  item,
+  isActive,
   isHovered,
-  onClick, 
+  onClick,
   onHoverStart,
   onHoverEnd,
   hideLabel,
-  prefersReducedMotion,
+  reducedMotion,
 }) {
   const Icon = item.icon;
 
   return (
     <motion.button
-      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+      whileHover={reducedMotion ? {} : { scale: 1.05 }}
+      whileTap={reducedMotion ? {} : { scale: 0.95 }}
       onHoverStart={onHoverStart}
       onHoverEnd={onHoverEnd}
-      onTapStart={() => triggerHaptic('light')}
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center gap-1 min-w-[56px] py-2 px-3 rounded-2xl transition-colors"
-      style={{
-        background: isActive 
-          ? `linear-gradient(135deg, ${TESLA_COLORS.accent}15, ${TESLA_COLORS.accent}08)` 
-          : isHovered 
-          ? TESLA_COLORS.surface_2 
-          : 'transparent',
-      }}
+      className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] py-2 px-2 rounded-xl transition-colors ${
+        isActive
+          ? "bg-emerald-50 dark:bg-emerald-900/30"
+          : isHovered
+          ? "bg-gray-100 dark:bg-gray-800"
+          : ""
+      }`}
     >
       {/* Icon Container */}
       <div className="relative">
-        <Icon 
-          size={22} 
+        <Icon
+          size={20}
           strokeWidth={isActive ? 2.5 : 2}
-          style={{ 
-            color: isActive ? TESLA_COLORS.accent : TESLA_COLORS.text_secondary 
-          }} 
+          className={
+            isActive
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-gray-500 dark:text-gray-400"
+          }
         />
-        
-        {/* Badge for notifications/messages */}
+
+        {/* Badge */}
         {item.badge && (
           <motion.div
-            initial={prefersReducedMotion ? {} : { scale: 0 }}
+            initial={reducedMotion ? {} : { scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1"
-            style={{
-              background: TESLA_COLORS.accent,
-              boxShadow: `0 2px 8px ${TESLA_COLORS.accent}60`,
-            }}
+            className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-1 bg-emerald-500"
+            style={{ boxShadow: "0 2px 8px rgba(16, 185, 129, 0.4)" }}
           >
-            <span className="text-[10px] font-black" style={{ color: TESLA_COLORS.text_primary }}>
-              {item.badge > 9 ? '9+' : item.badge}
+            <span className="text-[9px] font-bold text-white">
+              {item.badge > 9 ? "9+" : item.badge}
             </span>
           </motion.div>
         )}
       </div>
 
-      {/* Label (optional) */}
+      {/* Label */}
       {!hideLabel && (
-        <motion.span
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-[10px] font-bold tracking-wide"
-          style={{ 
-            color: isActive ? TESLA_COLORS.accent : TESLA_COLORS.text_tertiary 
-          }}
+        <span
+          className={`text-[9px] font-semibold ${
+            isActive
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-gray-500 dark:text-gray-500"
+          }`}
         >
           {item.label}
-        </motion.span>
+        </span>
       )}
 
-      {/* Active indicator line */}
+      {/* Active indicator */}
       {isActive && (
         <motion.div
           layoutId="activeTab"
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full"
-          style={{ background: TESLA_COLORS.accent }}
-          transition={SPRING_CONFIG}
+          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-emerald-500"
+          transition={SPRING.snappy}
         />
       )}
     </motion.button>
@@ -351,54 +300,40 @@ function NavButton({
 /**
  * QuickActionButton - Button in expanded menu
  */
-function QuickActionButton({ action, onClick, delay, prefersReducedMotion }) {
+function QuickActionButton({ action, onClick, delay, reducedMotion }) {
   const Icon = action.icon;
 
   return (
     <motion.button
-      initial={prefersReducedMotion ? {} : { scale: 0, opacity: 0 }}
+      initial={reducedMotion ? {} : { scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      exit={prefersReducedMotion ? {} : { scale: 0, opacity: 0 }}
-      transition={{ ...SPRING_CONFIG, delay }}
-      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-      onTapStart={() => triggerHaptic('medium')}
+      exit={reducedMotion ? {} : { scale: 0, opacity: 0 }}
+      transition={{ ...SPRING.snappy, delay }}
+      whileHover={reducedMotion ? {} : { scale: 1.05 }}
+      whileTap={reducedMotion ? {} : { scale: 0.95 }}
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center gap-2 py-4 rounded-2xl"
-      style={{
-        background: TESLA_COLORS.surface_2,
-        border: `1px solid ${TESLA_COLORS.divider}`,
-      }}
+      className="relative flex flex-col items-center justify-center gap-2 py-4 rounded-2xl bg-gray-50 dark:bg-[#2C2C2E] hover:bg-gray-100 dark:hover:bg-[#3C3C3E] border border-gray-200 dark:border-gray-700 transition-colors"
     >
       {/* Icon */}
-      <div 
-        className="w-12 h-12 rounded-2xl flex items-center justify-center"
-        style={{ background: TESLA_COLORS.surface_3 }}
-      >
-        <Icon size={20} style={{ color: TESLA_COLORS.text_secondary }} />
+      <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+        <Icon size={18} className="text-gray-600 dark:text-gray-400" />
       </div>
 
       {/* Label */}
-      <span 
-        className="text-[10px] font-bold tracking-wide px-2 text-center"
-        style={{ color: TESLA_COLORS.text_secondary }}
-      >
+      <span className="text-[10px] font-semibold px-2 text-center text-gray-600 dark:text-gray-400">
         {action.label}
       </span>
 
       {/* Badge */}
       {action.badge && (
         <motion.div
-          initial={prefersReducedMotion ? {} : { scale: 0 }}
+          initial={reducedMotion ? {} : { scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-2 right-2 min-w-[20px] h-[20px] rounded-full flex items-center justify-center px-1.5"
-          style={{
-            background: TESLA_COLORS.accent,
-            boxShadow: `0 2px 8px ${TESLA_COLORS.accent}60`,
-          }}
+          className="absolute top-2 right-2 min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1.5 bg-emerald-500"
+          style={{ boxShadow: "0 2px 8px rgba(16, 185, 129, 0.4)" }}
         >
-          <span className="text-[10px] font-black" style={{ color: TESLA_COLORS.text_primary }}>
-            {action.badge > 9 ? '9+' : action.badge}
+          <span className="text-[9px] font-bold text-white">
+            {action.badge > 9 ? "9+" : action.badge}
           </span>
         </motion.div>
       )}
