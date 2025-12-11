@@ -6,9 +6,20 @@ import CaptainSignup from "./CaptainSignup";
 import UserLogin from "./UserLogin";
 import CaptainLogin from "./CaptainLogin";
 
-import UserHomeScreen from "./UserHomeScreen";
-import CaptainHomeScreen from "./CaptainHomeScreen";
+// Phase 4 - New Luxury Screens
+import UserHomeScreen from "./user/UserHomeScreen";
+import RideBookingFlow from "./user/RideBookingFlow";
+import ActiveRideScreen from "./user/ActiveRideScreen";
 
+import CaptainHomeScreen from "./captain/CaptainHomeScreen";
+import CaptainActiveRide from "./captain/CaptainActiveRide";
+import RideRequestOverlay from "./captain/RideRequestOverlay";
+
+import ChatScreen from "./shared/ChatScreen";
+import RideHistoryScreen from "./shared/RideHistoryScreen";
+import ProfileScreen from "./shared/ProfileScreen";
+
+// Keep old imports for backward compatibility
 import UserProtectedWrapper from "./UserProtectedWrapper";
 import CaptainProtectedWrapper from "./CaptainProtectedWrapper";
 
@@ -18,7 +29,6 @@ import UserEditProfile from "./UserEditProfile";
 import CaptainEditProfile from "./CaptainEditProfile";
 
 import Error from "./Error";
-import ChatScreen from "./ChatScreen";
 import VerifyEmail from "./VerifyEmail";
 import ResetPassword from "./ResetPassword";
 import ForgotPassword from "./ForgotPassword";
@@ -38,15 +48,23 @@ export {
   CaptainSignup,
   UserLogin,
   CaptainLogin,
+  // Phase 4 - New Luxury Screens
   UserHomeScreen,
+  RideBookingFlow,
+  ActiveRideScreen,
   CaptainHomeScreen,
+  CaptainActiveRide,
+  RideRequestOverlay,
+  ChatScreen,
+  RideHistoryScreen,
+  ProfileScreen,
+  // Old screens (backward compatibility)
   UserProtectedWrapper,
   CaptainProtectedWrapper,
   RideHistory,
   UserEditProfile,
   CaptainEditProfile,
   Error,
-  ChatScreen,
   VerifyEmail,
   ResetPassword,
   ForgotPassword,
