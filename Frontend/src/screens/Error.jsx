@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "../components";
 
 function Error() {
@@ -8,12 +9,11 @@ function Error() {
       <p className="text-zinc-500 mt-2 mb-8">
         La página que buscas no existe o ha sido movida.
       </p>
-      <Button
-        type={"link"}
-        path={"/"}
-        title={"Volver al inicio"}
-        classes={"max-w-xs"}
-      />
+      <Link to="/" className="max-w-xs w-full">
+        <Button variant="primary" fullWidth>
+          Volver al inicio
+        </Button>
+      </Link>
     </div>
   );
 }
