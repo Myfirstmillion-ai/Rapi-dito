@@ -26,7 +26,20 @@ const UserContext = ({ children }) => {
 
 export const useUser = () => {
   const { user, setUser } = useContext(userDataContext);
-  return { user, setUser };
+  
+  const logout = () => {
+    localStorage.removeItem("userData");
+    localStorage.removeItem("token");
+    setUser({
+      email: "",
+      fullname: {
+        firstname: "",
+        lastname: "",
+      }
+    });
+  };
+  
+  return { user, setUser, logout };
 };
 
 export default UserContext;

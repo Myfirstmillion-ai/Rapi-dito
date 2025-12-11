@@ -34,7 +34,28 @@ function CaptainContext({ children }) {
 
 export const useCaptain = () => {
   const { captain, setCaptain } = useContext(captainDataContext);
-  return { captain, setCaptain };
+  
+  const logout = () => {
+    localStorage.removeItem("userData");
+    localStorage.removeItem("token");
+    setCaptain({
+      email: "",
+      fullname: {
+        firstname: "",
+        lastname: "",
+      },
+      vehicle: {
+        color: "",
+        number: "",
+        capacity: 0,
+        type: "",
+      },
+      rides: [],
+      status: "inactive",
+    });
+  };
+  
+  return { captain, setCaptain, logout };
 };
 
 export default CaptainContext;
