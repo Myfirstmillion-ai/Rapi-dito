@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, User } from "lucide-react";
+import { Star, User, MessageSquare, X, Frown, Meh, Smile, SmileBeam } from "lucide-react";
 import { cn } from "../../utils/cn";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { colors, shadows, glassEffect, borderRadius } from "../../styles/designSystem";
+import { springs } from "../../utils/animationUtils";
 
 /**
  * Rating Modal Component - UBER Style
@@ -130,64 +132,84 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
     return name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase() || '?';
   };
 
+  // Rating label based on selected stars
+  const getRatingLabel = () => {
+    switch (selectedStars) {
+      case 1: return "Muy malo";
+      case 2: return "Malo";
+      case 3: return "Regular";
+      case 4: return "Bueno";
+      case 5: return "Excelente";
+      default: return "Toca para calificar";
+    }
+  };
+  
+  // Rating icon based on selected stars
+  const getRatingIcon = () => {
+    switch (selectedStars) {
+      case 1: return <Frown size={32} className="text-red-500" />;
+      case 2: return <Frown size={32} className="text-orange-500" />;
+      case 3: return <Meh size={32} className="text-yellow-500" />;
+      case 4: return <Smile size={32} className="text-emerald-500" />;
+      case 5: return <SmileBeam size={32} className="text-emerald-500" />;
+      default: return null;
+    }
+  };
+  
+  // Haptic feedback function
+  const triggerHaptic = (intensity = 'light') => {
+    if (navigator.vibrate) {
+      const patterns = {
+        light: [5],
+        medium: [10],
+        heavy: [15],
+      };
+      navigator.vibrate(patterns[intensity]);
+    }
+  };
+  
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay - Premium fade with cubic-bezier */}
+          {/* Overlay - iOS Deluxe fade with blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{
-              duration: 0.3,
-              ease: [0.4, 0, 0.2, 1] // Premium cubic-bezier (ease-out-quart)
-            }}
-            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 z-50 backdrop-blur-md"
+            onClick={(e) => e.stopPropagation()} // Prevent close on overlay click
           />
 
-          {/* Modal with Glassmorphism - Premium spring animation */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Modal with iOS Deluxe Glassmorphism - Bottom sheet on mobile, centered on desktop */}
+          <div className="fixed inset-x-0 bottom-0 sm:inset-0 z-50 flex sm:items-center sm:justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{
-                type: "spring",
-                damping: 28,
-                stiffness: 350,
-                mass: 0.8
-              }}
-              className="relative w-full max-w-[400px] md:max-w-[480px] p-8 rounded-3xl shadow-uber-xl overflow-hidden"
+              initial={{ opacity: 0, y: 100, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 60, scale: 0.95 }}
+              transition={springs.default}
+              className="relative w-full max-w-[480px] p-0 rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[85vh] sm:max-h-[90vh] flex flex-col"
               style={{
-                background: "rgba(255, 255, 255, 0.95)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.1), 0 2px 16px 0 rgba(0, 0, 0, 0.05)"
+                ...glassEffect,
+                boxShadow: shadows.xl
               }}
             >
-              {/* Header with Star Icon */}
-              <div className="flex flex-col items-center mb-6">
-                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                  <Star size={32} className="text-yellow-500 fill-yellow-500" />
-                </div>
-                <h2 className="text-2xl font-bold text-uber-black text-center">
-                  ¿Cómo fue tu viaje?
-                </h2>
-                <p className="text-sm text-uber-gray-500 mt-2 text-center">
-                  Tu opinión nos ayuda a mejorar
-                </p>
+              {/* Handle bar for bottom sheet */}
+              <div className="w-full flex justify-center py-3 sm:hidden">
+                <div className="w-12 h-1 bg-white/20 rounded-full"></div>
               </div>
-
-              {/* Avatar and Name with Profile Photo */}
-              <div className="flex flex-col items-center mb-6">
-                <div className="relative w-20 h-20 mb-3">
+              
+              {/* Profile photo and details */}
+              <div className="flex flex-col items-center p-6">
+                <div className="relative w-20 h-20 mb-4">
                   {rideData.ratee.profileImage ? (
-                    <img
+                    <motion.img
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={springs.snappy}
                       src={rideData.ratee.profileImage}
                       alt={rideData.ratee.name}
-                      className="w-20 h-20 rounded-full object-cover shadow-lg ring-4 ring-gray-100"
+                      className="w-20 h-20 rounded-full object-cover shadow-lg border-4 border-white/20"
                       loading="lazy"
                       onError={(e) => {
                         e.target.onerror = null;
@@ -196,87 +218,145 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                       }}
                     />
                   ) : null}
-                  <div 
-                    className={`w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-gray-100 ${rideData.ratee.profileImage ? 'hidden' : 'flex'}`}
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={springs.snappy}
+                    className={`w-20 h-20 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center shadow-lg border-4 border-white/20 ${rideData.ratee.profileImage ? 'hidden' : 'flex'}`}
                   >
                     <span className="text-3xl font-black text-white">
                       {getInitials(rideData.ratee.name)}
                     </span>
-                  </div>
+                  </motion.div>
                 </div>
-                <p className="text-lg font-semibold text-uber-black">
-                  {rideData.ratee.name}
+                
+                {/* Name and rating */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...springs.snappy, delay: 0.1 }}
+                  className="flex flex-col items-center"
+                >
+                  <h3 className="text-xl font-bold text-white">
+                    {rideData.ratee.name}
+                  </h3>
+                  {rideData.ratee.rating && rideData.ratee.rating.count > 0 && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Star size={14} className="text-amber-400 fill-amber-400" />
+                      <span className="text-sm text-white/70">
+                        {rideData.ratee.rating.average.toFixed(1)} · {rideData.ratee.rating.count} {rideData.ratee.rating.count === 1 ? 'calificación' : 'calificaciones'}
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+                
+                {/* Subtle divider */}
+                <div className="w-full h-px bg-white/10 mt-6"></div>
+              </div>
+
+              {/* Star Rating System - iOS Deluxe style */}
+              <div className="px-6 pb-6">
+                <h2 className="text-2xl font-bold text-white text-center mb-1">
+                  ¿Cómo fue tu viaje?
+                </h2>
+                <p className="text-white/60 text-sm text-center mb-6">
+                  {getRatingLabel()}
                 </p>
-                {rideData.ratee.rating && rideData.ratee.rating.count > 0 && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star size={16} className="text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-medium text-uber-gray-600">
-                      {rideData.ratee.rating.average.toFixed(1)} ({rideData.ratee.rating.count})
+                
+                <div className="flex justify-center gap-4 mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <motion.button
+                      key={star}
+                      onClick={() => {
+                        handleStarClick(star);
+                        triggerHaptic('medium');
+                      }}
+                      onMouseEnter={() => setHoveredStar(star)}
+                      onMouseLeave={() => setHoveredStar(0)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={springs.bounce}
+                      className="focus:outline-none rounded-full p-1"
+                      aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                    >
+                      <Star
+                        size={48}
+                        className={cn(
+                          "drop-shadow-lg transition-all duration-300",
+                          star <= (hoveredStar || selectedStars)
+                            ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                            : "text-white/30 fill-white/5"
+                        )}
+                      />
+                    </motion.button>
+                  ))}
+                </div>
+                
+                {/* Rating descriptor with icon */}
+                <AnimatePresence mode="wait">
+                  {selectedStars > 0 && (
+                    <motion.div 
+                      key={selectedStars}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center justify-center gap-2 text-white/70 mb-6"
+                    >
+                      {getRatingIcon()}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Comment Section - iOS Deluxe style */}
+              <div className="px-6 pb-4">
+                <div className="relative">
+                  <div className="absolute top-4 left-4 text-white/40">
+                    <MessageSquare size={20} />
+                  </div>
+                  
+                  <textarea
+                    value={comment}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 250) {
+                        setComment(e.target.value);
+                      }
+                    }}
+                    placeholder="Cuéntanos más sobre tu experiencia (opcional)"
+                    className="w-full min-h-[120px] p-4 pl-12 border border-white/20 bg-white/5 backdrop-blur-sm rounded-2xl resize-none focus:outline-none focus:border-white/30 text-white placeholder-white/40 transition-colors"
+                    maxLength={250}
+                  />
+                  
+                  <div className="flex justify-end mt-2">
+                    <span className="text-xs text-white/50">
+                      {comment.length}/250
                     </span>
                   </div>
-                )}
-              </div>
-
-              {/* Star Rating System - Premium tactile feedback */}
-              <div className="flex justify-center gap-3 mb-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => handleStarClick(star)}
-                    onMouseEnter={() => setHoveredStar(star)}
-                    onMouseLeave={() => setHoveredStar(0)}
-                    className="transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.15] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 rounded-lg p-1"
-                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                  >
-                    <Star
-                      size={42}
-                      className={cn(
-                        "transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] drop-shadow-sm",
-                        star <= (hoveredStar || selectedStars)
-                          ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_2px_4px_rgba(250,204,21,0.4)]"
-                          : "text-uber-gray-200 fill-uber-gray-200"
-                      )}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              {/* Optional Comment */}
-              <div className="mb-6">
-                <textarea
-                  value={comment}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 250) {
-                      setComment(e.target.value);
-                    }
-                  }}
-                  placeholder="Cuéntanos más sobre tu experiencia (opcional)"
-                  className="w-full min-h-[100px] p-4 border border-uber-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-uber-black focus:border-transparent transition-all"
-                  maxLength={250}
-                />
-                <div className="flex justify-end mt-1">
-                  <span className="text-xs text-uber-gray-500">
-                    {comment.length}/250
-                  </span>
                 </div>
               </div>
 
-              {/* Submit Button - Premium tactile feel */}
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting || selectedStars === 0}
-                className={cn(
-                  "w-full py-4 rounded-xl font-bold text-white",
-                  "min-h-[52px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
-                  "active:scale-[0.97] active:brightness-95",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-uber-black",
-                  selectedStars === 0
-                    ? "bg-gradient-to-b from-gray-300 to-gray-350 text-gray-500 cursor-not-allowed shadow-sm"
-                    : "bg-gradient-to-b from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.35)] hover:-translate-y-0.5"
-                )}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
+              {/* Action buttons - iOS Deluxe style */}
+              <div className="px-6 pb-8">
+                {/* Submit Button */}
+                <motion.button
+                  onClick={() => {
+                    handleSubmit();
+                    triggerHaptic('heavy');
+                  }}
+                  disabled={isSubmitting || selectedStars === 0}
+                  whileHover={selectedStars > 0 ? { scale: 1.02, y: -1 } : {}}
+                  whileTap={selectedStars > 0 ? { scale: 0.98 } : {}}
+                  transition={springs.snappy}
+                  className={cn(
+                    "w-full py-4 rounded-2xl font-bold text-white",
+                    "h-14 flex items-center justify-center",
+                    "focus:outline-none",
+                    selectedStars === 0
+                      ? "bg-white/10 text-white/40 cursor-not-allowed"
+                      : "bg-[#10B981] text-white shadow-lg shadow-emerald-500/20"
+                  )}
+                >
+                  {isSubmitting ? (
                     <svg
                       className="animate-spin h-5 w-5"
                       xmlns="http://www.w3.org/2000/svg"
@@ -297,12 +377,11 @@ function RatingModal({ isOpen, rideData, onSubmit }) {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Enviando...
-                  </span>
-                ) : (
-                  "Enviar Calificación"
-                )}
-              </button>
+                  ) : (
+                    "Enviar Calificación"
+                  )}
+                </motion.button>
+              </div>
             </motion.div>
           </div>
         </>

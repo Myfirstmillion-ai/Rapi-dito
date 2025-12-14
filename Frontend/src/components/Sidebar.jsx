@@ -136,6 +136,7 @@ function Sidebar({ onToggle }) {
                         <img 
                           src={newUser.data.profileImage} 
                           alt="Profile" 
+                          loading="lazy"
                           className="w-full h-full rounded-full object-cover ring-2 ring-white/20 dark:ring-white/30"
                         />
                       ) : (

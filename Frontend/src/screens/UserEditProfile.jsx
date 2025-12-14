@@ -8,7 +8,28 @@ import Console from "../utils/console";
 import { useAlert } from "../hooks/useAlert";
 import { Alert } from "../components";
 import StarRating from "../components/ui/StarRating";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { colors, shadows, glassEffect, borderRadius } from "../styles/designSystem";
+import Button from "../components/common/Button";
+import Card from "../components/common/Card";
+import Badge from "../components/common/Badge";
+
+// Variantes de animación para iOS Deluxe
+const animationVariants = {
+  fadeInDown: {
+    initial: { opacity: 0, y: -20 },
+    animate: { opacity: 1, y: 0, transition: { type: "spring", damping: 25, stiffness: 300 } }
+  },
+  fadeInUp: {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { type: "spring", damping: 25, stiffness: 300 } }
+  },
+  scaleIn: {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: { opacity: 1, scale: 1, transition: { type: "spring", damping: 25, stiffness: 300 } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+  }
+};
 
 function UserEditProfile() {
   const token = localStorage.getItem("token");
@@ -170,7 +191,7 @@ function UserEditProfile() {
   }, [responseError]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0A0A] via-[#101010] to-[#080808] overflow-y-auto">
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -179,20 +200,22 @@ function UserEditProfile() {
         type={alert.type}
       />
       
-      {/* Header */}
+      {/* Header - iOS Deluxe */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-20 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800"
+        variants={animationVariants.fadeInDown}
+        initial="initial"
+        animate="animate"
+        className="sticky top-0 z-20 backdrop-blur-xl border-b border-white/10"
       >
         <div className="px-6 py-4 flex items-center gap-4">
-          <button
+          <Button
+            variant="glass"
+            size="icon"
+            icon={<ArrowLeft size={18} />}
             onClick={() => navigation(-1)}
-            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center"
-          >
-            <ArrowLeft size={20} className="text-gray-900 dark:text-white" />
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            aria-label="Volver"
+          />
+          <h1 className="text-2xl font-bold text-white">
             Editar perfil
           </h1>
         </div>
@@ -208,9 +231,13 @@ function UserEditProfile() {
           className="mb-12"
         >
           <div className="flex flex-col items-center">
-            {/* Image Container */}
-            <div className="relative mb-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-4 border-gray-200 dark:border-gray-800">
+            {/* Image Container - iOS Deluxe Style */}
+            <div className="relative mb-6">
+              {/* Outer Glassmorphism Ring */}
+              <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transform scale-110"></div>
+              
+              {/* Profile Picture Container */}
+              <div className="relative w-36 h-36 rounded-full overflow-hidden border-2 border-white/30 shadow-xl">
                 {imagePreview || user?.profileImage ? (
                   <img 
                     src={imagePreview || user?.profileImage} 
@@ -218,21 +245,25 @@ function UserEditProfile() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-600">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[${colors.accent}] to-[${colors.accent}]/70">
                     <User size={48} className="text-white" />
                   </div>
                 )}
+                
+                {/* Inner Glow Effect */}
+                <div className="absolute inset-0 rounded-full shadow-inner-light pointer-events-none"></div>
               </div>
               
-              {/* Camera Button */}
-              <button
-                type="button"
+              {/* Camera Button - iOS Deluxe Style */}
+              <Button
+                variant="glass"
+                size="icon"
+                icon={<Camera size={18} />}
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
                 disabled={uploadingImage}
-              >
-                <Camera size={20} className="text-white" />
-              </button>
+                className="absolute bottom-0 right-0"
+                aria-label="Cambiar imagen"
+              />
             </div>
             
             {/* Rating Display */}
@@ -255,52 +286,40 @@ function UserEditProfile() {
               className="hidden"
             />
 
-            {/* Action Buttons */}
+            {/* Action Buttons - iOS Deluxe Style */}
             {imagePreview && selectedFile && (
-              <div className="flex gap-3 w-full max-w-sm">
-                <button
-                  type="button"
+              <div className="flex gap-4 w-full max-w-sm mt-4">
+                <Button
+                  variant="glass"
+                  size="large"
+                  title="Cancelar"
                   onClick={handleCancelSelection}
-                  className="flex-1 h-12 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white font-medium rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
                   disabled={uploadingImage}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
+                  className="flex-1"
+                />
+                <Button
+                  variant="primary"
+                  size="large"
+                  icon={uploadingImage ? <Loader2 className="animate-spin" size={18} /> : <Upload size={18} />}
+                  title={uploadingImage ? "Subiendo..." : "Subir foto"}
                   onClick={handleImageUpload}
-                  className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center gap-2"
                   disabled={uploadingImage}
-                >
-                  {uploadingImage ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <>
-                      <Upload size={18} />
-                      Subir foto
-                    </>
-                  )}
-                </button>
+                  className="flex-1"
+                />
               </div>
             )}
 
-            {/* Delete Button */}
+            {/* Delete Button - iOS Deluxe Style */}
             {!imagePreview && user?.profileImage && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="small"
+                icon={uploadingImage ? <Loader2 className="animate-spin" size={14} /> : <X size={14} />}
+                title={uploadingImage ? "Eliminando..." : "Eliminar foto"}
                 onClick={handleImageDelete}
-                className="mt-2 text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium flex items-center gap-2 transition-colors"
                 disabled={uploadingImage}
-              >
-                {uploadingImage ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <>
-                    <X size={14} />
-                    Eliminar foto
-                  </>
-                )}
-              </button>
+                className="mt-3 text-red-400 hover:text-red-300"
+              />
             )}
 
             {/* Helper Text */}
@@ -317,105 +336,105 @@ function UserEditProfile() {
           transition={{ delay: 0.2 }}
         >
           <form onSubmit={handleSubmit(updateUserProfile)} className="space-y-8">
-            {/* Email - Read Only */}
+            {/* Email - Read Only - iOS Deluxe Style */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
                 <input
                   type="email"
                   defaultValue={user.email}
                   disabled={true}
-                  className="w-full h-14 pl-12 pr-4 bg-gray-100 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-2xl text-gray-500 dark:text-gray-400 outline-none cursor-not-allowed"
+                  className="w-full h-14 pl-12 pr-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white/50 outline-none cursor-not-allowed"
                 />
               </div>
             </div>
 
-            {/* First Name */}
+            {/* First Name - iOS Deluxe Style */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Nombre
               </label>
               <div className="relative">
-                <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
                 <input
                   type="text"
                   {...register("firstname", { required: true })}
                   defaultValue={user.fullname.firstname}
-                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl text-gray-900 dark:text-white outline-none transition-colors"
+                  className="w-full h-14 pl-12 pr-4 bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/30 rounded-xl text-white outline-none transition-colors"
                   placeholder="Tu nombre"
                 />
               </div>
               {errors.firstname && (
-                <p className="mt-2 text-sm text-red-500">El nombre es requerido</p>
+                <p className="mt-2 text-sm text-red-400">El nombre es requerido</p>
               )}
             </div>
 
-            {/* Last Name */}
+            {/* Last Name - iOS Deluxe Style */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Apellido
               </label>
               <div className="relative">
-                <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
                 <input
                   type="text"
                   {...register("lastname", { required: true })}
                   defaultValue={user.fullname.lastname}
-                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl text-gray-900 dark:text-white outline-none transition-colors"
+                  className="w-full h-14 pl-12 pr-4 bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/30 rounded-xl text-white outline-none transition-colors"
                   placeholder="Tu apellido"
                 />
               </div>
               {errors.lastname && (
-                <p className="mt-2 text-sm text-red-500">El apellido es requerido</p>
+                <p className="mt-2 text-sm text-red-400">El apellido es requerido</p>
               )}
             </div>
 
-            {/* Phone */}
+            {/* Phone - iOS Deluxe Style */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Teléfono
               </label>
               <div className="relative">
-                <Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
                 <input
                   type="tel"
                   {...register("phone", { required: true })}
                   defaultValue={user.phone}
-                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-2xl text-gray-900 dark:text-white outline-none transition-colors"
+                  className="w-full h-14 pl-12 pr-4 bg-white/10 backdrop-blur-sm border border-white/20 focus:border-white/30 rounded-xl text-white outline-none transition-colors"
                   placeholder="+58 276 123 4567"
                 />
               </div>
               {errors.phone && (
-                <p className="mt-2 text-sm text-red-500">El teléfono es requerido</p>
+                <p className="mt-2 text-sm text-red-400">El teléfono es requerido</p>
               )}
             </div>
 
-            {/* Error Message */}
+            {/* Error Message - iOS Deluxe Style */}
             {responseError && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-600 dark:text-red-400 text-sm">
-                {responseError}
-              </div>
+              <Card
+                variant="glass"
+                className="p-4 border border-red-500/30 bg-red-500/10 backdrop-blur-md rounded-xl text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <X size={16} className="text-red-400 flex-shrink-0" />
+                  <p className="text-red-400">{responseError}</p>
+                </div>
+              </Card>
             )}
 
-            {/* Submit Button */}
-            <motion.button
+            {/* Submit Button - iOS Deluxe Style */}
+            <Button
+              variant="primary"
+              size="large"
               type="submit"
               disabled={loading}
-              whileTap={{ scale: 0.98 }}
-              className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={20} className="animate-spin" />
-                  <span>Actualizando...</span>
-                </>
-              ) : (
-                'Guardar cambios'
-              )}
-            </motion.button>
+              className="w-full"
+              icon={loading ? <Loader2 size={20} className="animate-spin" /> : null}
+              title={loading ? "Actualizando..." : "Guardar cambios"}
+            />
           </form>
         </motion.div>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import PropTypes from 'prop-types';
+import { colors, shadows, borderRadius } from '../../styles/designSystem';
 
 // Mapbox access token from environment variables
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
@@ -78,16 +79,50 @@ function MapboxStaticMap({
 
       // Add marker if enabled
       if (showMarker) {
-        // Create custom marker element
+        // Create custom marker element with iOS Deluxe style
         const markerEl = document.createElement('div');
         markerEl.className = 'mapbox-custom-marker';
+        
+        // Create outer ring container
+        markerEl.style.position = 'relative';
         markerEl.style.width = '32px';
         markerEl.style.height = '32px';
-        markerEl.style.borderRadius = '50%';
-        markerEl.style.backgroundColor = markerColor;
-        markerEl.style.border = '3px solid white';
-        markerEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-        markerEl.style.cursor = 'pointer';
+        
+        // Main marker dot
+        const markerDot = document.createElement('div');
+        markerDot.style.position = 'absolute';
+        markerDot.style.inset = '0';
+        markerDot.style.borderRadius = '50%';
+        markerDot.style.backgroundColor = markerColor;
+        markerDot.style.border = '3px solid rgba(255, 255, 255, 0.8)';
+        markerDot.style.boxShadow = shadows.large;
+        markerDot.style.cursor = 'pointer';
+        markerDot.style.transform = 'scale(1)';
+        markerDot.style.zIndex = '1';
+        
+        // Pulse effect
+        const pulseDot = document.createElement('div');
+        pulseDot.style.position = 'absolute';
+        pulseDot.style.inset = '-8px';
+        pulseDot.style.borderRadius = '50%';
+        pulseDot.style.backgroundColor = `${markerColor}40`; // 25% opacity
+        pulseDot.style.animation = 'pulse-animation 2s infinite';
+        pulseDot.style.zIndex = '0';
+        
+        // Create animation style
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+          @keyframes pulse-animation {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 0; }
+            100% { transform: scale(0.95); opacity: 0; }
+          }
+        `;
+        document.head.appendChild(styleSheet);
+        
+        // Append elements
+        markerEl.appendChild(pulseDot);
+        markerEl.appendChild(markerDot);
 
         marker.current = new mapboxgl.Marker({
           element: markerEl,

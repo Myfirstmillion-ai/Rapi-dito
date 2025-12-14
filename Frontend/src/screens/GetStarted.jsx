@@ -1,12 +1,16 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Facebook, Instagram, Twitter, ArrowRight } from "lucide-react";
+import { colors, borderRadius, shadows, glassEffect } from "../styles/designSystem";
+import Button from "../components/common/Button";
+import Card from "../components/common/Card";
+import Badge from "../components/common/Badge";
 
 /**
- * GetStarted - Editorial Hero Landing
- * Swiss Minimalist Luxury Design
- * Full-bleed city photography with floating white card
+ * GetStarted - iOS Deluxe Floating Island Landing
+ * Premium dark mode design with glassmorphism
+ * Animated gradient background with floating islands
  */
 function GetStarted() {
   const navigate = useNavigate();
@@ -18,17 +22,23 @@ function GetStarted() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
-  // Animation variants following Swiss design spec
+  // Animation variants with iOS spring physics
   const fadeInUp = {
     initial: prefersReducedMotion ? {} : { opacity: 0, y: 40 },
     animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
   };
 
   const cardReveal = {
     initial: prefersReducedMotion ? {} : { opacity: 0, y: 100 },
     animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }
+    transition: { type: "spring", damping: 25, stiffness: 250, mass: 0.8, delay: 0.3 }
+  };
+  
+  const scaleIn = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, scale: 1 },
+    transition: { type: "spring", damping: 35, stiffness: 350, mass: 0.6, delay: 0.6 }
   };
   
   useEffect(() => {
@@ -63,144 +73,171 @@ function GetStarted() {
   }, [navigate]);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black">
-      {/* Background Image Layer - City skyline */}
-      <motion.img
-        src="/IMG_3639.jpeg"
-        alt=""
-        initial={prefersReducedMotion ? { opacity: 0 } : { scale: 1.1, opacity: 0 }}
-        animate={prefersReducedMotion 
-          ? { opacity: imageLoaded ? 1 : 0 }
-          : { scale: imageLoaded ? 1 : 1.1, opacity: imageLoaded ? 1 : 0 }
-        }
-        transition={{ duration: prefersReducedMotion ? 0.3 : 1.5, ease: "easeOut" }}
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-        decoding="async"
-      />
+    <div className={`relative h-screen w-full overflow-hidden bg-[${colors.primary}]`}>
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#101010] to-[#080808] opacity-90" />
       
-      {/* Gradient Overlay - bottom-heavy for text readability */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-transparent"
+      {/* Subtle Mesh Gradient Overlay */}
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: imageLoaded ? 0.7 : 0 }}
+        transition={{ duration: 1 }}
+        className="absolute inset-0 bg-[url('/2.webp')] bg-cover bg-center opacity-30 mix-blend-overlay"
         aria-hidden="true"
       />
       
-      {/* Content Wrapper - flex column, justify-between */}
-      <div className="relative z-10 h-full flex flex-col justify-between">
-        {/* Header - Logo + Navigation */}
+      {/* City Background Image with Blur Effect */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: imageLoaded ? 0.5 : 0 }}
+        transition={{ duration: 1.5 }}
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url('/IMG_3639.jpeg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(10px) brightness(0.3)',
+        }}
+        aria-hidden="true"
+      />
+      
+      {/* Content Wrapper */}
+      <div className="relative z-10 h-full flex flex-col justify-between px-6 py-12 md:px-8 md:py-16 lg:px-12">
+        {/* Header Logo - Floating Island */}
         <motion.header
           {...fadeInUp}
-          className="px-6 pt-10 md:px-12 md:pt-12"
+          className="flex justify-center md:justify-start"
         >
-          {/* RAPIDITO Logotype - Typography-based, no SVG */}
-          <div 
-            className="font-bold tracking-[0.2em] uppercase text-white"
-            role="img"
-            aria-label="RAPIDITO"
+          <Card 
+            variant="glass" 
+            borderRadius="xlarge"
+            className="inline-flex px-6 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
           >
-            <span className="text-4xl md:text-5xl">RAPIDITO</span>
-          </div>
+            {/* RAPIDITO Logo - Premium styling */}
+            <div 
+              className="font-bold tracking-[0.2em] uppercase text-white"
+              role="img"
+              aria-label="RAPIDITO"
+            >
+              <span className="text-2xl md:text-3xl">RAPIDITO</span>
+            </div>
+          </Card>
         </motion.header>
 
-        {/* Spacer - allows image visibility */}
-        <div className="flex-1" aria-hidden="true" />
-
-        {/* Floating White Card - Call-to-Action + Footer */}
-        <motion.div
-          initial={cardReveal.initial}
-          animate={cardReveal.animate}
-          transition={cardReveal.transition}
-          className="relative z-10 mx-6 mb-8 rounded-3xl bg-white p-8 shadow-2xl backdrop-blur-xl md:mx-12 md:p-12"
-        >
-          {/* Heading */}
-          <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-gray-900 md:text-4xl lg:text-5xl mb-3">
-            Una nueva forma{'\n'}de viajar.
-          </h1>
-          
-          {/* Subheading */}
-          <p className="text-base md:text-lg leading-relaxed text-gray-500 mb-8">
-            Seguridad, confort y estilo premium en San Antonio del Táchira.
-          </p>
-          
-          {/* Primary CTA Button */}
-          <button
-            onClick={() => navigate("/login")}
-            className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-            aria-label="Comenzar a usar Rapidito"
+        {/* Hero Section - Centered Content */}
+        <div className="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto text-center">
+          {/* Hero Text Floating Island */}
+          <motion.div
+            {...fadeInUp}
+            className="mb-8"
           >
-            Empezar →
-          </button>
-
-          {/* Secondary CTA */}
-          <button
-            onClick={() => navigate("/captain/login")}
-            className="w-full h-14 mt-4 rounded-full bg-gray-50 font-semibold text-gray-900 transition-all hover:bg-gray-100 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
-            aria-label="Registrarse como conductor"
-          >
-            Conducir con Rapidito
-          </button>
-          
-          {/* Divider */}
-          <hr className="my-8 border-gray-200" />
-          
-          {/* Footer Content */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            {/* Social Icons */}
-            <div className="flex items-center justify-center md:justify-start gap-4">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                aria-label="Síguenos en Facebook"
-              >
-                <Facebook className="w-5 h-5 text-white" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                aria-label="Síguenos en Instagram"
-              >
-                <Instagram className="w-5 h-5 text-white" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-                aria-label="Síguenos en Twitter"
-              >
-                <Twitter className="w-5 h-5 text-white" />
-              </a>
-            </div>
-            
-            {/* Legal Links */}
-            <nav 
-              className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2 text-sm text-gray-500"
-              aria-label="Enlaces legales"
+            <Card 
+              variant="glass" 
+              borderRadius="xlarge"
+              className="px-8 py-6 md:py-8 md:px-12 shadow-[${shadows.level4}]"
             >
-              <Link to="/privacy" className="hover:text-gray-900 transition-colors">
+              {/* Tagline */}
+              <Badge 
+                variant="primary" 
+                size="small"
+                className="mb-6"
+              >
+                PREMIUM EXPERIENCE
+              </Badge>
+              
+              {/* Main heading with premium styling */}
+              <h1 className={`text-balance text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-[${colors.textPrimary}] mb-4`}>
+                Una nueva forma<br />de viajar
+              </h1>
+              
+              {/* Subheading with premium styling */}
+              <p className={`text-balance text-base md:text-lg leading-relaxed text-[${colors.textSecondary}]`}>
+                Seguridad, confort y estilo premium en<br />San Antonio del Táchira.
+              </p>
+            </Card>
+          </motion.div>
+          
+          {/* CTA Buttons - Floating Island */}
+          <motion.div
+            {...scaleIn}
+            className="w-full max-w-md"
+          >
+            <Card
+              variant="floating"
+              borderRadius="xlarge"
+              className="px-8 py-6 flex flex-col gap-4"
+            >
+              {/* Google OAuth Button */}
+              <Button
+                variant="glass"
+                size="large"
+                icon={<img src="/screens/google-logo.png" alt="Google" className="w-5 h-5" />}
+                title="Continuar con Google"
+                onClick={() => navigate("/oauth/google")}
+                fullWidth
+              />
+              
+              {/* Divider with text */}
+              <div className="flex items-center gap-4 my-2">
+                <div className={`h-px flex-1 bg-[${colors.border}]`}></div>
+                <span className={`text-[${colors.textSecondary}] text-sm`}>o continuar con email</span>
+                <div className={`h-px flex-1 bg-[${colors.border}]`}></div>
+              </div>
+              
+              {/* Primary CTA Button */}
+              <Button
+                variant="primary"
+                size="large"
+                icon={<ArrowRight size={20} />}
+                title="Iniciar sesión"
+                onClick={() => navigate("/login")}
+                fullWidth
+              />
+              
+              {/* Secondary CTA */}
+              <Button
+                variant="secondary"
+                size="large"
+                title="Conducir con Rapidito"
+                onClick={() => navigate("/captain/login")}
+                fullWidth
+              />
+            </Card>
+          </motion.div>
+        </div>
+        
+        {/* Footer with Legal Links */}
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          className="mt-auto pt-6 flex flex-col items-center"
+        >
+          {/* Legal Links in Pills */}
+          <div className="flex flex-wrap justify-center gap-3 mb-6">
+            <Badge variant="ghost">
+              <Link to="/privacy" className="px-1">
                 Privacidad
               </Link>
-              <span aria-hidden="true">•</span>
-              <Link to="/terms" className="hover:text-gray-900 transition-colors">
+            </Badge>
+            <Badge variant="ghost">
+              <Link to="/terms" className="px-1">
                 Términos
               </Link>
-              <span aria-hidden="true">•</span>
-              <Link to="/help" className="hover:text-gray-900 transition-colors">
+            </Badge>
+            <Badge variant="ghost">
+              <Link to="/help" className="px-1">
                 Ayuda
               </Link>
-            </nav>
+            </Badge>
           </div>
           
           {/* Signature */}
-          <p className="text-center text-sm text-gray-400 mt-6">
+          <p className={`text-center text-sm text-[${colors.textSecondary}]`}>
             Hecho con <span className="text-red-500">♥️</span> y{' '}
             <span className="text-amber-600">☕️</span> por Camilo González
           </p>
-        </motion.div>
+        </motion.footer>
       </div>
     </div>
   );

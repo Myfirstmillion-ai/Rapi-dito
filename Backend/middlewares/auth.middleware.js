@@ -17,7 +17,8 @@ module.exports.authUser = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userModel.findOne({ _id: decoded.id }).populate("rides");
+    // PERF-002: Removed .populate("rides") - only populate rides in endpoints that need them
+    const user = await userModel.findOne({ _id: decoded.id });
     if (!user) {
       return res.status(401).json({ message: "Unauthorized User" });
     }
@@ -62,9 +63,8 @@ module.exports.authCaptain = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const captain = await captainModel
-      .findOne({ _id: decoded.id })
-      .populate("rides");
+    // PERF-002: Removed .populate("rides") - only populate rides in endpoints that need them
+    const captain = await captainModel.findOne({ _id: decoded.id });
     if (!captain) {
       return res.status(401).json({ message: "Unauthorized User" });
     }

@@ -162,6 +162,7 @@ function RideRequestCard({
                       <img
                         src={rideData.user.profileImage}
                         alt="Passenger"
+                        loading="lazy"
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
@@ -201,6 +202,7 @@ function RideRequestCard({
                         <img
                           src={rideData.user.profileImage}
                           alt="Passenger"
+                          loading="lazy"
                           className="w-14 h-14 rounded-2xl object-cover border-2"
                           style={{ borderColor: CAPTAIN_COLORS.online }}
                         />

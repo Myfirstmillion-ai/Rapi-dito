@@ -12,6 +12,7 @@ function CaptainProtectedWrapper({ children }) {
 
   const [loading, setLoading] = useState(true);
   const [isVerified, setIsVerified] = useState(null);
+  const [isProfileComplete, setIsProfileComplete] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -32,6 +33,7 @@ function CaptainProtectedWrapper({ children }) {
         headers: {
           token: token,
         },
+        withCredentials: true, // CRITICAL-006: Send cookies with request
         timeout: 8000, // 8 second request timeout
       })
       .then((response) => {
@@ -44,6 +46,7 @@ function CaptainProtectedWrapper({ children }) {
             JSON.stringify({ type: "captain", data: captainData })
           );
           setIsVerified(captainData.emailVerified);
+          setIsProfileComplete(captainData.isProfileComplete !== false);
         }
       })
       .catch((err) => {
@@ -65,6 +68,12 @@ function CaptainProtectedWrapper({ children }) {
 
   if (isVerified === false) {
     return <VerifyEmail user={captain} role={"captain"} />;
+  }
+
+  // Redirect to complete profile if OAuth captain hasn't completed profile
+  if (isProfileComplete === false) {
+    navigate("/complete-profile");
+    return <Loading />;
   }
 
   return <>{children}</>;

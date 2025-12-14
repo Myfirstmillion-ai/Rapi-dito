@@ -19,6 +19,15 @@ const rideSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // PERF-001: Store coordinates to eliminate N+1 queries
+    pickupCoordinates: {
+      lat: { type: Number },
+      lng: { type: Number }
+    },
+    destinationCoordinates: {
+      lat: { type: Number },
+      lng: { type: Number }
+    },
     fare: {
       type: Number,
       required: true,
@@ -40,6 +49,12 @@ const rideSchema = new mongoose.Schema(
       type: Number,
     }, // in meters
 
+    paymentMethod: {
+      type: String,
+      enum: ['cash', 'nequi'],
+      default: 'cash',
+      required: true
+    },
     paymentID: {
       type: String,
     },
@@ -54,6 +69,16 @@ const rideSchema = new mongoose.Schema(
       select: false,
       required: true,
     },
+    // MEDIUM-012: OTP expiration timestamp
+    otpExpiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from creation
+    },
+    // MEDIUM-013: OTP attempts tracking for brute force prevention
+    otpAttempts: {
+      type: Number,
+      default: 0,
+    },
     messages: [
       {
         msg: String,
@@ -67,6 +92,11 @@ const rideSchema = new mongoose.Schema(
         _id: false
       },
     ],
+    // Track which captains have been offered this ride (prevent duplicates)
+    offeredTo: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Captain",
+    }],
     // Rating system
     rating: {
       // Rating given by user to captain
@@ -112,5 +142,8 @@ rideSchema.index({ status: 1, createdAt: -1 });
 
 // Index for efficient ride lookups
 rideSchema.index({ _id: 1, status: 1 });
+
+// Index for pending rides lookup (late joiner system)
+rideSchema.index({ status: 1, createdAt: -1, vehicle: 1 });
 
 module.exports = mongoose.model("Ride", rideSchema);

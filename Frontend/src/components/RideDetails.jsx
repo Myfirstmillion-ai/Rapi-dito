@@ -70,6 +70,7 @@ function RideDetails({
   pickupLocation,
   destinationLocation,
   selectedVehicle,
+  paymentMethod = "cash",
   fare,
   showPanel,
   setShowPanel,
@@ -286,14 +287,43 @@ function RideDetails({
 
                 {/* Vehicle Info - Bento Grid */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  {/* Vehicle Type */}
+                  {/* Price Info */}
                   <div className="rounded-2xl p-3" style={{ background: TESLA_COLORS.surface_3 }}>
                     <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
-                      Vehículo
+                      Precio
                     </p>
                     <p className="text-sm font-bold" style={{ color: TESLA_COLORS.text_primary }}>
-                      {confirmedRideData.captain?.vehicle?.type === "car" ? "Carro" : "Moto"}
+                      ${fare?.[selectedVehicle]?.toLocaleString('es-CO') || "--"}
                     </p>
+                  </div>
+                  
+                  {/* Payment Method (before ride is confirmed) */}
+                  <div className="rounded-2xl p-3" style={{ background: TESLA_COLORS.surface_3 }}>
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                      Pago
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {paymentMethod === "nequi" ? (
+                        <>
+                          <img 
+                            src="/payment-icons/nequi-logo.svg" 
+                            alt="Nequi" 
+                            className="w-5 h-5"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'block';
+                            }}
+                          />
+                          <span className="hidden text-sm font-bold" style={{ color: "#61108C" }}>N</span>
+                        </>
+                      ) : (
+                        <CreditCard size={18} style={{ color: TESLA_COLORS.accent }} />
+                      )}
+                      <p className="text-sm font-bold" style={{ color: TESLA_COLORS.text_primary }}>
+                        {paymentMethod === "nequi" ? "Nequi" : "Efectivo"}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Color */}
@@ -301,9 +331,38 @@ function RideDetails({
                     <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
                       Color
                     </p>
-                    <p className="text-sm font-bold capitalize" style={{ color: TESLA_COLORS.text_primary }}>
-                      {confirmedRideData.captain?.vehicle?.color}
+                    <p className="text-sm font-bold" style={{ color: TESLA_COLORS.text_primary }}>
+                      {confirmedRideData.captain?.vehicle?.color || "N/A"}
                     </p>
+                  </div>
+                  
+                  {/* Payment Method */}
+                  <div className="rounded-2xl p-3 col-span-2" style={{ background: TESLA_COLORS.surface_3 }}>
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: TESLA_COLORS.text_tertiary }}>
+                      Método de pago
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {confirmedRideData.paymentMethod === "nequi" ? (
+                        <>
+                          <img 
+                            src="/payment-icons/nequi-logo.svg" 
+                            alt="Nequi" 
+                            className="w-5 h-5"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'block';
+                            }}
+                          />
+                          <span className="hidden text-sm font-bold" style={{ color: "#61108C" }}>N</span>
+                        </>
+                      ) : (
+                        <CreditCard size={18} style={{ color: TESLA_COLORS.accent }} />
+                      )}
+                      <p className="text-sm font-bold" style={{ color: TESLA_COLORS.text_primary }}>
+                        {confirmedRideData.paymentMethod === "nequi" ? "Nequi" : "Efectivo"}
+                      </p>
+                    </div>
                   </div>
                 </div>
 

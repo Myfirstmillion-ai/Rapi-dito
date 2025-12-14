@@ -22,8 +22,21 @@ import {
   DollarSign,
   Activity,
   Clock,
-  Star
+  Star,
+  Target,
+  CheckCircle,
+  ShieldCheck,
+  Car,
+  ArrowRight,
+  User as UserIcon
 } from "lucide-react";
+
+// Import design system components
+import { colors, shadows, glassEffect, borderRadius } from "../styles/designSystem";
+import Button from "../components/common/Button";
+import Card from "../components/common/Card";
+import Input from "../components/common/Input";
+import Badge from "../components/common/Badge";
 
 // Coordenadas de San Antonio del Táchira
 const DEFAULT_LOCATION = {
@@ -138,6 +151,41 @@ function CaptainHomeScreen() {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
+
+  // Animation variants with iOS spring physics
+  const staggerContainer = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.2
+      }
+    }
+  };
+
+  const fadeInUp = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, y: 40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
+
+  const fadeInDown = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, y: -40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
+
+  const fadeInRight = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, x: -40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, x: 0 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
+
+  const scaleIn = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, scale: 1 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
 
   const handleSidebarToggle = (isOpen) => {
     setIsSidebarOpen(isOpen);
@@ -393,35 +441,59 @@ function CaptainHomeScreen() {
       const locationInterval = setInterval(updateLocation, 30000);
       
       let activeRideLocationInterval = null;
+      let locationWatchId = null;
       
-      if (showBtn === "start" || showBtn === "end-ride") {
-        activeRideLocationInterval = setInterval(() => {
-          if (navigator.geolocation && newRide._id) {
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                const location = {
-                  lat: position.coords.latitude,
-                  lng: position.coords.longitude,
-                };
-                
-                socket.emit("driver:locationUpdate", {
-                  driverId: captain._id,
-                  location,
-                  rideId: newRide._id,
-                });
-                
-                Console.log("Ubicación enviada:", location);
-              },
-              (error) => {
-                Console.log("Error obteniendo ubicación:", error);
-              }
-            );
+      // Professional tracking: Use watchPosition for active rides
+      if (showBtn === "otp" || showBtn === "end-ride") {
+        const trackingInterval = parseInt(import.meta.env.VITE_TRACKING_UPDATE_INTERVAL) || 4000;
+        let lastUpdateTime = 0;
+        
+        locationWatchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const now = Date.now();
+            // Throttle updates to configured interval
+            if (now - lastUpdateTime < trackingInterval) return;
+            lastUpdateTime = now;
+            
+            const location = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            
+            setRiderLocation(location);
+            setCurrentLocation(location);
+            
+            // Send enhanced location data for professional tracking
+            socket.emit("driver:locationUpdate", {
+              driverId: captain._id,
+              location,
+              rideId: newRide._id,
+              heading: position.coords.heading || 0,
+              speed: position.coords.speed ? position.coords.speed * 3.6 : 0, // m/s to km/h
+              accuracy: position.coords.accuracy || 0,
+              timestamp: now,
+            });
+            
+            Console.log("Ubicación enviada:", location);
+          },
+          (error) => {
+            Console.log("Error obteniendo ubicación:", error);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000,
           }
-        }, 5000);
+        );
       }
       
       const handleNewRide = (data) => {
         Console.log("Nuevo viaje disponible:", data);
+        
+        if (data.isLateJoinOffer) {
+          Console.log(`[LateJoiner] Received pending ride with ${data.timeRemaining}s remaining`);
+        }
+        
         vibrate([500, 200, 500, 200, 500]);
         playSound(NOTIFICATION_SOUNDS.newRide);
         
@@ -438,7 +510,8 @@ function CaptainHomeScreen() {
           () => {
             Console.log("Viaje rechazado por el conductor");
             activeRideToastsRef.current.delete(data._id);
-          }
+          },
+          data.timeRemaining
         );
         
         activeRideToastsRef.current.set(data._id, toastId);
@@ -479,6 +552,9 @@ function CaptainHomeScreen() {
         clearInterval(locationInterval);
         if (activeRideLocationInterval) {
           clearInterval(activeRideLocationInterval);
+        }
+        if (locationWatchId !== null) {
+          navigator.geolocation.clearWatch(locationWatchId);
         }
         socket.off("new-ride", handleNewRide);
         socket.off("ride-cancelled", handleRideCancelled);
@@ -587,7 +663,7 @@ function CaptainHomeScreen() {
   };
 
   return (
-    <div className="relative w-full h-dvh overflow-hidden bg-white dark:bg-black">
+    <div className={`relative w-full h-dvh overflow-hidden bg-[${colors.primary}]`}>
       <Alert
         heading={alert.heading}
         text={alert.text}
@@ -597,106 +673,127 @@ function CaptainHomeScreen() {
       />
       <Sidebar onToggle={handleSidebarToggle} />
       
+      {/* Subtle Dark Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#101010] to-[#080808] opacity-90" />
+      
       {/* Map Container */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 rounded-xl overflow-hidden mx-4 my-4 shadow-2xl">
+        {/* Glass Overlay for Map */}
+        <div className="absolute inset-0 z-10 pointer-events-none" style={glassEffect}></div>
         <MapboxStaticMap
           latitude={mapCenter.lat}
           longitude={mapCenter.lng}
           zoom={mapZoom}
           interactive={true}
           showMarker={true}
-          markerColor="#05A357"
+          markerColor="#10B981"
           className="w-full h-full"
         />
       </div>
 
-      {/* Swiss Minimalist UI Layer */}
+      {/* iOS Deluxe UI Layer */}
       {!isSidebarOpen && !showNewRidePanel && (
         <>
-          {/* Top Bar - Captain Profile + Stats */}
+          {/* Top Bar - Captain Profile Floating Island */}
           <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute top-6 left-6 right-6 z-20"
+            variants={fadeInDown}
+            initial="initial"
+            animate="animate"
+            className="absolute top-8 left-6 right-6 z-20 flex items-center justify-between"
           >
-            <div className="flex items-start justify-between gap-3">
-              {/* Captain Profile Pill */}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsSidebarOpen(true)}
-                className="flex items-center gap-3 pl-2 pr-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800"
-              >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
-                  {captainData?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
+            {/* Captain Profile Card - Floating Glass Pill */}
+            <Button
+              variant="glass"
+              size="custom"
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center gap-3 pl-2 pr-5 py-1 rounded-full"
+            >
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-[${colors.accent}] to-[${colors.accent}]/70 flex items-center justify-center text-white font-bold text-sm ring-2 ring-white/10 shadow-lg`}>
+                {captainData?.fullname?.firstname?.[0]?.toUpperCase() || 'C'}
+              </div>
+              <div className="text-left">
+                <p className={`text-sm font-semibold text-[${colors.textPrimary}]`}>
+                  {captainData?.fullname?.firstname || 'Conductor'}
+                </p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                  <p className={`text-xs text-[${colors.textSecondary}]`}>En línea</p>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {captainData?.fullname?.firstname}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Disponible</p>
-                  </div>
-                </div>
-              </motion.button>
+              </div>
+            </Button>
 
-              {/* Menu Button */}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsSidebarOpen(true)}
-                className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
-              >
-                <Menu size={20} className="text-gray-900 dark:text-white" />
-              </motion.button>
-            </div>
+            {/* Menu Button - Floating Glass */}
+            <Button
+              variant="glass"
+              size="icon"
+              icon={<Menu size={18} />}
+              onClick={() => setIsSidebarOpen(true)}
+              aria-label="Abrir menú"
+            />
           </motion.div>
 
-          {/* Map Controls - Right Side */}
+          {/* Map Controls - Floating Glass Card */}
           <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            variants={fadeInRight}
+            initial="initial"
+            animate="animate"
             className="absolute right-6 top-24 z-20 flex flex-col gap-3"
           >
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMapZoom(prev => Math.min(prev + 1, 20))}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            {/* Controls Card */}
+            <Card
+              variant="glass"
+              borderRadius="large"
+              className="p-3 flex flex-col gap-3"
             >
-              <Plus size={20} className="text-gray-900 dark:text-white" />
-            </motion.button>
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMapZoom(prev => Math.max(prev - 1, 1))}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
-            >
-              <Minus size={20} className="text-gray-900 dark:text-white" />
-            </motion.button>
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                setIsLocating(true);
-                updateLocation();
-                setTimeout(() => setIsLocating(false), 1500);
-              }}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
-            >
-              <Compass size={20} className={`text-gray-900 dark:text-white ${isLocating ? 'animate-spin' : ''}`} />
-            </motion.button>
+              {/* Zoom In */}
+              <Button
+                variant="glass"
+                size="icon"
+                onClick={() => setMapZoom(prev => Math.min(prev + 1, 20))}
+                icon={<Plus size={18} />}
+                aria-label="Acercar mapa"
+              />
+              
+              {/* Zoom Out */}
+              <Button
+                variant="glass"
+                size="icon"
+                onClick={() => setMapZoom(prev => Math.max(prev - 1, 1))}
+                icon={<Minus size={18} />}
+                aria-label="Alejar mapa"
+              />
+              
+              {/* Recenter */}
+              <Button
+                variant="glass"
+                size="icon"
+                onClick={() => {
+                  setIsLocating(true);
+                  updateLocation();
+                  setTimeout(() => setIsLocating(false), 1500);
+                }}
+                icon={<Target size={18} className={isLocating ? 'animate-spin' : ''} />}
+                aria-label="Mi ubicación"
+              />
+            </Card>
           </motion.div>
 
-          {/* Bottom Stats Dashboard */}
+          {/* Bottom Stats Dashboard - Floating Glass Island */}
           <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={fadeInUp}
+            initial="initial"
+            animate="animate"
             className="absolute bottom-8 left-6 right-6 z-20"
           >
-            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <Card
+              variant="floating"
+              borderRadius="xlarge"
+              className="p-6"
+            >
               {/* Today's Earnings - Hero Stat */}
               <div className="mb-6 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Hoy ganaste</p>
-                <p className="text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                <p className={`text-sm text-[${colors.textSecondary}] mb-1`}>Hoy ganaste</p>
+                <p className={`text-5xl font-black text-[${colors.textPrimary}] tracking-tight`}>
                   ${Math.round(earnings.today / 1000)}K
                 </p>
               </div>
@@ -704,46 +801,54 @@ function CaptainHomeScreen() {
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-3">
                 {/* Total Earnings */}
-                <div className="text-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
-                  <DollarSign size={18} className="mx-auto mb-1 text-emerald-500" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <Card variant="glass" borderRadius="large" className="p-3 text-center">
+                  <div className={`w-9 h-9 mx-auto mb-2 rounded-full bg-[${colors.accent}]/10 flex items-center justify-center text-[${colors.accent}]`}>
+                    <DollarSign size={18} />
+                  </div>
+                  <p className={`text-xs text-[${colors.textSecondary}] mb-1`}>Total</p>
+                  <p className={`text-lg font-bold text-[${colors.textPrimary}]`}>
                     ${Math.round(earnings.total / 1000)}K
                   </p>
-                </div>
+                </Card>
 
                 {/* Rides Today */}
-                <div className="text-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
-                  <Activity size={18} className="mx-auto mb-1 text-blue-500" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Viajes</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <Card variant="glass" borderRadius="large" className="p-3 text-center">
+                  <div className="w-9 h-9 mx-auto mb-2 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <Activity size={18} />
+                  </div>
+                  <p className={`text-xs text-[${colors.textSecondary}] mb-1`}>Viajes</p>
+                  <p className={`text-lg font-bold text-[${colors.textPrimary}]`}>
                     {rides.accepted}
                   </p>
-                </div>
+                </Card>
 
                 {/* Distance */}
-                <div className="text-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
-                  <TrendingUp size={18} className="mx-auto mb-1 text-purple-500" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Distancia</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <Card variant="glass" borderRadius="large" className="p-3 text-center">
+                  <div className="w-9 h-9 mx-auto mb-2 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <TrendingUp size={18} />
+                  </div>
+                  <p className={`text-xs text-[${colors.textSecondary}] mb-1`}>Distancia</p>
+                  <p className={`text-lg font-bold text-[${colors.textPrimary}]`}>
                     {rides.distanceTravelled}km
                   </p>
-                </div>
+                </Card>
               </div>
 
               {/* Rating if available */}
               {captain?.rating && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-center gap-2">
-                  <Star size={16} className="fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {captain.rating.average.toFixed(1)}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                <div className={`mt-4 pt-4 border-t border-[${colors.border}] flex items-center justify-center gap-2`}>
+                  <div className="flex items-center gap-1">
+                    <Star size={16} className="fill-yellow-400 text-yellow-400" />
+                    <span className={`text-sm font-semibold text-[${colors.textPrimary}]`}>
+                      {captain.rating.average.toFixed(1)}
+                    </span>
+                  </div>
+                  <span className={`text-xs text-[${colors.textSecondary}]`}>
                     ({captain.rating.count} calificaciones)
                   </span>
                 </div>
               )}
-            </div>
+            </Card>
           </motion.div>
         </>
       )}
@@ -768,65 +873,86 @@ function CaptainHomeScreen() {
         />
       )}
 
-      {/* Ride Completed Modal */}
+      {/* Ride Completed Modal - iOS Deluxe Style */}
       <AnimatePresence>
         {showRideCompleted && completedRideData && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-6"
           >
+            {/* Glass Card Container */}
             <motion.div
-              initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={prefersReducedMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-900 rounded-3xl p-8 w-full max-w-sm shadow-2xl"
+              variants={scaleIn}
+              initial="initial"
+              animate="animate"
+              className="w-full max-w-sm px-2"
             >
-              {/* Success Icon */}
-              <motion.div
-                initial={prefersReducedMotion ? {} : { scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center"
+              <Card
+                variant="floating"
+                borderRadius="xlarge"
+                className="py-8 px-6"
               >
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </motion.div>
+                {/* Success Icon with Animated Check */}
+                <motion.div 
+                  className="mx-auto mb-6 flex justify-center"
+                  initial={prefersReducedMotion ? {} : { scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                >
+                  <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[${colors.accent}] to-[${colors.accent}]/70 flex items-center justify-center shadow-lg`}>
+                    <CheckCircle size={36} strokeWidth={2.5} className="text-white" />
+                  </div>
+                </motion.div>
 
-              <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">
-                ¡Viaje completado!
-              </h2>
-              <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
-                Has finalizado el viaje exitosamente
-              </p>
-              
-              {/* Earnings Display */}
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-2xl p-6 mb-6">
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-1">
-                  Ganancia del viaje
+                <h2 className={`text-2xl font-bold text-[${colors.textPrimary}] mb-2 text-center`}>
+                  ¡Viaje completado!
+                </h2>
+                <p className={`text-center text-[${colors.textSecondary}] mb-6`}>
+                  Has finalizado el viaje exitosamente
                 </p>
-                <p className="text-4xl font-black text-center text-emerald-600 dark:text-emerald-400">
-                  ${completedRideData.fare?.toLocaleString('es-CO') || 0}
-                </p>
-              </div>
-              
-              {/* Distance */}
-              <div className="text-center mb-6">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Distancia: {Math.round((completedRideData.distance || 0) / 1000)} km
-                </p>
-              </div>
-              
-              {/* Continue Button */}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={closeRideCompleted}
-                className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-2xl shadow-lg transition-all"
-              >
-                Continuar
-              </motion.button>
+                
+                {/* Earnings Display - Glass Card */}
+                <Card
+                  variant="glass"
+                  borderRadius="large"
+                  className="p-5 mb-6"
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <div className={`w-10 h-10 rounded-full bg-[${colors.accent}]/10 flex items-center justify-center text-[${colors.accent}]`}>
+                      <DollarSign size={20} />
+                    </div>
+                  </div>
+                  <p className={`text-sm text-[${colors.textSecondary}] text-center mb-1`}>
+                    Ganancia del viaje
+                  </p>
+                  <p className={`text-4xl font-black text-center text-[${colors.accent}]`}>
+                    ${completedRideData.fare?.toLocaleString('es-CO') || 0}
+                  </p>
+                </Card>
+                
+                {/* Distance Badge */}
+                <div className="flex justify-center mb-8">
+                  <Badge variant="glass">
+                    <div className="flex items-center gap-1.5 px-2 py-1">
+                      <MapPinned size={14} className={`text-[${colors.textSecondary}]`} />
+                      <span className={`text-sm text-[${colors.textSecondary}]`}>
+                        {Math.round((completedRideData.distance || 0) / 1000)} km
+                      </span>
+                    </div>
+                  </Badge>
+                </div>
+                
+                {/* Continue Button */}
+                <Button
+                  variant="primary"
+                  size="large"
+                  title="Continuar"
+                  onClick={closeRideCompleted}
+                  fullWidth
+                />
+              </Card>
             </motion.div>
           </motion.div>
         )}

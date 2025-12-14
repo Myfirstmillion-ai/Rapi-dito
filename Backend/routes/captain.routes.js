@@ -6,7 +6,13 @@ const { authCaptain } = require("../middlewares/auth.middleware");
 
 router.post("/register",
     body("email").isEmail().withMessage("Invalid Email"),
-    body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long"),
+    // H-003: Enhanced password strength validation
+    body("password")
+        .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+        .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter")
+        .matches(/[a-z]/).withMessage("Password must contain at least one lowercase letter")
+        .matches(/[0-9]/).withMessage("Password must contain at least one number")
+        .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage("Password must contain at least one special character"),
     body("phone").isLength({ min: 10, max: 10 }).withMessage("Phone Number should be of 10 characters only"),
     body("fullname.firstname").isLength({min:3}).withMessage("First name must be at least 3 characters long"),
     captainController.registerCaptain
@@ -33,7 +39,13 @@ router.get("/logout", authCaptain, captainController.logoutCaptain);
 router.post(
     "/reset-password",
     body("token").notEmpty().withMessage("Token is required"),
-    body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long"),
+    // H-003: Enhanced password strength validation
+    body("password")
+        .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+        .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter")
+        .matches(/[a-z]/).withMessage("Password must contain at least one lowercase letter")
+        .matches(/[0-9]/).withMessage("Password must contain at least one number")
+        .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage("Password must contain at least one special character"),
     captainController.resetPassword
 );
 

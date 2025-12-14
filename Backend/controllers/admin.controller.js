@@ -3,17 +3,34 @@ const captainModel = require("../models/captain.model");
 const { validationResult } = require("express-validator");
 
 // Get all captains with their membership status
+// MEDIUM-013: Added pagination support
 module.exports.getAllCaptains = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const totalCount = await captainModel.countDocuments({});
+  const totalPages = Math.ceil(totalCount / limit);
+
   const captains = await captainModel
     .find({})
     .select(
       "fullname email phone vehicle isMembershipActive membershipPlan membershipExpiresAt status emailVerified profileImage rating createdAt"
     )
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
   res.status(200).json({ 
     captains,
-    count: captains.length 
+    count: captains.length,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalCount,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    }
   });
 });
 

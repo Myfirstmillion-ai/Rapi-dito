@@ -70,6 +70,7 @@ function NewRide({
   setShowPanel,
   fare,
   vehicleType,
+  paymentMethod = "cash",
   showNextPanel,
 }) {
   const [isConfirming, setIsConfirming] = useState(false);
@@ -130,9 +131,11 @@ function NewRide({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleClose}
-            style={{ opacity }}
+            style={{ 
+              opacity,
+              background: 'rgba(0, 0, 0, 0.6)' 
+            }}
             className="absolute inset-0"
-            style={{ background: 'rgba(0, 0, 0, 0.6)' }}
           />
 
           {/* Floating Island Container */}
@@ -151,18 +154,13 @@ function NewRide({
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 0.5 }}
-              style={{ y: springY }}
-              onDragEnd={(e, { offset, velocity }) => {
-                if (offset.y > 150 || velocity.y > 500) {
-                  handleClose();
-                }
-              }}
-              className="overflow-hidden"
               style={{
+                y: springY,
                 background: TESLA_COLORS.surface_1,
                 borderRadius: '32px',
                 boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06)',
               }}
+              className="overflow-hidden"
             >
               {/* Drag Handle */}
               <div className="flex justify-center pt-3 pb-2">
@@ -351,9 +349,30 @@ function NewRide({
                         >
                           TARIFA
                         </div>
-                        <p className="text-sm font-semibold" style={{ color: TESLA_COLORS.text_secondary }}>
-                          Efectivo
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {paymentMethod === "nequi" ? (
+                            <>
+                              <img 
+                                src="/payment-icons/nequi-logo.svg" 
+                                alt="Nequi" 
+                                className="w-4 h-4"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = 'none';
+                                  e.target.nextElementSibling.style.display = 'block';
+                                }}
+                              />
+                              <span className="hidden text-xs font-bold" style={{ color: "#61108C" }}>N</span>
+                              <p className="text-sm font-semibold" style={{ color: TESLA_COLORS.text_secondary }}>
+                                Nequi
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-sm font-semibold" style={{ color: TESLA_COLORS.text_secondary }}>
+                              Efectivo
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
 

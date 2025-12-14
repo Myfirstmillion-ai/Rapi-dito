@@ -22,9 +22,23 @@ const captainSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function() {
+        // Password required only for local auth
+        return this.authProvider === 'local';
+      },
       minlength: 8,
       select: false,
+    },
+    // OAuth fields
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
     },
     phone: {
       type: String,
@@ -48,21 +62,30 @@ const captainSchema = new mongoose.Schema(
     vehicle: {
       color: {
         type: String,
-        required: true,
+        required: function() {
+          // Vehicle details required only for local auth (OAuth users complete profile later)
+          return this.authProvider === 'local';
+        },
         minlength: [3, "El color debe tener al menos 3 caracteres"],
       },
       number: {
         type: String,
-        required: true,
+        required: function() {
+          return this.authProvider === 'local';
+        },
         minlength: [3, "La placa debe tener al menos 3 caracteres"],
       },
       capacity: {
         type: Number,
-        required: true,
+        required: function() {
+          return this.authProvider === 'local';
+        },
       },
       type: {
         type: String,
-        required: true,
+        required: function() {
+          return this.authProvider === 'local';
+        },
         enum: ["car", "bike", "carro", "moto"],
       },
       brand: {
@@ -122,6 +145,24 @@ const captainSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // MEDIUM-014: Account lockout for brute force prevention
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
+      default: null,
+    },
+    // Profile completion flag for OAuth users
+    isProfileComplete: {
+      type: Boolean,
+      default: function() {
+        // Local auth users have complete profile by default (required fields at registration)
+        // OAuth users need to complete phone and vehicle details
+        return this.authProvider === 'local';
+      },
+    },
   },
   { timestamps: true }
 );
@@ -170,5 +211,8 @@ captainSchema.index({ socketId: 1 });
 
 // Index for status queries
 captainSchema.index({ status: 1 });
+
+// Index for Google OAuth lookups
+captainSchema.index({ googleId: 1 }, { sparse: true });
 
 module.exports = mongoose.model("Captain", captainSchema);

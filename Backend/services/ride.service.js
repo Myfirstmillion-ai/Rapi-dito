@@ -69,10 +69,17 @@ module.exports.createRide = async ({
   try {
     const { fare, distanceTime } = await getFare(pickup, destination);
 
+    // PERF-001: Get and store coordinates to eliminate N+1 queries later
+    const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+    const destinationCoordinates = await mapService.getAddressCoordinate(destination);
+
     const ride = await rideModel.create({
       user,
       pickup,
       destination,
+      // PERF-001: Store coordinates in ride document
+      pickupCoordinates,
+      destinationCoordinates,
       otp: getOtp(6),
       fare: fare[vehicleType],
       vehicle: vehicleType,
@@ -153,8 +160,21 @@ module.exports.startRide = async ({ rideId, otp, captain }) => {
     throw new Error("Viaje no aceptado");
   }
 
+  // MEDIUM-013: Check OTP attempts limit (max 3 attempts)
+  const MAX_OTP_ATTEMPTS = 3;
+  if (ride.otpAttempts >= MAX_OTP_ATTEMPTS) {
+    throw new Error("Demasiados intentos de OTP. Por favor solicite un nuevo viaje.");
+  }
+
   if (ride.otp !== otp) {
+    // Increment OTP attempts on failure
+    await rideModel.findByIdAndUpdate(rideId, { $inc: { otpAttempts: 1 } });
     throw new Error("OTP inválido");
+  }
+
+  // MEDIUM-012: Check OTP expiration
+  if (ride.otpExpiresAt && new Date() > ride.otpExpiresAt) {
+    throw new Error("OTP expirado. Por favor solicite un nuevo código.");
   }
 
   await rideModel.findOneAndUpdate(

@@ -10,7 +10,9 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { NotificationContext } from "../contexts/NotificationContext";
 
 /**
  * 🏆 TESLA MATTE PREMIUM - CommandDock Component
@@ -70,7 +72,7 @@ const mainNavItems = [
 // Quick action items (expandable menu)
 const quickActions = [
   { id: 'history', icon: History, label: 'Historial' },
-  { id: 'notifications', icon: Bell, label: 'Notificaciones', badge: 5 },
+  { id: 'notifications', icon: Bell, label: 'Notificaciones' },
   { id: 'settings', icon: Settings, label: 'Ajustes' },
 ];
 
@@ -82,6 +84,10 @@ function CommandDock({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const navigate = useNavigate();
+  
+  // Obtener datos de notificaciones del contexto
+  const { unreadCount, toggleNotificationCenter } = useContext(NotificationContext);
 
   // Check for reduced motion
   const prefersReducedMotion = typeof window !== 'undefined' 
@@ -95,7 +101,20 @@ function CommandDock({
 
   const handleQuickAction = (actionId) => {
     triggerHaptic('heavy');
-    onQuickAction?.(actionId);
+    
+    // Manejo especial para acciones específicas
+    if (actionId === 'notifications') {
+      toggleNotificationCenter();
+    } else if (actionId === 'settings') {
+      navigate('/settings');
+    } else if (actionId === 'history') {
+      const isUser = localStorage.getItem("userType") === "user";
+      navigate(isUser ? "/user/rides" : "/captain/rides");
+    } else {
+      // Para otras acciones personalizadas
+      onQuickAction?.(actionId);
+    }
+    
     setIsExpanded(false);
   };
 
@@ -353,6 +372,11 @@ function NavButton({
  */
 function QuickActionButton({ action, onClick, delay, prefersReducedMotion }) {
   const Icon = action.icon;
+  const { unreadCount } = useContext(NotificationContext);
+  
+  // Determinar si debe mostrar un badge y cuántos elementos
+  const showBadge = action.id === 'notifications' && unreadCount > 0;
+  const badgeCount = unreadCount;
 
   return (
     <motion.button
@@ -387,7 +411,7 @@ function QuickActionButton({ action, onClick, delay, prefersReducedMotion }) {
       </span>
 
       {/* Badge */}
-      {action.badge && (
+      {showBadge && (
         <motion.div
           initial={prefersReducedMotion ? {} : { scale: 0 }}
           animate={{ scale: 1 }}
@@ -398,7 +422,7 @@ function QuickActionButton({ action, onClick, delay, prefersReducedMotion }) {
           }}
         >
           <span className="text-[10px] font-black" style={{ color: TESLA_COLORS.text_primary }}>
-            {action.badge > 9 ? '9+' : action.badge}
+            {badgeCount > 9 ? '9+' : badgeCount}
           </span>
         </motion.div>
       )}

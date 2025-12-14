@@ -13,4 +13,7 @@ const blacklistTokenSchema = new mongoose.Schema({
     }
 });
 
+// MEDIUM-004: Explicit index for faster token lookups
+blacklistTokenSchema.index({ token: 1 });
+
 module.exports = mongoose.model('BlacklistToken', blacklistTokenSchema);

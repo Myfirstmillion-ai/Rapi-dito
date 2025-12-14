@@ -12,6 +12,7 @@ function UserProtectedWrapper({ children }) {
 
   const [loading, setLoading] = useState(true);
   const [isVerified, setIsVerified] = useState(null);
+  const [isProfileComplete, setIsProfileComplete] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -33,6 +34,7 @@ function UserProtectedWrapper({ children }) {
         headers: {
           token: token,
         },
+        withCredentials: true, // CRITICAL-006: Send cookies with request
         timeout: 8000, // 8 second request timeout
       })
       .then((response) => {
@@ -45,6 +47,7 @@ function UserProtectedWrapper({ children }) {
             JSON.stringify({ type: "user", data: user })
           );
           setIsVerified(user.emailVerified);
+          setIsProfileComplete(user.isProfileComplete !== false);
         }
       })
       .catch((error) => {
@@ -66,6 +69,12 @@ function UserProtectedWrapper({ children }) {
 
   if (isVerified === false) {
     return <VerifyEmail user={user} role={"user"} />;
+  }
+
+  // Redirect to complete profile if OAuth user hasn't completed profile
+  if (isProfileComplete === false) {
+    navigate("/complete-profile");
+    return <Loading />;
   }
 
   return <>{children}</>;

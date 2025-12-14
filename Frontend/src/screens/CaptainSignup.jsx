@@ -1,15 +1,23 @@
 import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, ChevronRight, Car, User } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ChevronRight, Car, User, Mail, Lock, Phone, UserPlus, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import Console from "../utils/console";
 
+// Import design system components
+import { colors, shadows, glassEffect, borderRadius } from "../styles/designSystem";
+import Button from "../components/common/Button";
+import Card from "../components/common/Card";
+import Input from "../components/common/Input";
+import Badge from "../components/common/Badge";
+
 /**
- * CaptainSignup - Swiss Minimalist Studio Layout
- * Solid backgrounds, massive typography, zero visual noise
- * Two-step form: Personal info → Vehicle info
+ * CaptainSignup - iOS Deluxe Floating Island Layout
+ * Premium dark mode design with glassmorphism and depth layers
+ * Two-step form with floating inputs and spring animations
+ * Personal info → Vehicle info
  */
 function CaptainSignup() {
   const [responseError, setResponseError] = useState("");
@@ -24,24 +32,34 @@ function CaptainSignup() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
-  // Animation variants
+  // Animation variants with iOS spring physics
+  const staggerContainer = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.2
+      }
+    }
+  };
+
   const fadeInUp = {
     initial: prefersReducedMotion ? {} : { opacity: 0, y: 40 },
     animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
   };
 
-  const slideInLeft = {
-    initial: prefersReducedMotion ? {} : { opacity: 0, x: -60 },
-    animate: prefersReducedMotion ? {} : { opacity: 1, x: 0 },
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
+  const scaleIn = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, scale: 1 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8, delay: 0.1 }
   };
 
   const panelTransition = {
-    initial: prefersReducedMotion ? {} : { opacity: 0, x: 20 },
-    animate: prefersReducedMotion ? {} : { opacity: 1, x: 0 },
-    exit: prefersReducedMotion ? {} : { opacity: 0, x: -20 },
-    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+    initial: prefersReducedMotion ? {} : { opacity: 0, x: 20, scale: 0.98 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, x: 0, scale: 1 },
+    exit: prefersReducedMotion ? {} : { opacity: 0, x: -20, scale: 0.95 },
+    transition: { type: "spring", damping: 25, stiffness: 250, mass: 0.8 }
   };
 
   const {
@@ -120,392 +138,464 @@ function CaptainSignup() {
   }, [responseError]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col overflow-y-auto">
-      {/* Back Button */}
-      <motion.button
-        initial={prefersReducedMotion ? {} : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        onClick={() => showVehiclePanel ? setShowVehiclePanel(false) : navigation('/')}
-        className="absolute top-6 left-6 flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors z-20 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 rounded-lg p-2"
-        aria-label={showVehiclePanel ? "Volver al paso anterior" : "Volver a inicio"}
+    <div className={`min-h-screen bg-[${colors.primary}] flex flex-col overflow-y-auto`}>
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#101010] to-[#080808] opacity-90" />
+      
+      {/* Subtle Mesh Gradient Overlay */}
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 0.7 }}
+        transition={{ duration: 1 }}
+        className="absolute inset-0 bg-[url('/2.webp')] bg-cover bg-center opacity-30 mix-blend-overlay"
+        aria-hidden="true"
+      />
+
+      {/* Back Button - Floating Glass Pill */}
+      <motion.div
+        initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", damping: 30, stiffness: 300, delay: 0.1 }}
+        className="absolute top-6 left-6 z-20"
       >
-        <ArrowLeft className="w-5 h-5" />
-      </motion.button>
+        <Button
+          variant="glass"
+          size="small"
+          icon={<ArrowLeft size={18} />}
+          title={showVehiclePanel ? "Atrás" : "Volver"}
+          onClick={() => showVehiclePanel ? setShowVehiclePanel(false) : navigation('/')}
+          fullWidth={false}
+        />
+      </motion.div>
 
-      {/* Content Wrapper */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-20 md:px-12 lg:px-20">
-        <div className="w-full max-w-md mx-auto">
-          {/* Progress Indicator */}
-          <motion.div 
-            {...fadeInUp}
-            className="flex items-center gap-4 mb-8"
+      {/* Content Wrapper - Centered Signup Island */}
+      <div className="relative z-10 flex-1 flex flex-col justify-center items-center px-6 py-10">
+        {/* Centered Floating Island Card */}
+        <motion.div
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          className="w-full max-w-md"
+        >
+          <Card 
+            variant="floating" 
+            borderRadius="xlarge"
+            className="py-10 px-8"
           >
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-              showVehiclePanel 
-                ? 'bg-emerald-500' 
-                : 'bg-gray-900 dark:bg-white'
-            }`}>
-              <User className={`w-6 h-6 ${
-                showVehiclePanel 
-                  ? 'text-white' 
-                  : 'text-white dark:text-gray-900'
-              }`} />
-            </div>
-            <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded">
-              <div className={`h-full bg-emerald-500 rounded transition-all duration-500 ${
-                showVehiclePanel ? 'w-full' : 'w-0'
-              }`} />
-            </div>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-              showVehiclePanel 
-                ? 'bg-gray-900 dark:bg-white' 
-                : 'bg-gray-100 dark:bg-gray-800'
-            }`}>
-              <Car className={`w-6 h-6 ${
-                showVehiclePanel 
-                  ? 'text-white dark:text-gray-900' 
-                  : 'text-gray-400'
-              }`} />
-            </div>
-          </motion.div>
-
-          {/* Error Message */}
-          {responseError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-300 text-sm"
-              role="alert"
-            >
-              {responseError}
-            </motion.div>
-          )}
-
-          <form onSubmit={handleSubmit(signupCaptain)}>
-            <AnimatePresence mode="wait">
-              {!showVehiclePanel ? (
-                <motion.div
-                  key="personal"
-                  {...panelTransition}
+            {/* Header with Title and Captain Badge */}
+            <div className="flex flex-col items-center mb-8">
+              <motion.div variants={fadeInUp} className="mb-4">
+                <Badge 
+                  variant="primary" 
+                  size="medium"
+                  icon={<Car size={16} />}
+                  className="mb-3"
                 >
-                  {/* Hero Heading - Personal Info */}
-                  <motion.h1
-                    {...slideInLeft}
-                    className="mb-12 text-balance text-6xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-7xl"
-                  >
-                    Únete a{'\n'}
-                    RAPIDITO.
-                  </motion.h1>
+                  CONDUCTOR
+                </Badge>
+              </motion.div>
+              
+              <motion.div variants={fadeInUp} className="text-center">
+                <h2 className={`text-[28px] font-bold tracking-tight text-[${colors.textPrimary}]`}>Crear Cuenta</h2>
+                <p className={`mt-2 text-[${colors.textSecondary}]`}>Únete a Rapidito como conductor</p>
+              </motion.div>
+            </div>
 
-                  <div className="space-y-6">
-                    {/* First Name */}
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="firstname"
-                        placeholder="Nombre"
-                        {...register("firstname", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.firstname ? "firstname-error" : undefined}
-                      />
-                      {errors.firstname && (
-                        <p id="firstname-error" className="mt-2 text-sm text-red-500" role="alert">
-                          El nombre es requerido
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Last Name */}
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="lastname"
-                        placeholder="Apellido"
-                        {...register("lastname", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.lastname ? "lastname-error" : undefined}
-                      />
-                      {errors.lastname && (
-                        <p id="lastname-error" className="mt-2 text-sm text-red-500" role="alert">
-                          El apellido es requerido
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div className="relative">
-                      <input
-                        type="email"
-                        id="email"
-                        placeholder="correo@ejemplo.com"
-                        {...register("email", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.email ? "email-error" : undefined}
-                      />
-                      {errors.email && (
-                        <p id="email-error" className="mt-2 text-sm text-red-500" role="alert">
-                          El email es requerido
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Phone */}
-                    <div className="relative">
-                      <input
-                        type="tel"
-                        id="phone"
-                        placeholder="+58 276 123 4567"
-                        {...register("phone", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.phone ? "phone-error" : undefined}
-                      />
-                      {errors.phone && (
-                        <p id="phone-error" className="mt-2 text-sm text-red-500" role="alert">
-                          El teléfono es requerido
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Password */}
-                    <div className="relative">
-                      <div className="relative">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          id="password"
-                          placeholder="••••••••"
-                          {...register("password", { required: true, minLength: 6 })}
-                          className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 pr-12 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                          aria-describedby={errors.password ? "password-error" : undefined}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded p-1"
-                          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        >
-                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <p id="password-error" className="mt-2 text-sm text-red-500" role="alert">
-                          {errors.password.type === "minLength" 
-                            ? "Mínimo 6 caracteres" 
-                            : "La contraseña es requerida"}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Login Link */}
-                  <div className="mt-8 text-center">
-                    <p className="text-gray-500 dark:text-gray-400">
-                      ¿Ya tienes cuenta?{" "}
-                      <Link 
-                        to="/captain/login" 
-                        className="font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                      >
-                        Inicia sesión
-                      </Link>
-                    </p>
-                  </div>
+            {/* iOS Style Progress Indicator */}
+            <motion.div 
+              variants={fadeInUp}
+              className="flex items-center gap-4 mb-8 px-4"
+            >
+              {/* Step 1 - User Info */}
+              <div className="flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full ${!showVehiclePanel ? `bg-[${colors.accent}]` : `bg-[${colors.accent}]/20`} flex items-center justify-center mb-2 transition-all duration-300 shadow-lg`}>
+                  <User className={`w-5 h-5 ${!showVehiclePanel ? 'text-white' : `text-[${colors.accent}]`}`} />
+                </div>
+                <span className={`text-xs ${!showVehiclePanel ? `text-[${colors.textPrimary}]` : `text-[${colors.textSecondary}]`} font-medium`}>Personal</span>
+              </div>
+              
+              {/* Progress Line */}
+              <div className={`flex-1 h-[3px] relative overflow-hidden rounded-full bg-[${colors.border}]`}>
+                <div 
+                  className={`absolute top-0 left-0 h-full bg-[${colors.accent}] transition-all duration-500 ease-out`}
+                  style={{ width: showVehiclePanel ? '100%' : '0%' }}
+                />
+              </div>
+              
+              {/* Step 2 - Vehicle Info */}
+              <div className="flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full ${showVehiclePanel ? `bg-[${colors.accent}]` : `bg-[${colors.accent}]/10`} flex items-center justify-center mb-2 transition-all duration-300`}>
+                  <Car className={`w-5 h-5 ${showVehiclePanel ? 'text-white' : `text-[${colors.accent}]/70`}`} />
+                </div>
+                <span className={`text-xs ${showVehiclePanel ? `text-[${colors.textPrimary}]` : `text-[${colors.textSecondary}]`} font-medium`}>Vehículo</span>
+              </div>
+            </motion.div>
+            
+            {/* Google OAuth Button - Only show on first step */}
+            {!showVehiclePanel && (
+              <>
+                <motion.div variants={fadeInUp} className="mb-4">
+                  <Button
+                    variant="glass"
+                    size="large"
+                    icon={<img src="/screens/google-logo.png" alt="Google" className="w-5 h-5" />}
+                    title="Continuar con Google"
+                    onClick={() => window.location.href = `${import.meta.env.VITE_SERVER_URL}/auth/google?userType=captain`}
+                    fullWidth
+                  />
                 </motion.div>
+
+                {/* Divider with text */}
+                <motion.div variants={fadeInUp} className="flex items-center gap-4 my-6">
+                  <div className={`h-px flex-1 bg-[${colors.border}]`}></div>
+                  <span className={`text-[${colors.textSecondary}] text-sm`}>o registrarse con email</span>
+                  <div className={`h-px flex-1 bg-[${colors.border}]`}></div>
+                </motion.div>
+              </>
+            )}
+
+            {/* Error Message - iOS Style */}
+            {responseError && (
+              <motion.div
+                variants={fadeInUp}
+                className={`mb-6 px-4 py-3 bg-[${colors.error}]/10 border border-[${colors.error}]/20 rounded-[${borderRadius.medium}] text-[${colors.error}] text-sm flex items-center gap-2`}
+                role="alert"
+              >
+                <span className="rounded-full bg-[${colors.error}]/20 p-1">
+                  <AlertCircle size={14} />
+                </span>
+                {responseError}
+              </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit(signupCaptain)} className="space-y-5">
+              <AnimatePresence mode="wait">
+                {!showVehiclePanel ? (
+                  <motion.div
+                    key="personal"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                    {...panelTransition}
+                  >
+                    {/* Personal Info Form */}
+                    <div className="space-y-5">
+                      {/* First Name Input - iOS Floating Label */}
+                      <motion.div variants={fadeInUp}>
+                        <Input
+                          label="Nombre"
+                          type="text"
+                          name="firstname"
+                          icon={User}
+                          register={register}
+                          error={errors.firstname && { message: "El nombre es requerido" }}
+                          floatingLabel
+                          clearable
+                        />
+                      </motion.div>
+
+                      {/* Last Name Input - iOS Floating Label */}
+                      <motion.div variants={fadeInUp}>
+                        <Input
+                          label="Apellido"
+                          type="text"
+                          name="lastname"
+                          icon={User}
+                          register={register}
+                          error={errors.lastname && { message: "El apellido es requerido" }}
+                          floatingLabel
+                          clearable
+                        />
+                      </motion.div>
+
+                      {/* Email Input - iOS Floating Label */}
+                      <motion.div variants={fadeInUp}>
+                        <Input
+                          label="Correo electrónico"
+                          type="email"
+                          name="email"
+                          icon={Mail}
+                          register={register}
+                          error={errors.email && { message: "El email es requerido" }}
+                          floatingLabel
+                          clearable
+                        />
+                      </motion.div>
+
+                      {/* Phone Input - iOS Floating Label */}
+                      <motion.div variants={fadeInUp}>
+                        <Input
+                          label="Teléfono"
+                          type="tel"
+                          name="phone"
+                          icon={Phone}
+                          register={register}
+                          error={errors.phone && { message: "El teléfono es requerido" }}
+                          floatingLabel
+                          clearable
+                        />
+                      </motion.div>
+
+                      {/* Password Input - iOS Floating Label */}
+                      <motion.div variants={fadeInUp} className="relative">
+                        <Input
+                          label="Contraseña"
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          icon={Lock}
+                          register={register("password", { required: true, minLength: 6 })}
+                          error={errors.password && { 
+                            message: errors.password.type === "minLength" 
+                              ? "La contraseña debe tener al menos 6 caracteres" 
+                              : "La contraseña es requerida"
+                          }}
+                          floatingLabel
+                          clearable={false}
+                        />
+                        
+                        {/* Show/Hide Password Button */}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className={`text-[${colors.textSecondary}] hover:text-[${colors.textPrimary}] p-1 rounded-full transition-colors`}
+                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </motion.div>
+                      
+                      {/* Login Link */}
+                      <motion.div variants={fadeInUp} className="mt-6 pt-2 text-center">
+                        <p className={`text-[${colors.textSecondary}]`}>
+                          ¿Ya tienes cuenta?{" "}
+                          <Link 
+                            to="/captain/login" 
+                            className={`font-semibold text-[${colors.textPrimary}] hover:text-[${colors.accent}] transition-colors`}
+                          >
+                            Inicia sesión
+                          </Link>
+                        </p>
+                      </motion.div>
+                      
+                      {/* Next Step Button */}
+                      <motion.div variants={fadeInUp} className="mt-8">
+                        <Button
+                          variant="primary"
+                          size="large"
+                          title="Siguiente paso"
+                          icon={<ChevronRight size={20} />}
+                          iconPosition="right"
+                          onClick={handleNextStep}
+                          fullWidth
+                        />
+                      </motion.div>
+                    </div>
+                  </motion.div>
               ) : (
                 <motion.div
                   key="vehicle"
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
                   {...panelTransition}
                 >
-                  {/* Hero Heading - Vehicle Info */}
-                  <motion.h1
-                    {...slideInLeft}
-                    className="mb-12 text-balance text-6xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-7xl"
-                  >
-                    Tu{'\n'}
-                    vehículo.
-                  </motion.h1>
-
-                  <div className="space-y-6">
-                    {/* Vehicle Type */}
-                    <div className="relative">
-                      <select
-                        id="type"
-                        {...register("type", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors focus:border-emerald-500 dark:focus:border-emerald-400 appearance-none cursor-pointer"
-                        aria-describedby={errors.type ? "type-error" : undefined}
-                        defaultValue=""
-                      >
-                        <option value="" disabled className="bg-white dark:bg-gray-900">
-                          Tipo de vehículo
-                        </option>
-                        <option value="car" className="bg-white dark:bg-gray-900">Carro</option>
-                        <option value="bike" className="bg-white dark:bg-gray-900">Moto</option>
-                      </select>
-                      <ChevronRight className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 rotate-90 pointer-events-none" />
+                  {/* Vehicle Info Form */}
+                  <div className="space-y-5">
+                    <motion.div variants={fadeInUp}>
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className={`p-2 rounded-full bg-[${colors.accent}]/10 text-[${colors.accent}]`}>
+                          <Car size={20} />
+                        </div>
+                        <h3 className={`text-lg font-semibold text-[${colors.textPrimary}]`}>Información del vehículo</h3>
+                      </div>
+                    </motion.div>
+                    
+                    {/* Vehicle Type - iOS Style Select */}
+                    <motion.div variants={fadeInUp} className="relative">
+                      <div className={`relative rounded-[${borderRadius.medium}] border border-[${colors.border}] overflow-hidden`}>
+                        <select
+                          id="type"
+                          {...register("type", { required: true })}
+                          className={`w-full bg-[${colors.card}] px-4 py-3.5 pr-12 text-[${colors.textPrimary}] appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-[${colors.accent}] transition-all duration-200`}
+                          aria-describedby={errors.type ? "type-error" : undefined}
+                          defaultValue=""
+                        >
+                          <option value="" disabled className={`bg-[${colors.card}]`}>
+                            Tipo de vehículo
+                          </option>
+                          <option value="car" className={`bg-[${colors.card}]`}>Carro</option>
+                          <option value="bike" className={`bg-[${colors.card}]`}>Moto</option>
+                        </select>
+                        <div className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full bg-[${colors.accent}]/10 text-[${colors.accent}] pointer-events-none`}>
+                          <ChevronRight className="w-4 h-4 rotate-90" />
+                        </div>
+                      </div>
                       {errors.type && (
-                        <p id="type-error" className="mt-2 text-sm text-red-500" role="alert">
+                        <p className={`mt-1 text-sm text-[${colors.error}]`} role="alert">
                           El tipo es requerido
                         </p>
                       )}
-                    </div>
+                    </motion.div>
 
-                    {/* Vehicle Number (Plate) */}
-                    <div className="relative">
-                      <input
+                    {/* Vehicle Number (Plate) - iOS Floating Label */}
+                    <motion.div variants={fadeInUp}>
+                      <Input
+                        label="Placa del vehículo"
                         type="text"
-                        id="number"
-                        placeholder="Placa del vehículo"
-                        {...register("number", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.number ? "number-error" : undefined}
+                        name="number"
+                        icon={Car}
+                        register={register}
+                        error={errors.number && { message: "La placa es requerida" }}
+                        floatingLabel
+                        clearable
                       />
-                      {errors.number && (
-                        <p id="number-error" className="mt-2 text-sm text-red-500" role="alert">
-                          La placa es requerida
-                        </p>
-                      )}
-                    </div>
+                    </motion.div>
 
-                    {/* Color */}
-                    <div className="relative">
-                      <input
+                    {/* Color - iOS Floating Label */}
+                    <motion.div variants={fadeInUp}>
+                      <Input
+                        label="Color del vehículo"
                         type="text"
-                        id="color"
-                        placeholder="Color del vehículo"
-                        {...register("color", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.color ? "color-error" : undefined}
+                        name="color"
+                        register={register}
+                        error={errors.color && { message: "El color es requerido" }}
+                        floatingLabel
+                        clearable
                       />
-                      {errors.color && (
-                        <p id="color-error" className="mt-2 text-sm text-red-500" role="alert">
-                          El color es requerido
-                        </p>
-                      )}
-                    </div>
+                    </motion.div>
 
-                    {/* Brand */}
-                    <div className="relative">
-                      <input
+                    {/* Brand - iOS Floating Label */}
+                    <motion.div variants={fadeInUp}>
+                      <Input
+                        label="Marca del vehículo"
                         type="text"
-                        id="brand"
-                        placeholder="Marca del vehículo"
-                        {...register("brand", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.brand ? "brand-error" : undefined}
+                        name="brand"
+                        register={register}
+                        error={errors.brand && { message: "La marca es requerida" }}
+                        floatingLabel
+                        clearable
                       />
-                      {errors.brand && (
-                        <p id="brand-error" className="mt-2 text-sm text-red-500" role="alert">
-                          La marca es requerida
-                        </p>
-                      )}
-                    </div>
+                    </motion.div>
 
-                    {/* Model */}
-                    <div className="relative">
-                      <input
+                    {/* Model - iOS Floating Label */}
+                    <motion.div variants={fadeInUp}>
+                      <Input
+                        label="Modelo del vehículo"
                         type="text"
-                        id="model"
-                        placeholder="Modelo del vehículo"
-                        {...register("model", { required: true })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.model ? "model-error" : undefined}
+                        name="model"
+                        register={register}
+                        error={errors.model && { message: "El modelo es requerido" }}
+                        floatingLabel
+                        clearable
                       />
-                      {errors.model && (
-                        <p id="model-error" className="mt-2 text-sm text-red-500" role="alert">
-                          El modelo es requerido
-                        </p>
-                      )}
-                    </div>
+                    </motion.div>
 
-                    {/* Capacity */}
-                    <div className="relative">
-                      <input
+                    {/* Capacity - iOS Floating Label */}
+                    <motion.div variants={fadeInUp}>
+                      <Input
+                        label="Capacidad de pasajeros"
                         type="number"
-                        id="capacity"
-                        placeholder="Capacidad de pasajeros"
-                        min="1"
-                        {...register("capacity", { required: true, min: 1 })}
-                        className="peer w-full border-b-2 border-gray-300 dark:border-gray-700 bg-transparent py-4 text-lg text-gray-900 dark:text-white outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                        aria-describedby={errors.capacity ? "capacity-error" : undefined}
+                        name="capacity"
+                        register={register("capacity", { required: true, min: 1 })}
+                        error={errors.capacity && { message: "La capacidad es requerida" }}
+                        floatingLabel
+                        clearable
                       />
-                      {errors.capacity && (
-                        <p id="capacity-error" className="mt-2 text-sm text-red-500" role="alert">
-                          La capacidad es requerida
-                        </p>
-                      )}
-                    </div>
+                    </motion.div>
 
-                    {/* Terms Checkbox */}
-                    <div className="pt-4">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={termsAccepted}
-                          onChange={(e) => setTermsAccepted(e.target.checked)}
-                          className="mt-1 h-5 w-5 rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500 dark:bg-gray-800"
-                        />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {/* Terms Checkbox - iOS Style */}
+                    <motion.div variants={fadeInUp} className="mt-6">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <div className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                            className={`peer appearance-none h-[22px] w-[22px] rounded-[6px] border border-[${colors.border}] bg-[${colors.card}] checked:bg-[${colors.accent}] checked:border-0 transition-all duration-200`}
+                          />
+                          <svg
+                            className="absolute h-[14px] w-[14px] text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                        <span className={`text-sm text-[${colors.textSecondary}]`}>
                           Acepto los{' '}
-                          <Link to="/terms" className="underline hover:text-emerald-600 dark:hover:text-emerald-400">
+                          <Link to="/terms" className={`text-[${colors.accent}] hover:text-[${colors.accent}]/80 transition-colors`}>
                             Términos y Condiciones
                           </Link>
                           {' '}y la{' '}
-                          <Link to="/privacy" className="underline hover:text-emerald-600 dark:hover:text-emerald-400">
+                          <Link to="/privacy" className={`text-[${colors.accent}] hover:text-[${colors.accent}]/80 transition-colors`}>
                             Política de Privacidad
                           </Link>
                         </span>
                       </label>
-                    </div>
-                  </div>
+                    </motion.div>
 
-                  {/* Info Text */}
-                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-8">
-                    Revisaremos tu solicitud en 24-48 horas
-                  </p>
+                    {/* Info Text - iOS Style */}
+                    <motion.div variants={fadeInUp} className="mt-6">
+                      <div className={`flex items-center justify-center gap-2 p-3 rounded-[${borderRadius.medium}] bg-[${colors.accent}]/5 text-sm text-[${colors.textSecondary}]`}>
+                        <AlertCircle size={16} className={`text-[${colors.accent}]`} />
+                        <span>Revisaremos tu solicitud en 24-48 horas</span>
+                      </div>
+                    </motion.div>
+                    
+                    {/* Submit Button */}
+                    <motion.div variants={fadeInUp} className="mt-8">
+                      <Button
+                        variant="primary"
+                        size="large"
+                        title={loading ? "Creando cuenta..." : "Crear Cuenta"}
+                        icon={loading ? null : <Car size={20} />}
+                        loading={loading}
+                        loadingMessage="Creando cuenta..."
+                        onClick={handleSubmit(signupCaptain)}
+                        fullWidth
+                      />
+                    </motion.div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </form>
-        </div>
+          
+          {/* Footer with Legal Links */}
+          <motion.footer
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="relative z-10 mt-4 py-4 flex flex-col items-center"
+          >
+            <div className="flex flex-wrap justify-center gap-3">
+              <Badge variant="ghost">
+                <Link to="/privacy" className="px-1">
+                  Privacidad
+                </Link>
+              </Badge>
+              <Badge variant="ghost">
+                <Link to="/terms" className="px-1">
+                  Términos
+                </Link>
+              </Badge>
+              <Badge variant="ghost">
+                <Link to="/help" className="px-1">
+                  Ayuda
+                </Link>
+              </Badge>
+            </div>
+          </motion.footer>
+          
+          </Card>
+        </motion.div>
       </div>
-
-      {/* Floating Action Button - Fixed at bottom */}
-      <motion.div
-        initial={prefersReducedMotion ? {} : { opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed bottom-8 left-6 right-6 md:left-auto md:right-8 md:w-full md:max-w-md z-50"
-      >
-        {!showVehiclePanel ? (
-          <button
-            type="button"
-            onClick={handleNextStep}
-            className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-2xl transition-all hover:shadow-emerald-500/50 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 flex items-center justify-center gap-2"
-          >
-            <span>Siguiente paso</span>
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleSubmit(signupCaptain)}
-            disabled={loading}
-            className="w-full h-16 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 font-semibold text-white shadow-2xl transition-all hover:shadow-emerald-500/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 flex items-center justify-center gap-2"
-            aria-busy={loading}
-          >
-            {loading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-                <span>Creando cuenta...</span>
-              </>
-            ) : (
-              <span>Crear Cuenta →</span>
-            )}
-          </button>
-        )}
-      </motion.div>
-
-      {/* Bottom padding to account for fixed button */}
-      <div className="h-28" aria-hidden="true" />
     </div>
   );
 }

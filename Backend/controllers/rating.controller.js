@@ -3,6 +3,7 @@ const userModel = require("../models/user.model");
 const captainModel = require("../models/captain.model");
 const { validationResult } = require("express-validator");
 const { sendMessageToSocketId } = require("../socket");
+const mongoose = require("mongoose");
 
 /**
  * Submit rating for a completed ride
@@ -15,6 +16,11 @@ module.exports.submitRating = async (req, res) => {
   }
 
   const { rideId, stars, comment, raterType } = req.body;
+
+  // HIGH-002: Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(rideId)) {
+    return res.status(400).json({ message: "ID de viaje inválido" });
+  }
 
   try {
     // Find the ride
@@ -163,6 +169,11 @@ module.exports.submitRating = async (req, res) => {
  */
 module.exports.getRatingStatus = async (req, res) => {
   const { rideId } = req.params;
+
+  // HIGH-002: Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(rideId)) {
+    return res.status(400).json({ message: "ID de viaje inválido" });
+  }
 
   try {
     const ride = await rideModel.findById(rideId);

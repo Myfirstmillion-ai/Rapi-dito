@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
 import { useUser } from "../contexts/UserContext";
 import {
-  Button,
   LocationSuggestions,
   SelectVehicle,
   RideDetails,
@@ -24,9 +23,29 @@ import {
   Minus,
   Compass,
   Menu,
-  Loader2
+  Loader2,
+  ChevronRight,
+  MessageSquare,
+  User as UserIcon,
+  Clock,
+  MapPinned,
+  Shield,
+  Target,
+  Home,
+  Briefcase,
+  Star,
+  AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import LocationFavoritesPills from "../components/LocationFavoritesPills";
+import SaveLocationModal from "../components/SaveLocationModal";
+
+// Import design system components
+import { colors, shadows, glassEffect, borderRadius } from "../styles/designSystem";
+import Button from "../components/common/Button";
+import Card from "../components/common/Card";
+import Input from "../components/common/Input";
+import Badge from "../components/common/Badge";
 
 // Coordenadas de San Antonio del Táchira, Colombia (frontera)
 const DEFAULT_LOCATION = {
@@ -84,6 +103,11 @@ function UserHomeScreen() {
   const [driverLocation, setDriverLocation] = useState(null);
   const [currentRideStatus, setCurrentRideStatus] = useState("pending");
 
+  // Estado para ubicaciones favoritas
+  const [showSaveLocationModal, setShowSaveLocationModal] = useState(false);
+  const [editingLocation, setEditingLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
   const [pickupCoordinates, setPickupCoordinates] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
 
@@ -91,6 +115,7 @@ function UserHomeScreen() {
   const [pickupLocation, setPickupLocation] = useState("");
   const [destinationLocation, setDestinationLocation] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("car");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash");
   const [fare, setFare] = useState({
     car: 0,
     bike: 0,
@@ -99,7 +124,7 @@ function UserHomeScreen() {
   const [rideETA, setRideETA] = useState(null);
   const rideTimeout = useRef(null);
 
-  // UI State - Swiss Minimalist
+  // UI State - iOS Deluxe Floating Island
   const [showSearchPanel, setShowSearchPanel] = useState(false);
   const [showSelectVehiclePanel, setShowSelectVehiclePanel] = useState(false);
   const [showRideDetailsPanel, setShowRideDetailsPanel] = useState(false);
@@ -112,6 +137,41 @@ function UserHomeScreen() {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
+
+  // Animation variants with iOS spring physics
+  const staggerContainer = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.2
+      }
+    }
+  };
+
+  const fadeInUp = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, y: 40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
+
+  const fadeInDown = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, y: -40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
+
+  const fadeInRight = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, x: -40 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, x: 0 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
+
+  const scaleIn = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, scale: 1 },
+    transition: { type: "spring", damping: 30, stiffness: 300, mass: 0.8 }
+  };
 
   // Handle sidebar toggle
   const handleSidebarToggle = (isOpen) => {
@@ -160,6 +220,7 @@ function UserHomeScreen() {
   const abortControllerRef = useRef(null);
 
   // Memoize debounced function with AbortController
+  // MEDIUM-010: Store debounced function ref for cleanup
   const handleLocationChange = useMemo(
     () => debounce(async (inputValue, token) => {
       if (inputValue.length >= 3) {
@@ -178,6 +239,7 @@ function UserHomeScreen() {
                 token: token,
               },
               signal: abortControllerRef.current.signal,
+              withCredentials: true, // CRITICAL-006: Send cookies
             }
           );
           Console.log(response.data);
@@ -195,6 +257,16 @@ function UserHomeScreen() {
     }, 300),
     []
   );
+  
+  // MEDIUM-010: Cleanup debounce and abort controller on unmount
+  useEffect(() => {
+    return () => {
+      handleLocationChange.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [handleLocationChange]);
 
   const onChangeHandler = (e) => {
     setSelectedInput(e.target.id);
@@ -255,6 +327,7 @@ function UserHomeScreen() {
           pickup: pickupLocation,
           destination: destinationLocation,
           vehicleType: selectedVehicle,
+          paymentMethod: selectedPaymentMethod,
         },
         {
           headers: {
@@ -267,6 +340,7 @@ function UserHomeScreen() {
         pickup: pickupLocation,
         destination: destinationLocation,
         vehicleType: selectedVehicle,
+        paymentMethod: selectedPaymentMethod,
         fare: fare,
         confirmedRideData: confirmedRideData,
         _id: response.data._id,
@@ -325,6 +399,7 @@ function UserHomeScreen() {
     setPickupLocation("");
     setDestinationLocation("");
     setSelectedVehicle("car");
+    setSelectedPaymentMethod("cash");
     setFare({
       car: 0,
       bike: 0,
@@ -479,6 +554,7 @@ function UserHomeScreen() {
       setPickupLocation(ride.pickup);
       setDestinationLocation(ride.destination);
       setSelectedVehicle(ride.vehicleType);
+      setSelectedPaymentMethod(ride.paymentMethod);
       setFare(ride.fare);
       setConfirmedRideData(ride.confirmedRideData);
     }
@@ -518,6 +594,7 @@ function UserHomeScreen() {
       pickup: pickupLocation,
       destination: destinationLocation,
       vehicleType: selectedVehicle,
+      paymentMethod: selectedPaymentMethod,
       fare: fare,
       confirmedRideData: confirmedRideData,
     };
@@ -526,6 +603,7 @@ function UserHomeScreen() {
     pickupLocation,
     destinationLocation,
     selectedVehicle,
+    selectedPaymentMethod,
     fare,
     confirmedRideData,
     saveRideDetailsDebounced,
@@ -545,9 +623,11 @@ function UserHomeScreen() {
   }, [messages, saveMessagesDebounced]);
 
   useEffect(() => {
-    socket.emit("join-room", confirmedRideData?._id);
+    if (!confirmedRideData?._id) return;
+    
+    socket.emit("join-room", confirmedRideData._id);
 
-    socket.on("receiveMessage", (data) => {
+    const handleReceiveMessage = (data) => {
       const messageText = typeof data === 'string' ? data : (data?.msg || '');
       const messageBy = typeof data === 'string' ? 'other' : (data?.by || 'other');
       const messageTime = typeof data === 'string' ? '' : (data?.time || '');
@@ -563,12 +643,14 @@ function UserHomeScreen() {
       setShowMessageBanner(true);
       playSound(NOTIFICATION_SOUNDS.newMessage);
       vibrate([200, 100, 200]);
-    });
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
 
     return () => {
-      socket.off("receiveMessage");
+      socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [confirmedRideData]);
+  }, [confirmedRideData?._id, socket]);
 
   const handleETAUpdate = (data) => {
     setRideETA(data);
@@ -577,12 +659,109 @@ function UserHomeScreen() {
 
   const showEliteMap = confirmedRideData && driverLocation;
 
+  const handleLocationSuggestion = (suggestion) => {
+    if (selectedInput === "pickup") {
+      setPickupLocation(suggestion.address);
+      setPickupCoordinates({
+        lat: suggestion.coordinates.lat,
+        lng: suggestion.coordinates.lng,
+      });
+    } else if (selectedInput === "destination") {
+      setDestinationLocation(suggestion.address);
+      setDestinationCoordinates({
+        lat: suggestion.coordinates.lat,
+        lng: suggestion.coordinates.lng,
+      });
+    }
+    setLocationSuggestion([]);
+    
+    // Mostrar opción para guardar como favorito después de seleccionar ubicación
+    if (suggestion.showSaveOption) {
+      setSelectedLocation({
+        address: suggestion.address,
+        coordinates: suggestion.coordinates
+      });
+    }
+  };
+
+  // Manejar selección de ubicación favorita
+  const handleSelectSavedLocation = (location) => {
+    if (selectedInput === "pickup" || (!pickupLocation && !destinationLocation)) {
+      setPickupLocation(location.address);
+      setPickupCoordinates(location.coordinates);
+    } else if (selectedInput === "destination") {
+      setDestinationLocation(location.address);
+      setDestinationCoordinates(location.coordinates);
+    } else {
+      // Si ambos campos están llenos, preguntar cuál quiere llenar
+      const replacePickup = window.confirm(
+        "¿Deseas reemplazar la ubicación de origen? Presiona Cancelar para reemplazar el destino."
+      );
+      
+      if (replacePickup) {
+        setPickupLocation(location.address);
+        setPickupCoordinates(location.coordinates);
+      } else {
+        setDestinationLocation(location.address);
+        setDestinationCoordinates(location.coordinates);
+      }
+    }
+  };
+
+  // Abrir modal para agregar favorito
+  const handleAddFavorite = () => {
+    setEditingLocation(null);
+    setShowSaveLocationModal(true);
+  };
+
+  // Abrir modal para editar favorito existente
+  const handleEditFavorite = (location) => {
+    setEditingLocation(location);
+    setShowSaveLocationModal(true);
+  };
+
+  // Guardar ubicación favorita
+  const handleSaveLocation = async (locationData, locationId) => {
+    try {
+      if (locationId) {
+        // Actualizar ubicación existente
+        await axios.put(
+          `${import.meta.env.VITE_SERVER_URL}/user/saved-locations/${locationId}`,
+          locationData,
+          { headers: { token } }
+        );
+      } else {
+        // Crear nueva ubicación
+        await axios.post(
+          `${import.meta.env.VITE_SERVER_URL}/user/saved-locations`,
+          locationData,
+          { headers: { token } }
+        );
+      }
+      
+      // Mostrar mensaje de éxito
+      alert(locationId ? "Ubicación actualizada" : "Ubicación guardada exitosamente");
+      
+    } catch (error) {
+      console.error("Error guardando ubicación:", error);
+      alert(
+        error.response?.data?.message || 
+        "Ocurrió un error al guardar la ubicación"
+      );
+    }
+  };
+
   return (
-    <div className="relative w-full h-dvh overflow-hidden bg-white dark:bg-black">
+    <div className={`relative w-full h-dvh overflow-hidden bg-[${colors.primary}]`}>
       <Sidebar onToggle={handleSidebarToggle} />
       
+      {/* Subtle Dark Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#101010] to-[#080808] opacity-90" />
+      
       {/* Map Container */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 rounded-xl overflow-hidden mx-4 my-4 shadow-2xl">
+        {/* Glass Overlay for Map */}
+        <div className="absolute inset-0 z-10 pointer-events-none" style={glassEffect}></div>
         {showEliteMap ? (
           <EliteTrackingMap
             driverLocation={driverLocation}
@@ -608,105 +787,133 @@ function UserHomeScreen() {
         )}
       </div>
 
-      {/* Swiss Minimalist UI Layer */}
+      {/* iOS Deluxe UI Layer */}
       {!isSidebarOpen && !showSelectVehiclePanel && !showRideDetailsPanel && !rideCreated && (
         <>
-          {/* Top Bar - User Profile Pill */}
+          {/* Top Bar - User Profile Floating Island */}
           <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between"
+            variants={fadeInDown}
+            initial="initial"
+            animate="animate"
+            className="absolute top-8 left-6 right-6 z-20 flex items-center justify-between"
           >
-            {/* User Pill */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
+            {/* User Profile Card - Floating Glass Pill */}
+            <Button
+              variant="glass"
+              size="custom"
               onClick={() => setIsSidebarOpen(true)}
-              className="flex items-center gap-3 pl-2 pr-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800"
+              className="flex items-center gap-3 pl-2 pr-5 py-1 rounded-full"
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-[${colors.accent}] to-[${colors.accent}]/70 flex items-center justify-center flex-shrink-0 text-[${colors.accent}]`}>
                 {user?.fullname?.firstname?.[0]?.toUpperCase() || 'U'}
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {user?.fullname?.firstname}
+                <p className={`text-sm font-semibold text-[${colors.textPrimary}]`}>
+                  {user?.fullname?.firstname || 'Usuario'}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">En línea</p>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  <p className={`text-xs text-[${colors.textSecondary}]`}>En línea</p>
+                </div>
               </div>
-            </motion.button>
+            </Button>
 
-            {/* Menu Button */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
+            {/* Menu Button - Floating Glass */}
+            <Button
+              variant="glass"
+              size="icon"
+              icon={<Menu size={18} />}
               onClick={() => setIsSidebarOpen(true)}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
-            >
-              <Menu size={20} className="text-gray-900 dark:text-white" />
-            </motion.button>
+              aria-label="Abrir menú"
+            />
           </motion.div>
 
-          {/* Map Controls - Right Side */}
+          {/* Map Controls - Floating Glass Card */}
           <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            variants={fadeInRight}
+            initial="initial"
+            animate="animate"
             className="absolute right-6 top-24 z-20 flex flex-col gap-3"
           >
-            {/* Zoom In */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMapZoom(prev => Math.min(prev + 1, 20))}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
+            {/* Controls Card */}
+            <Card
+              variant="glass"
+              borderRadius="large"
+              className="p-3 flex flex-col gap-3"
             >
-              <Plus size={20} className="text-gray-900 dark:text-white" />
-            </motion.button>
-
-            {/* Zoom Out */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMapZoom(prev => Math.max(prev - 1, 1))}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
-            >
-              <Minus size={20} className="text-gray-900 dark:text-white" />
-            </motion.button>
-
-            {/* Recenter */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                setIsLocating(true);
-                updateLocation();
-                setTimeout(() => setIsLocating(false), 1500);
-              }}
-              className="w-12 h-12 rounded-full bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-800 flex items-center justify-center"
-            >
-              <Compass size={20} className={`text-gray-900 dark:text-white ${isLocating ? 'animate-spin' : ''}`} />
-            </motion.button>
+              {/* Zoom In */}
+              <Button
+                variant="glass"
+                size="icon"
+                onClick={() => setMapZoom(prev => Math.min(prev + 1, 20))}
+                icon={<Plus size={18} />}
+                aria-label="Acercar mapa"
+              />
+              
+              {/* Zoom Out */}
+              <Button
+                variant="glass"
+                size="icon"
+                onClick={() => setMapZoom(prev => Math.max(prev - 1, 1))}
+                icon={<Minus size={18} />}
+                aria-label="Alejar mapa"
+              />
+              
+              {/* Recenter */}
+              <Button
+                variant="glass"
+                size="icon"
+                onClick={() => {
+                  setIsLocating(true);
+                  updateLocation();
+                  setTimeout(() => setIsLocating(false), 1500);
+                }}
+                icon={<Target size={18} className={isLocating ? 'animate-spin' : ''} />}
+                aria-label="Mi ubicación"
+              />
+            </Card>
           </motion.div>
 
-          {/* Bottom Search Card */}
+          {/* Bottom Search Card - Floating Glass Island */}
           <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={fadeInUp}
+            initial="initial"
+            animate="animate"
             className="absolute bottom-8 left-6 right-6 z-20"
           >
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowSearchPanel(true)}
-              className="w-full p-6 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800"
+            <Card
+              variant="floating"
+              borderRadius="xlarge"
+              className="overflow-hidden"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                  <Search size={20} className="text-gray-900 dark:text-white" />
+              <Button
+                variant="custom"
+                size="custom"
+                onClick={() => setShowSearchPanel(true)}
+                className="w-full p-6 flex items-center gap-4 bg-transparent"
+              >
+                <div className={`w-12 h-12 rounded-full bg-[${colors.accent}]/10 flex items-center justify-center flex-shrink-0 text-[${colors.accent}]`}>
+                  <Search size={24} />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                  <p className={`text-lg font-semibold text-[${colors.textPrimary}]`}>
                     ¿A dónde vamos?
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className={`text-sm text-[${colors.textSecondary}]`}>
                     Toca para buscar destino
                   </p>
                 </div>
+              </Button>
+              
+              {/* Ubicaciones Favoritas */}
+              <div className="px-1 py-2">
+                <LocationFavoritesPills
+                  onSelectLocation={handleSelectSavedLocation}
+                  onAddFavorite={handleAddFavorite}
+                  onEditFavorite={handleEditFavorite}
+                />
               </div>
-            </motion.button>
+            </Card>
           </motion.div>
         </>
       )}
@@ -849,12 +1056,15 @@ function UserHomeScreen() {
             showPreviousPanel={setShowSearchPanel}
             showNextPanel={setShowRideDetailsPanel}
             fare={fare}
+            paymentMethod={selectedPaymentMethod}
+            onPaymentMethodChange={setSelectedPaymentMethod}
           />
 
           <RideDetails
             pickupLocation={pickupLocation}
             destinationLocation={destinationLocation}
             selectedVehicle={selectedVehicle}
+            paymentMethod={selectedPaymentMethod}
             fare={fare}
             showPanel={showRideDetailsPanel}
             setShowPanel={setShowRideDetailsPanel}
@@ -869,45 +1079,61 @@ function UserHomeScreen() {
         </>
       )}
 
-      {/* Looking for Driver Overlay */}
+      {/* Looking for Driver Overlay - iOS Deluxe Style */}
       <AnimatePresence>
         {rideCreated && !confirmedRideData && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md z-50 flex flex-col items-center justify-center"
           >
+            {/* Glass Card Container */}
             <motion.div
-              initial={prefersReducedMotion ? { scale: 1 } : { scale: 0.8 }}
-              animate={{ scale: 1 }}
-              className="text-center px-6"
+              variants={scaleIn}
+              initial="initial"
+              animate="animate"
+              className="w-full max-w-xs px-8"
             >
-              {/* Pulsing Pin */}
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-2xl"
+              <Card
+                variant="floating"
+                borderRadius="xlarge"
+                className="py-8 px-6"
               >
-                <MapPin size={40} className="text-white" />
-              </motion.div>
+                {/* Animated Pulsing Pin */}
+                <motion.div 
+                  className="mx-auto mb-6 flex justify-center"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                >
+                  <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[${colors.accent}] to-[${colors.accent}]/70 flex items-center justify-center relative`}>
+                    {/* Inner pulse rings */}
+                    <motion.div 
+                      className="absolute inset-0 rounded-full border-4 border-white/20"
+                      animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
+                      transition={{ repeat: Infinity, duration: 2, delay: 0.2 }}
+                    />
+                    <MapPinned size={36} className="text-white" strokeWidth={2.5} />
+                  </div>
+                </motion.div>
 
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Buscando conductor
-              </h2>
-              <p className="text-gray-300 mb-8">
-                Conectando con conductores cercanos...
-              </p>
+                <h2 className={`text-2xl font-bold text-[${colors.textPrimary}] mb-2 text-center`}>
+                  Buscando conductor
+                </h2>
+                <p className={`text-[${colors.textSecondary}] mb-8 text-center`}>
+                  Conectando con conductores cercanos...
+                </p>
 
-              {/* Cancel Button */}
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={cancelRide}
-                disabled={loading}
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-2xl border border-white/20 transition-all"
-              >
-                {loading ? 'Cancelando...' : 'Cancelar búsqueda'}
-              </motion.button>
+                {/* Cancel Button */}
+                <Button
+                  variant="glass"
+                  size="large"
+                  title={loading ? "Cancelando..." : "Cancelar búsqueda"}
+                  onClick={cancelRide}
+                  disabled={loading}
+                  fullWidth
+                />
+              </Card>
             </motion.div>
           </motion.div>
         )}

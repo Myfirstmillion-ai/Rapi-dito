@@ -4,6 +4,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { SocketDataContext } from "../../contexts/SocketContext";
 import { cn } from "../../utils/cn";
 import { calculateDistance, calculateETA, formatDistance, formatDuration } from "../../utils/rideTracking";
+import { colors, shadows, glassEffect, borderRadius } from "../../styles/designSystem";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Set Mapbox access token
 const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -236,7 +238,7 @@ function EliteTrackingMap({
     };
   }, [validateCoordinates]);
 
-  // 🎨 Create premium driver marker with high-quality 3D icon
+  // 🎨 Create iOS Deluxe driver marker with high-quality 3D icon
   useEffect(() => {
     if (!map.current || !isMapLoaded) return;
     if (!validateCoordinates(driverLocation)) return;
@@ -245,45 +247,76 @@ function EliteTrackingMap({
       driverMarker.current.remove();
     }
 
-    // Create premium marker element with CDN icon
+    // Create iOS Deluxe marker element with premium styling
     const el = document.createElement('div');
-    el.className = 'driver-marker-elite-premium';
+    el.className = 'ios-deluxe-driver-marker';
     el.style.cssText = `
-      width: 56px;
-      height: 56px;
+      width: 60px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
       will-change: transform;
+      position: relative;
     `;
     
-    // Premium icon container with shadow
-    const iconContainer = document.createElement('div');
-    iconContainer.style.cssText = `
+    // Outer blur halo (glassmorphism effect)
+    const blurHalo = document.createElement('div');
+    blurHalo.style.cssText = `
+      position: absolute;
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: linear-gradient(145deg, #ffffff, #f0f0f0);
-      border: 3px solid white;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.25), 0 4px 8px rgba(0,0,0,0.15);
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: ${shadows.floating};
+      z-index: 1;
+    `;
+    
+    // Premium icon container with glassmorphism
+    const iconContainer = document.createElement('div');
+    iconContainer.style.cssText = `
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: ${shadows.medium};
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      z-index: 2;
     `;
+    
+    // Accent color ring around icon
+    const accentRing = document.createElement('div');
+    accentRing.style.cssText = `
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 2px solid ${colors.accent};
+      opacity: 0.7;
+      z-index: 1;
+    `;
+    iconContainer.appendChild(accentRing);
     
     // High-quality CDN icon
     const icon = document.createElement('img');
     icon.src = vehicleIcon;
     icon.alt = vehicleType === 'bike' ? 'Moto' : 'Carro';
     icon.style.cssText = `
-      width: 36px;
-      height: 36px;
+      width: 28px;
+      height: 28px;
       object-fit: contain;
       user-select: none;
       pointer-events: none;
+      z-index: 3;
+      position: relative;
     `;
     
     // Fallback in case CDN icon fails to load
@@ -291,24 +324,42 @@ function EliteTrackingMap({
       icon.style.display = 'none';
       const fallbackEmoji = document.createElement('span');
       fallbackEmoji.textContent = vehicleType === 'bike' ? '🛵' : '🚗';
-      fallbackEmoji.style.cssText = 'font-size: 28px;';
+      fallbackEmoji.style.cssText = 'font-size: 24px; z-index: 3;';
       iconContainer.appendChild(fallbackEmoji);
     };
     
+    // Pulse animation for location accuracy
+    const pulseRing = document.createElement('div');
+    pulseRing.style.cssText = `
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: ${colors.accent}20;
+      z-index: 0;
+    `;
+    
+    // Append elements in proper order
+    el.appendChild(pulseRing);
+    el.appendChild(blurHalo);
     iconContainer.appendChild(icon);
     el.appendChild(iconContainer);
 
-    // Premium pulse animation on hover
+    // iOS Deluxe animations
     const style = document.createElement('style');
-    if (!document.getElementById('elite-marker-styles')) {
-      style.id = 'elite-marker-styles';
+    if (!document.getElementById('ios-deluxe-marker-styles')) {
+      style.id = 'ios-deluxe-marker-styles';
       style.textContent = `
-        @keyframes pulse-elite-premium {
-          0%, 100% { transform: scale(1); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
-          50% { transform: scale(1.08); box-shadow: 0 12px 24px rgba(0,0,0,0.35); }
+        @keyframes ios-deluxe-pulse {
+          0% { transform: scale(0.95); opacity: 0.6; }
+          50% { transform: scale(1.15); opacity: 0; }
+          100% { transform: scale(0.95); opacity: 0; }
         }
-        .driver-marker-elite-premium:hover > div {
-          animation: pulse-elite-premium 1.5s ease-in-out infinite;
+        .ios-deluxe-driver-marker > div:first-child {
+          animation: ios-deluxe-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .ios-deluxe-driver-marker:hover > div:nth-child(3) {
+          transform: scale(1.08);
+          box-shadow: ${shadows.large};
         }
       `;
       document.head.appendChild(style);
@@ -416,7 +467,7 @@ function EliteTrackingMap({
     };
   }, [driverLocation, userType, calculateBearing, interpolatePosition, validateCoordinates]);
 
-  // Create pickup marker (blue)
+  // Create pickup marker with iOS Deluxe styling
   useEffect(() => {
     if (!map.current || !isMapLoaded || !pickupLocation) return;
 
@@ -424,42 +475,71 @@ function EliteTrackingMap({
       pickupMarker.current.remove();
     }
 
+    // Create container element
     const el = document.createElement('div');
+    el.className = 'ios-deluxe-pickup-marker';
     el.style.cssText = `
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: #276EF1;
-      border: 4px solid white;
-      box-shadow: 0 4px 8px rgba(39, 110, 241, 0.5);
+      width: 44px;
+      height: 44px;
       position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     `;
 
-    // Add pulse ring
-    const ring = document.createElement('div');
-    ring.style.cssText = `
+    // Glassmorphism effect outer ring
+    const glassRing = document.createElement('div');
+    glassRing.style.cssText = `
       position: absolute;
-      top: -8px;
-      left: -8px;
-      right: -8px;
-      bottom: -8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: ${shadows.medium};
+    `;
+    el.appendChild(glassRing);
+
+    // Main pickup dot
+    const mainDot = document.createElement('div');
+    mainDot.style.cssText = `
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #276EF1;
+      border: 3px solid white;
+      box-shadow: ${shadows.small};
+      z-index: 2;
+      position: relative;
+    `;
+    el.appendChild(mainDot);
+
+    // Add pulse ring animation
+    const pulseRing = document.createElement('div');
+    pulseRing.style.cssText = `
+      position: absolute;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       border: 2px solid #276EF1;
       opacity: 0;
-      animation: ping-elite 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+      z-index: 1;
     `;
-    el.appendChild(ring);
+    el.appendChild(pulseRing);
 
-    // Add ping animation styles (with check to prevent duplicates)
-    if (!document.getElementById('elite-ping-styles')) {
+    // Add iOS Deluxe ping animation
+    if (!document.getElementById('ios-deluxe-ping-styles')) {
       const pingStyle = document.createElement('style');
-      pingStyle.id = 'elite-ping-styles';
+      pingStyle.id = 'ios-deluxe-ping-styles';
       pingStyle.textContent = `
-        @keyframes ping-elite {
-          75%, 100% {
-            transform: scale(2);
-            opacity: 0;
-          }
+        @keyframes ios-deluxe-ping {
+          0% { transform: scale(0.8); opacity: 0.8; }
+          70%, 100% { transform: scale(1.8); opacity: 0; }
+        }
+        .ios-deluxe-pickup-marker > div:last-child {
+          animation: ios-deluxe-ping 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
       `;
       document.head.appendChild(pingStyle);
@@ -476,7 +556,7 @@ function EliteTrackingMap({
     };
   }, [pickupLocation, isMapLoaded]);
 
-  // Create dropoff marker (green)
+  // Create dropoff marker with iOS Deluxe styling
   useEffect(() => {
     if (!map.current || !isMapLoaded || !dropoffLocation) return;
 
@@ -484,15 +564,58 @@ function EliteTrackingMap({
       dropoffMarker.current.remove();
     }
 
+    // Create container element
     const el = document.createElement('div');
+    el.className = 'ios-deluxe-dropoff-marker';
     el.style.cssText = `
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: #05A357;
-      border: 4px solid white;
-      box-shadow: 0 4px 8px rgba(5, 163, 87, 0.5);
+      width: 44px;
+      height: 44px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     `;
+    
+    // Glassmorphism effect for depth
+    const glassCircle = document.createElement('div');
+    glassCircle.style.cssText = `
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: ${shadows.medium};
+    `;
+    el.appendChild(glassCircle);
+    
+    // Main destination dot
+    const mainDot = document.createElement('div');
+    mainDot.style.cssText = `
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: ${colors.accent || '#10B981'};
+      border: 3px solid white;
+      box-shadow: ${shadows.small};
+      z-index: 2;
+      position: relative;
+    `;
+    el.appendChild(mainDot);
+    
+    // Subtle glow effect
+    const glowEffect = document.createElement('div');
+    glowEffect.style.cssText = `
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle, ${colors.accent || '#10B981'}30 0%, transparent 70%);
+      z-index: 0;
+    `;
+    el.appendChild(glowEffect);
 
     dropoffMarker.current = new mapboxgl.Marker(el)
       .setLngLat([dropoffLocation.lng, dropoffLocation.lat])
@@ -754,84 +877,120 @@ function EliteTrackingMap({
         style={{ minHeight: '400px' }}
       />
       
-      {/* 🎨 PREMIUM ETA and Distance Info Overlay */}
-      {eta && distance && userType === "user" && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="bg-black text-white px-6 py-3 rounded-full shadow-uber-xl flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              {/* Premium vehicle icon */}
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src={vehicleIcon} 
-                  alt={vehicleType === 'bike' ? 'Moto' : 'Carro'}
-                  className="w-8 h-8 object-contain"
-                  onError={(e) => {
-                    // Fallback to emoji if CDN fails (XSS-safe using textContent)
-                    const target = e.target;
-                    target.style.display = 'none';
-                    const fallback = document.createElement('span');
-                    fallback.textContent = vehicleType === 'bike' ? '🛵' : '🚗';
-                    fallback.style.fontSize = '24px';
-                    target.parentElement.appendChild(fallback);
-                  }}
-                />
+      {/* iOS Deluxe ETA and Distance Info Overlay */}
+      <AnimatePresence>
+        {eta && distance && userType === "user" && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10 w-auto max-w-xs"
+          >
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-5">
+              <div className="flex items-center gap-2">
+                {/* Vehicle icon in glass circle */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-white/30 backdrop-blur-sm rounded-full" />
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-[${colors.accent}]/80 to-[${colors.accent}]/40 backdrop-blur-sm flex items-center justify-center shadow-md`}>
+                    <img 
+                      src={vehicleIcon} 
+                      alt={vehicleType === 'bike' ? 'Moto' : 'Carro'}
+                      className="w-6 h-6 object-contain"
+                      onError={(e) => {
+                        const target = e.target;
+                        target.style.display = 'none';
+                        const fallback = document.createElement('span');
+                        fallback.textContent = vehicleType === 'bike' ? '🛵' : '🚗';
+                        fallback.style.fontSize = '18px';
+                        target.parentElement.appendChild(fallback);
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-xs text-white/70">
+                    {isPrePickup ? "Llegada conductor" : "Llegada estimada"}
+                  </div>
+                  <div className="text-base font-semibold text-white">
+                    {formatDuration(eta)}
+                  </div>
+                </div>
               </div>
+              
+              <div className="h-8 w-px bg-white/20" />
+              
               <div>
-                <div className="text-xs text-gray-300">
-                  {isPrePickup ? "El conductor llega en" : "Llegada en"}
-                </div>
-                <div className="text-lg font-bold">
-                  {formatDuration(eta)}
+                <div className="text-xs text-white/70">Distancia</div>
+                <div className="text-base font-semibold text-white">
+                  {formatDistance(distance)}
                 </div>
               </div>
             </div>
-            
-            <div className="h-8 w-px bg-gray-600" />
-            
-            <div>
-              <div className="text-xs text-gray-300">Distancia</div>
-              <div className="text-lg font-bold">
-                {formatDistance(distance)}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Current Phase Indicator */}
+      {/* Current Phase Indicator - iOS Deluxe Style */}
       {userType === "user" && (
-        <div className="absolute bottom-24 left-4 z-10">
-          <div className="bg-white px-4 py-2 rounded-lg shadow-uber-md">
-            <div className="text-xs text-gray-500">Estado del viaje</div>
-            <div className="text-sm font-semibold text-black">
-              {isPrePickup ? "Conductor en camino" : "En viaje"}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300, delay: 0.2 }}
+          className="absolute bottom-24 left-4 z-10"
+        >
+          <div className="backdrop-blur-lg bg-white/20 border border-white/30 px-4 py-3 rounded-xl shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full bg-[${isPrePickup ? '#3B82F6' : colors.accent}] animate-pulse`} />
+              <div className="text-sm font-medium text-white">
+                {isPrePickup ? "Conductor en camino" : "En viaje"}
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Error States */}
-      {locationTimeout && userType === "user" && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm font-medium">Esperando ubicación del conductor...</span>
-          </div>
-        </div>
-      )}
+      {/* Error States - iOS Deluxe Style */}
+      <AnimatePresence>
+        {locationTimeout && userType === "user" && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="absolute top-24 left-1/2 transform -translate-x-1/2 z-10"
+          >
+            <div className="backdrop-blur-xl bg-[#FFEDD5]/40 border border-[#FED7AA]/50 px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#FFBA42]/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#F59E0B]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-[#92400E]">Esperando ubicación del conductor...</span>
+            </div>
+          </motion.div>
+        )}
 
-      {trackingError === 'GPS_ERROR' && userType === "user" && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm font-medium">Error de GPS. Reconectando...</span>
-          </div>
-        </div>
-      )}
+        {trackingError === 'GPS_ERROR' && userType === "user" && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}  
+            className="absolute top-24 left-1/2 transform -translate-x-1/2 z-10"
+          >
+            <div className="backdrop-blur-xl bg-[#FEE2E2]/40 border border-[#FCA5A5]/50 px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#EF4444]/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#DC2626]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-[#B91C1C]">Error de GPS. Reconectando...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

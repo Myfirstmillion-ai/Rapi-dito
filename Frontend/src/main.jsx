@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import UserContext from "./contexts/UserContext.jsx";
 import CaptainContext from "./contexts/CaptainContext.jsx";
 import SocketContext from "./contexts/SocketContext.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx"; // MEDIUM-002: Global Error Boundary
 
 /**
  * Swiss Minimalist Luxury App Entry Point
@@ -26,11 +27,13 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <SocketContext>
-    <UserContext>
-      <CaptainContext>
-        <App />
-      </CaptainContext>
-    </UserContext>
-  </SocketContext>
+  <ErrorBoundary>
+    <SocketContext>
+      <UserContext>
+        <CaptainContext>
+          <App />
+        </CaptainContext>
+      </UserContext>
+    </SocketContext>
+  </ErrorBoundary>
 );

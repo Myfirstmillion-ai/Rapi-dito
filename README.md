@@ -276,6 +276,28 @@ MAIL_PASS=<your-app-password>
 
 ---
 
+## 🔒 Security Features (v1.1.0)
+
+This application has been security-audited and includes:
+
+| Feature | Description |
+|---------|-------------|
+| **Helmet.js** | Security headers (XSS, clickjacking protection) |
+| **Rate Limiting** | Prevents brute force attacks (5 login attempts/15min) |
+| **httpOnly Cookies** | XSS-protected token storage |
+| **Socket.io Auth** | JWT authentication for real-time connections |
+| **Input Validation** | express-validator on all endpoints |
+| **MongoDB Sanitization** | Prevents NoSQL injection |
+| **Graceful Shutdown** | Clean server termination |
+| **Health Check** | `/health` endpoint for monitoring |
+
+For detailed security audit results, see:
+- **[AUDIT_REPORT.md](./AUDIT_REPORT.md)** - Full audit findings
+- **[SECURITY_REPORT.md](./SECURITY_REPORT.md)** - Security-specific analysis
+- **[FIX_IMPLEMENTATION_REPORT.md](./FIX_IMPLEMENTATION_REPORT.md)** - Implementation status
+
+---
+
 ## 📖 Technical Documentation
 
 For detailed technical information about the implementation, including:

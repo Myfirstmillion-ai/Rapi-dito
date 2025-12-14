@@ -2,14 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/icon-quickride.png" />
-
+    <link rel="icon" type="image/x-icon" href="/icons/icon-32x32.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rapi-dito">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    
     <!-- Improved viewport for mobile devices with safe areas -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- Primary Meta Tags -->
-    <title>QuickRide - Full Stack Ride Booking App based on MERN Stack</title>
-    <meta name="description" content="QuickRide is a MERN stack based full stack ride booking application with real-time tracking, authentication, Google Maps integration, and more. Open source and free to use.">
+    <title>Rapi-dito - Ride-hailing premium app</title>
+    <meta name="description" content="Rapi-dito es una aplicación premium de transporte disponible en San Antonio del Táchira y zonas aledañas.">
     
     <!-- Keywords -->
     <meta name="keywords" content="quickride, quickride github, quick ride, quick ride asif, quick-ride-asif, quick ride asif vercel, quick-ride-asif vercel, full stack ride booking app, mern stack ride booking app, mern stack taxi app, react nodejs uber clone, real-time ride booking, google maps taxi app, quick ride booking app, open source ride booking app, mern stack cab booking app, react taxi booking app, full stack cab booking system, mern stack transportation app, react nodejs cab app, mern stack car booking app, bike ride booking app, auto ride booking app, online cab booking mern, react google maps integration, real time cab tracking app, ride hailing app mern stack, uber clone mern stack, nodejs taxi app, reactjs ride booking app, mern stack location tracking app, mern stack realtime chat app, ride booking platform open source">
@@ -37,5 +48,20 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Register Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+              console.error('Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

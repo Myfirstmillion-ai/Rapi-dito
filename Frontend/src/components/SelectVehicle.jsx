@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Clock, Users, Zap, ChevronRight } from "lucide-react";
+import PaymentMethodSelector from "./PaymentMethodSelector";
 
 /**
  * 🏆 TESLA MATTE PREMIUM - SelectVehicle Component
@@ -84,9 +85,12 @@ function SelectVehicle({
   showPreviousPanel,
   showNextPanel,
   fare,
+  paymentMethod = "cash",
+  onPaymentMethodChange = () => {},
 }) {
   const [currentlySelected, setCurrentlySelected] = useState(null);
   const [hoveredVehicle, setHoveredVehicle] = useState(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod);
 
   // Check for reduced motion
   const prefersReducedMotion = typeof window !== 'undefined' 
@@ -117,10 +121,16 @@ function SelectVehicle({
     
     setTimeout(() => {
       selectedVehicle(vehicle.type);
+      onPaymentMethodChange(selectedPaymentMethod);
       setShowPanel(false);
       showNextPanel(true);
       triggerHaptic('heavy');
     }, 300);
+  };
+
+  const handlePaymentMethodChange = (method) => {
+    setSelectedPaymentMethod(method);
+    triggerHaptic('light');
   };
 
   return (
@@ -193,7 +203,7 @@ function SelectVehicle({
                 </div>
 
                 {/* Vehicle Cards - Dynamic Islands */}
-                <div className="space-y-3 mb-4">
+                <div className="space-y-3 mb-6">
                   {vehicles.map((vehicle, index) => (
                     <VehicleCard
                       key={vehicle.id}
@@ -210,6 +220,14 @@ function SelectVehicle({
                       delay={index * 0.1}
                     />
                   ))}
+                </div>
+                
+                {/* Payment Method Selector - iOS Deluxe Style */}
+                <div className="mb-4">
+                  <PaymentMethodSelector 
+                    selectedMethod={selectedPaymentMethod}
+                    onMethodChange={handlePaymentMethodChange}
+                  />
                 </div>
               </div>
             </motion.div>
